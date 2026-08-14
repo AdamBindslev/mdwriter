@@ -191,66 +191,194 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     const end = editorTextarea.selectionEnd;
     const selectedText = editorTextarea.value.substring(start, end);
     let replacement = '';
-    let cursorOffset = 0;
+    let selStart = start;
+    let selEnd = end;
 
     switch (command) {
       case 'h1':
-        replacement = `# ${selectedText || 'Overskrift 1'}`;
+        if (selectedText) {
+          replacement = `# ${selectedText}`;
+          selStart = start + 2;
+          selEnd = start + 2 + selectedText.length;
+        } else {
+          const placeholder = 'Overskrift 1';
+          replacement = `# ${placeholder}`;
+          selStart = start + 2;
+          selEnd = start + 2 + placeholder.length;
+        }
         break;
       case 'h2':
-        replacement = `## ${selectedText || 'Overskrift 2'}`;
+        if (selectedText) {
+          replacement = `## ${selectedText}`;
+          selStart = start + 3;
+          selEnd = start + 3 + selectedText.length;
+        } else {
+          const placeholder = 'Overskrift 2';
+          replacement = `## ${placeholder}`;
+          selStart = start + 3;
+          selEnd = start + 3 + placeholder.length;
+        }
         break;
       case 'h3':
-        replacement = `### ${selectedText || 'Overskrift 3'}`;
+        if (selectedText) {
+          replacement = `### ${selectedText}`;
+          selStart = start + 4;
+          selEnd = start + 4 + selectedText.length;
+        } else {
+          const placeholder = 'Overskrift 3';
+          replacement = `### ${placeholder}`;
+          selStart = start + 4;
+          selEnd = start + 4 + placeholder.length;
+        }
         break;
       case 'bold':
-        replacement = `**${selectedText || 'fed tekst'}**`;
-        cursorOffset = 2;
+        if (selectedText) {
+          replacement = `**${selectedText}**`;
+          selStart = start + 2;
+          selEnd = start + 2 + selectedText.length;
+        } else {
+          const placeholder = 'fed tekst';
+          replacement = `**${placeholder}**`;
+          selStart = start + 2;
+          selEnd = start + 2 + placeholder.length;
+        }
         break;
       case 'italic':
-        replacement = `*${selectedText || 'kursiv tekst'}*`;
-        cursorOffset = 1;
+        if (selectedText) {
+          replacement = `*${selectedText}*`;
+          selStart = start + 1;
+          selEnd = start + 1 + selectedText.length;
+        } else {
+          const placeholder = 'kursiv tekst';
+          replacement = `*${placeholder}*`;
+          selStart = start + 1;
+          selEnd = start + 1 + placeholder.length;
+        }
         break;
       case 'strikethrough':
-        replacement = `~~${selectedText || 'gennemstreget tekst'}~~`;
-        cursorOffset = 2;
+        if (selectedText) {
+          replacement = `~~${selectedText}~~`;
+          selStart = start + 2;
+          selEnd = start + 2 + selectedText.length;
+        } else {
+          const placeholder = 'gennemstreget tekst';
+          replacement = `~~${placeholder}~~`;
+          selStart = start + 2;
+          selEnd = start + 2 + placeholder.length;
+        }
         break;
       case 'code':
-        replacement = `\`${selectedText || 'kode'}\``;
-        cursorOffset = 1;
+        if (selectedText) {
+          replacement = `\`${selectedText}\``;
+          selStart = start + 1;
+          selEnd = start + 1 + selectedText.length;
+        } else {
+          const placeholder = 'kode';
+          replacement = `\`${placeholder}\``;
+          selStart = start + 1;
+          selEnd = start + 1 + placeholder.length;
+        }
         break;
       case 'quote':
-        replacement = `> ${selectedText || 'Citattekst'}`;
+        if (selectedText) {
+          replacement = `> ${selectedText}`;
+          selStart = start + 2;
+          selEnd = start + 2 + selectedText.length;
+        } else {
+          const placeholder = 'Citattekst';
+          replacement = `> ${placeholder}`;
+          selStart = start + 2;
+          selEnd = start + 2 + placeholder.length;
+        }
         break;
       case 'ul':
-        replacement = selectedText ? selectedText.split('\n').map(l => `- ${l}`).join('\n') : '- Punkt 1\n- Punkt 2';
+        if (selectedText) {
+          replacement = selectedText.split('\n').map(l => `- ${l}`).join('\n');
+          selStart = start;
+          selEnd = start + replacement.length;
+        } else {
+          const placeholder = 'Punkt 1';
+          replacement = `- ${placeholder}\n- Punkt 2`;
+          selStart = start + 2;
+          selEnd = start + 2 + placeholder.length;
+        }
         break;
       case 'ol':
-        replacement = selectedText ? selectedText.split('\n').map((l, i) => `${i + 1}. ${l}`).join('\n') : '1. Første punkt\n2. Andet punkt';
+        if (selectedText) {
+          replacement = selectedText.split('\n').map((l, i) => `${i + 1}. ${l}`).join('\n');
+          selStart = start;
+          selEnd = start + replacement.length;
+        } else {
+          const placeholder = 'Første punkt';
+          replacement = `1. ${placeholder}\n2. Andet punkt`;
+          selStart = start + 3;
+          selEnd = start + 3 + placeholder.length;
+        }
         break;
       case 'task':
-        replacement = selectedText ? selectedText.split('\n').map(l => `- [ ] ${l}`).join('\n') : '- [ ] Opgave 1\n- [ ] Opgave 2';
+        if (selectedText) {
+          replacement = selectedText.split('\n').map(l => `- [ ] ${l}`).join('\n');
+          selStart = start;
+          selEnd = start + replacement.length;
+        } else {
+          const placeholder = 'Opgave 1';
+          replacement = `- [ ] ${placeholder}\n- [ ] Opgave 2`;
+          selStart = start + 6;
+          selEnd = start + 6 + placeholder.length;
+        }
         break;
       case 'link':
-        replacement = `[${selectedText || 'Link tekst'}](https://example.com)`;
+        if (selectedText) {
+          replacement = `[${selectedText}](https://example.com)`;
+          selStart = start + 1 + selectedText.length + 2;
+          selEnd = selStart + 'https://example.com'.length;
+        } else {
+          const placeholder = 'Link tekst';
+          replacement = `[${placeholder}](https://example.com)`;
+          selStart = start + 1;
+          selEnd = start + 1 + placeholder.length;
+        }
         break;
       case 'image':
-        replacement = `![${selectedText || 'Billedbeskrivelse'}](https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800)`;
+        if (selectedText) {
+          replacement = `![${selectedText}](https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800)`;
+          selStart = start + 2;
+          selEnd = start + 2 + selectedText.length;
+        } else {
+          const placeholder = 'Billedbeskrivelse';
+          replacement = `![${placeholder}](https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800)`;
+          selStart = start + 2;
+          selEnd = start + 2 + placeholder.length;
+        }
         break;
       case 'codeblock':
-        replacement = `\`\`\`javascript\n${selectedText || '// Skriv kode her'}\n\`\`\``;
+        if (selectedText) {
+          replacement = `\`\`\`javascript\n${selectedText}\n\`\`\``;
+          selStart = start + 14;
+          selEnd = start + 14 + selectedText.length;
+        } else {
+          const placeholder = '// Skriv kode her';
+          replacement = `\`\`\`javascript\n${placeholder}\n\`\`\``;
+          selStart = start + 14;
+          selEnd = start + 14 + placeholder.length;
+        }
         break;
       case 'table':
         replacement = `| Kolonne 1 | Kolonne 2 | Kolonne 3 |\n| --- | --- | --- |\n| Værdi 1 | Værdi 2 | Værdi 3 |\n| Værdi 4 | Værdi 5 | Værdi 6 |`;
+        selStart = start + 2;
+        selEnd = start + 11;
         break;
       case 'hr':
         replacement = `\n---\n`;
+        selStart = start + replacement.length;
+        selEnd = selStart;
         break;
       default:
         return;
     }
 
-    editorTextarea.setRangeText(replacement, start, end, 'select');
+    editorTextarea.setRangeText(replacement, start, end, 'end');
+    editorTextarea.setSelectionRange(selStart, selEnd);
     editorTextarea.focus();
     renderPreview();
   }
@@ -471,11 +599,20 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     showToast(`Filen "${fileName}" blev indlæst!`, 'upload');
   }
 
-  // Keyboard Shortcuts (Ctrl/Cmd + S to Export, Ctrl/Cmd + B, Ctrl/Cmd + I)
+  // Keyboard Shortcuts (Ctrl/Cmd + S to Export, Ctrl/Cmd + B for Bold, Ctrl/Cmd + I for Italic)
   document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-      e.preventDefault();
-      btnExportMd.click();
+    if (e.ctrlKey || e.metaKey) {
+      const key = e.key.toLowerCase();
+      if (key === 's') {
+        e.preventDefault();
+        btnExportMd.click();
+      } else if (key === 'b') {
+        e.preventDefault();
+        applyFormat('bold');
+      } else if (key === 'i') {
+        e.preventDefault();
+        applyFormat('italic');
+      }
     }
   });
 
