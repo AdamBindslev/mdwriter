@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="da" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MD Editor & Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Feather Icons for modern visual editing controls -->
+  <script src="https://unpkg.com/feather-icons"></script>
+  <!-- Marked parser and DOMPurify CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Navigation Bar -->
+    <header class="top-header">
+      <div class="brand">
+        <div class="logo-icon"><i data-feather="edit-3"></i></div>
+        <div class="brand-text">
+          <h1>MD Writer</h1>
+          <span class="subtitle">Visuel Markdown Editor & Eksportør</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="view-toggle-group">
+          <button id="btnViewSplit" class="btn-toggle active" title="Splittet visning">
+            <i data-feather="columns"></i> Splittet
+          </button>
+          <button id="btnViewEditor" class="btn-toggle" title="Kun editor">
+            <i data-feather="edit"></i> Editor
+          </button>
+          <button id="btnViewPreview" class="btn-toggle" title="Kun forhåndsvisning">
+            <i data-feather="eye"></i> Preview
+          </button>
+        </div>
+
+        <div class="action-divider"></div>
+
+        <button id="btnLoadSample" class="btn btn-secondary" title="Indlæs Møns Klint feltjournal som eksempel">
+          <i data-feather="file-text"></i> Indlæs Eksempel
+        </button>
+
+        <button id="btnThemeToggle" class="btn btn-icon" title="Skift Mørk/Lys Tema">
+          <i data-feather="sun" id="themeIcon"></i>
+        </button>
+
+        <button id="btnExportMd" class="btn btn-primary" title="Download .md-fil med dags dato og titel">
+          <i data-feather="download"></i> Download .md
+        </button>
+      </div>
+    </header>
+
+    <!-- Meta & Title Inputs Section -->
+    <section class="meta-section">
+      <div class="meta-grid">
+        <div class="input-group title-group">
+          <label for="docTitle">
+            <i data-feather="type"></i> Dokumenttitel
+          </label>
+          <input type="text" id="docTitle" placeholder="f.eks. Feltdagbog: Vandring ved Møns Klint" autocomplete="off" />
+        </div>
+
+        <div class="input-group note-group">
+          <label for="docCategories">
+            <i data-feather="tag"></i> Notefelt & Kategorier <span class="badge-tag">Markeres med *</span>
+          </label>
+          <div class="input-with-actions">
+            <input type="text" id="docCategories" placeholder="f.eks. Dato: 14. august 2026 | Sted: Møns Klint, Danmark | Notat #042" autocomplete="off" />
+            <div class="quick-chips">
+              <button class="chip-btn" id="chipDate" title="Indsæt dags dato">+ Dato</button>
+              <button class="chip-btn" id="chipLocation" title="Indsæt sted skabelon">+ Sted</button>
+              <button class="chip-btn" id="chipNoteNo" title="Indsæt notatnummer">+ Notat #</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="export-preview-bar">
+        <span class="export-label"><i data-feather="file"></i> Filnavn ved eksport:</span>
+        <code id="filenamePreview" class="filename-badge">260814 dokument.md</code>
+        <span class="auto-save-indicator" id="saveIndicator"><i data-feather="file-text"></i> Tomt dokument</span>
+      </div>
+    </section>
+
+    <!-- Format Toolbar -->
+    <div class="toolbar" id="toolbar">
+      <div class="toolbar-group">
+        <button type="button" data-cmd="h1" class="tb-btn" title="Overskrift 1 (#)"><i data-feather="type"></i>1</button>
+        <button type="button" data-cmd="h2" class="tb-btn" title="Overskrift 2 (##)"><i data-feather="type"></i>2</button>
+        <button type="button" data-cmd="h3" class="tb-btn" title="Overskrift 3 (###)"><i data-feather="type"></i>3</button>
+      </div>
+
+      <div class="tb-divider"></div>
+
+      <div class="toolbar-group">
+        <button type="button" data-cmd="bold" class="tb-btn" title="Fed (**tekst**)"><i data-feather="bold"></i></button>
+        <button type="button" data-cmd="italic" class="tb-btn" title="Kursiv (*tekst*)"><i data-feather="italic"></i></button>
+        <button type="button" data-cmd="strikethrough" class="tb-btn" title="Gennemstreget (~~tekst~~)"><i data-feather="minus"></i></button>
+        <button type="button" data-cmd="code" class="tb-btn" title="Inline Kode (`kode`)"><i data-feather="code"></i></button>
+      </div>
+
+      <div class="tb-divider"></div>
+
+      <div class="toolbar-group">
+        <button type="button" data-cmd="quote" class="tb-btn" title="Citat (> quote)"><i data-feather="message-square"></i></button>
+        <button type="button" data-cmd="ul" class="tb-btn" title="Punktopstilling (- punkt)"><i data-feather="list"></i></button>
+        <button type="button" data-cmd="ol" class="tb-btn tb-badge-btn" title="Nummereret liste (1. 2. 3.)">1.2.3</button>
+        <button type="button" data-cmd="task" class="tb-btn" title="Opgaveliste (- [ ])"><i data-feather="check-square"></i></button>
+      </div>
+
+      <div class="tb-divider"></div>
+
+      <div class="toolbar-group">
+        <button type="button" data-cmd="link" class="tb-btn" title="Indsæt Link ([titel](url))"><i data-feather="link"></i></button>
+        <button type="button" data-cmd="codeblock" class="tb-btn" title="Kodeblok (``` code ```)"><i data-feather="terminal"></i></button>
+        <button type="button" data-cmd="table" class="tb-btn" title="Indsæt Tabel"><i data-feather="grid"></i></button>
+        <button type="button" data-cmd="hr" class="tb-btn" title="Vandret Linje (---)"><i data-feather="more-horizontal"></i></button>
+      </div>
+
+      <div class="tb-divider"></div>
+
+      <div class="toolbar-group ml-auto">
+        <button type="button" id="btnCopyMd" class="tb-btn tb-action" title="Kopier ren MD til udklipsholder">
+          <i data-feather="copy"></i> Kopier MD
+        </button>
+        <button type="button" id="btnClear" class="tb-btn tb-danger" title="Ryd indhold">
+          <i data-feather="trash-2"></i> Ryd
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Workspace (Editor + Live Preview) -->
+    <main class="workspace mode-split" id="workspace">
+      <!-- Editor Panel -->
+      <div class="pane pane-editor" id="paneEditor">
+        <div class="pane-header">
+          <span><i data-feather="code"></i> Markdown Brødtekst</span>
+          <span class="file-drop-hint"><i data-feather="upload-cloud"></i> Træk en .md fil herind</span>
+        </div>
+        <textarea id="editorTextarea" placeholder="Skriv din brødtekst her i Markdown..." spellcheck="false"></textarea>
+      </div>
+
+      <!-- Drag & Drop Overlay -->
+      <div class="drag-drop-overlay" id="dragOverlay">
+        <div class="drag-message">
+          <i data-feather="file-plus"></i>
+          <h3>Slip din .md-fil her for at indlæse den</h3>
+        </div>
+      </div>
+
+      <!-- Preview Panel -->
+      <div class="pane pane-preview" id="panePreview">
+        <div class="pane-header">
+          <span><i data-feather="eye"></i> Live Visuel Visning</span>
+          <span class="preview-badge">HTML Renderet</span>
+        </div>
+        <div class="preview-content markdown-body" id="previewContainer"></div>
+      </div>
+    </main>
+
+    <!-- Footer / Status Bar -->
+    <footer class="status-bar">
+      <div class="status-left">
+        <span class="stat-item" id="statWords">0 ord</span>
+        <span class="stat-dot">•</span>
+        <span class="stat-item" id="statChars">0 tegn</span>
+        <span class="stat-dot">•</span>
+        <span class="stat-item" id="statLines">0 linjer</span>
+        <span class="stat-dot">•</span>
+        <span class="stat-item" id="statReadTime">< 1 min læsetid</span>
+      </div>
+      <div class="status-right">
+        <span class="status-info">Format: <code>yymmdd titel.md</code></span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
