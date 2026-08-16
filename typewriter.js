@@ -889,11 +889,8 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     const lineTop = (currentLineIdx * lineHeight);
     const targetScrollTop = lineTop - (editorTextarea.clientHeight / 2) + (lineHeight / 2);
 
-    editorTextarea.scrollTo({
-      top: Math.max(0, targetScrollTop),
-      behavior: 'smooth'
-    });
-
+    // Direct scrollTop assignment to prevent scroll animation locks while typing
+    editorTextarea.scrollTop = Math.max(0, targetScrollTop);
     updateActiveLineHighlight();
   }
 
@@ -903,13 +900,15 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       document.body.classList.add('focus-mode-active');
       if (editorTextarea) editorTextarea.classList.add('focus-mode');
       if (btnFocusToggle) btnFocusToggle.classList.add('active');
+      if (editorTextarea) editorTextarea.focus();
       centerActiveLine();
-      showToast('🎯 Fokus-modus aktiveret (alt udenom dæmpes)', 'target');
+      showToast('🎯 Fokus-modus aktiveret', 'target');
     } else {
       document.body.classList.remove('focus-mode-active');
       if (editorTextarea) editorTextarea.classList.remove('focus-mode');
       if (btnFocusToggle) btnFocusToggle.classList.remove('active');
       if (activeLineHighlight) activeLineHighlight.style.opacity = '0';
+      if (editorTextarea) editorTextarea.focus();
       showToast('Fokus-modus deaktiveret', 'target');
     }
   }
@@ -919,6 +918,10 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   }
 
   if (editorTextarea) {
+    editorTextarea.addEventListener('input', () => {
+      if (isFocusMode) centerActiveLine();
+      else updateActiveLineHighlight();
+    });
     editorTextarea.addEventListener('keyup', () => {
       if (isFocusMode) centerActiveLine();
       else updateActiveLineHighlight();
@@ -927,7 +930,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       if (isFocusMode) centerActiveLine();
       else updateActiveLineHighlight();
     });
-    editorTextarea.addEventListener('selectionchange', updateActiveLineHighlight);
     editorTextarea.addEventListener('scroll', updateActiveLineHighlight);
   }
 

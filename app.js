@@ -599,11 +599,8 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     const lineTop = paddingTop + (currentLineIdx * lineHeight);
     const targetScrollTop = lineTop - (editorTextarea.clientHeight / 2) + (lineHeight / 2);
 
-    editorTextarea.scrollTo({
-      top: Math.max(0, targetScrollTop),
-      behavior: 'smooth'
-    });
-
+    // Use direct scrollTop assignment instead of smooth scroll to prevent typing lock
+    editorTextarea.scrollTop = Math.max(0, targetScrollTop);
     updateActiveLineHighlight();
   }
 
@@ -614,14 +611,16 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       workspace.classList.add('focus-mode');
       editorTextarea.classList.add('focus-mode');
       if (btnFocusToggle) btnFocusToggle.classList.add('active');
+      editorTextarea.focus();
       centerActiveLine();
-      showToast('🎯 Fokus-modus aktiveret (alt udenom dæmpes)', 'target');
+      showToast('🎯 Fokus-modus aktiveret', 'target');
     } else {
       document.body.classList.remove('focus-mode-active');
       workspace.classList.remove('focus-mode');
       editorTextarea.classList.remove('focus-mode');
       if (btnFocusToggle) btnFocusToggle.classList.remove('active');
       if (activeLineHighlight) activeLineHighlight.style.opacity = '0';
+      editorTextarea.focus();
       showToast('Fokus-modus deaktiveret', 'target');
     }
   }
@@ -630,6 +629,10 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     btnFocusToggle.addEventListener('click', toggleFocusMode);
   }
 
+  editorTextarea.addEventListener('input', () => {
+    if (isFocusMode) centerActiveLine();
+    else updateActiveLineHighlight();
+  });
   editorTextarea.addEventListener('keyup', () => {
     if (isFocusMode) centerActiveLine();
     else updateActiveLineHighlight();
@@ -638,7 +641,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     if (isFocusMode) centerActiveLine();
     else updateActiveLineHighlight();
   });
-  editorTextarea.addEventListener('selectionchange', updateActiveLineHighlight);
   editorTextarea.addEventListener('scroll', updateActiveLineHighlight);
 
   // Keyboard Shortcuts Modal Toggle

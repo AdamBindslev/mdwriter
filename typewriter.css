@@ -839,12 +839,19 @@ body.distraction-free-mode .paper-sheet {
   left: 0;
   right: 0;
   height: 30px;
-  background: rgba(239, 68, 68, 0.12) !important;
+  background: rgba(239, 68, 68, 0.15) !important;
   border-left: 3px solid #ef4444 !important;
-  pointer-events: none;
+  pointer-events: none !important;
   opacity: 0;
-  transition: top 0.1s ease-out, opacity 0.25s ease;
+  transition: top 0.05s ease-out, opacity 0.25s ease;
   z-index: 1;
+}
+
+.tw-textarea {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+  background: transparent;
 }
 
 body.focus-mode-active .active-line-highlight {
