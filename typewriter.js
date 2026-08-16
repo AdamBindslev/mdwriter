@@ -76,7 +76,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   };
 
   // ----------------------------------------------------
-  // WEB AUDIO API — Typewriter Sound Synthesizer
+  // WEB AUDIO API — Typewriter Sound Synthesizer Engine
   // ----------------------------------------------------
   let soundEnabled = true;
   let audioCtx = null;
@@ -88,107 +88,211 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         audioCtx = new AudioContext();
       }
     }
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
   }
 
-  // Synthesize Key Click ("Clack")
+  // Global user gesture listeners to unlock AudioContext on first click or keypress
+  ['click', 'keydown', 'mousedown', 'touchstart'].forEach(evt => {
+    window.addEventListener(evt, () => {
+      initAudio();
+    }, { once: false, passive: true });
+  });
+
+  // Synthesize Realistic Mechanical Character Key Strike ("Clack-Snap")
   function playKeyClickSound() {
     if (!soundEnabled) return;
+    initAudio();
+    if (!audioCtx) return;
+
     try {
-      initAudio();
-      if (!audioCtx) return;
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-
       const now = audioCtx.currentTime;
+      // Slight pitch and volume variation per keystroke for organic mechanical typewriter feel
+      const pitchVariation = 0.9 + Math.random() * 0.22; // 0.9 - 1.12
+      const gainVariation = 0.8 + Math.random() * 0.3;
 
-      // Noise buffer for mechanical clack
-      const bufferSize = audioCtx.sampleRate * 0.03; // 30ms
+      // 1. High-frequency Metal Type-Bar Strike (Noise burst through sharp bandpass)
+      const noiseLength = 0.04; // 40ms
+      const bufferSize = audioCtx.sampleRate * noiseLength;
       const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
       const output = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
+        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
       }
 
       const noise = audioCtx.createBufferSource();
       noise.buffer = buffer;
 
-      // Bandpass filter for crisp metal/wood hit
-      const filter = audioCtx.createBiquadFilter();
-      filter.type = 'bandpass';
-      filter.frequency.setValueAtTime(1800 + Math.random() * 400, now);
-      filter.Q.setValueAtTime(3, now);
+      const bandpass = audioCtx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.setValueAtTime((2400 + Math.random() * 600) * pitchVariation, now);
+      bandpass.Q.setValueAtTime(4.5, now);
 
-      const gain = audioCtx.createGain();
-      gain.gain.setValueAtTime(0.35, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.setValueAtTime(0.4 * gainVariation, now);
+      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.038);
+
+      noise.connect(bandpass);
+      bandpass.connect(noiseGain);
+      noiseGain.connect(audioCtx.destination);
+      noise.start(now);
+
+      // 2. Lever Mechanism Metallic Snap (Triangle Sweep)
+      const osc = audioCtx.createOscillator();
+      const oscGain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1400 * pitchVariation, now);
+      osc.frequency.exponentialRampToValueAtTime(350, now + 0.02);
+
+      oscGain.gain.setValueAtTime(0.3 * gainVariation, now);
+      oscGain.gain.linearRampToValueAtTime(0.0001, now + 0.02);
+
+      osc.connect(oscGain);
+      oscGain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.02);
+
+      // 3. Platen Wood/Rubber Roller Body Resonance (Low sine thud)
+      const body = audioCtx.createOscillator();
+      const bodyGain = audioCtx.createGain();
+      body.type = 'sine';
+      body.frequency.setValueAtTime(280 * pitchVariation, now);
+      body.frequency.exponentialRampToValueAtTime(70, now + 0.025);
+
+      bodyGain.gain.setValueAtTime(0.25 * gainVariation, now);
+      bodyGain.gain.linearRampToValueAtTime(0.0001, now + 0.025);
+
+      body.connect(bodyGain);
+      bodyGain.connect(audioCtx.destination);
+      body.start(now);
+      body.stop(now + 0.025);
+    } catch (e) {
+      console.error('Audio error:', e);
+    }
+  }
+
+  // Synthesize Spacebar (Deeper frame impact + mechanical spring)
+  function playSpaceSound() {
+    if (!soundEnabled) return;
+    initAudio();
+    if (!audioCtx) return;
+
+    try {
+      const now = audioCtx.currentTime;
+      
+      // Heavy low impact
+      const body = audioCtx.createOscillator();
+      const bodyGain = audioCtx.createGain();
+      body.type = 'sine';
+      body.frequency.setValueAtTime(180, now);
+      body.frequency.exponentialRampToValueAtTime(45, now + 0.06);
+
+      bodyGain.gain.setValueAtTime(0.5, now);
+      bodyGain.gain.linearRampToValueAtTime(0.0001, now + 0.06);
+
+      body.connect(bodyGain);
+      bodyGain.connect(audioCtx.destination);
+      body.start(now);
+      body.stop(now + 0.06);
+
+      // Soft mechanical spring release noise
+      const noiseLength = 0.03;
+      const bufferSize = audioCtx.sampleRate * noiseLength;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = (Math.random() * 2 - 1);
+      }
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(900, now);
+
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.setValueAtTime(0.25, now);
+      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.03);
 
       noise.connect(filter);
-      filter.connect(gain);
-      gain.connect(audioCtx.destination);
-
+      filter.connect(noiseGain);
+      noiseGain.connect(audioCtx.destination);
       noise.start(now);
     } catch (e) {
       console.error(e);
     }
   }
 
-  // Synthesize Spacebar Heavy Thud
-  function playSpaceSound() {
+  // Synthesize Backspace / Delete (Double mechanical ratchet click)
+  function playBackspaceSound() {
     if (!soundEnabled) return;
+    initAudio();
+    if (!audioCtx) return;
+
     try {
-      initAudio();
-      if (!audioCtx) return;
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-
       const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(160, now);
-      osc.frequency.exponentialRampToValueAtTime(40, now + 0.05);
-
-      gain.gain.setValueAtTime(0.4, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-
-      osc.start(now);
-      osc.stop(now + 0.05);
-    } catch (e) {
-      console.error(e);
-    }
+      playRatchetClick(now);
+      playRatchetClick(now + 0.015);
+    } catch (e) {}
   }
 
-  // Synthesize Carriage Return Bell ("Ding!")
+  function playRatchetClick(t) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(800, t);
+    osc.frequency.exponentialRampToValueAtTime(200, t + 0.012);
+
+    gain.gain.setValueAtTime(0.2, t);
+    gain.gain.linearRampToValueAtTime(0.0001, t + 0.012);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + 0.012);
+  }
+
+  // Synthesize Carriage Return Bell ("Ding!") + Carriage Slide
   function playBellSound() {
     if (!soundEnabled) return;
+    initAudio();
+    if (!audioCtx) return;
+
     try {
-      initAudio();
-      if (!audioCtx) return;
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-
       const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
 
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(2400, now); // Metallic high bell pitch
+      // 1. High Metallic Bell Chime (Pure sine 2650Hz with 1.1s exponential decay)
+      const bell = audioCtx.createOscillator();
+      const bellGain = audioCtx.createGain();
+      bell.type = 'sine';
+      bell.frequency.setValueAtTime(2650, now);
 
-      gain.gain.setValueAtTime(0.5, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+      bellGain.gain.setValueAtTime(0.55, now);
+      bellGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
 
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
+      bell.connect(bellGain);
+      bellGain.connect(audioCtx.destination);
+      bell.start(now);
+      bell.stop(now + 1.1);
 
-      osc.start(now);
-      osc.stop(now + 0.8);
+      // 2. Harmonic overtone (5300Hz)
+      const overtone = audioCtx.createOscillator();
+      const overtoneGain = audioCtx.createGain();
+      overtone.type = 'sine';
+      overtone.frequency.setValueAtTime(5300, now);
+
+      overtoneGain.gain.setValueAtTime(0.2, now);
+      overtoneGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+
+      overtone.connect(overtoneGain);
+      overtoneGain.connect(audioCtx.destination);
+      overtone.start(now);
+      overtone.stop(now + 0.5);
+
+      // 3. Mechanical Carriage Return Ratchet Slide
+      for (let i = 0; i < 4; i++) {
+        playRatchetClick(now + 0.08 + i * 0.025);
+      }
     } catch (e) {
       console.error(e);
     }
@@ -328,35 +432,21 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   // ----------------------------------------------------
   // Mechanical Key Events & Audio Feedback
   // ----------------------------------------------------
-  editorTextarea.addEventListener('keydown', (e) => {
+  function handleTypewriterKeydown(e) {
     if (e.key === 'Enter') {
       playBellSound();
     } else if (e.key === ' ') {
       playSpaceSound();
-    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+      playBackspaceSound();
+    } else if (e.key !== 'Shift' && e.key !== 'Control' && e.key !== 'Alt' && e.key !== 'Meta' && !e.ctrlKey && !e.metaKey) {
       playKeyClickSound();
     }
-  });
+  }
 
-  docTitleInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      playBellSound();
-    } else if (e.key === ' ') {
-      playSpaceSound();
-    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
-      playKeyClickSound();
-    }
-  });
-
-  docCategoriesInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      playBellSound();
-    } else if (e.key === ' ') {
-      playSpaceSound();
-    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
-      playKeyClickSound();
-    }
-  });
+  editorTextarea.addEventListener('keydown', handleTypewriterKeydown);
+  docTitleInput.addEventListener('keydown', handleTypewriterKeydown);
+  docCategoriesInput.addEventListener('keydown', handleTypewriterKeydown);
 
   // Realtime Render & Odometer Update
   editorTextarea.addEventListener('input', renderPreview);
