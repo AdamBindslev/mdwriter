@@ -29,11 +29,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const chipLocation = document.getElementById('chipLocation');
   const chipNoteNo = document.getElementById('chipNoteNo');
 
-  // Actions
+  // Actions & Dropdowns
+  const exportDropdown = document.getElementById('exportDropdown');
+  const btnExportMenu = document.getElementById('btnExportMenu');
   const btnExportMd = document.getElementById('btnExportMd');
+  const btnPrintPdf = document.getElementById('btnPrintPdf');
+  const btnCopyMdDropdown = document.getElementById('btnCopyMdDropdown');
   const btnCopyMd = document.getElementById('btnCopyMd');
   const btnClear = document.getElementById('btnClear');
   const btnLoadSample = document.getElementById('btnLoadSample');
+  const btnFocusToggle = document.getElementById('btnFocusToggle');
+  const btnShortcuts = document.getElementById('btnShortcuts');
+  const shortcutModal = document.getElementById('shortcutModal');
+  const btnCloseShortcutModal = document.getElementById('btnCloseShortcutModal');
   const toast = document.getElementById('toast');
 
   // Counters
@@ -520,6 +528,111 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   btnViewEditor.addEventListener('click', () => setViewMode('editor'));
   btnViewPreview.addEventListener('click', () => setViewMode('preview'));
 
+  // Export Dropdown Toggle Logic
+  if (btnExportMenu && exportDropdown) {
+    btnExportMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+      exportDropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!exportDropdown.contains(e.target)) {
+        exportDropdown.classList.remove('open');
+      }
+    });
+  }
+
+  // Print / PDF Export Action
+  if (btnPrintPdf) {
+    btnPrintPdf.addEventListener('click', () => {
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      window.print();
+    });
+  }
+
+  if (btnCopyMdDropdown) {
+    btnCopyMdDropdown.addEventListener('click', () => {
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      btnCopyMd.click();
+    });
+  }
+
+  // Focus Mode & Vertical Typewriter Centering
+  let isFocusMode = false;
+
+  function toggleFocusMode() {
+    isFocusMode = !isFocusMode;
+    if (isFocusMode) {
+      workspace.classList.add('focus-mode');
+      editorTextarea.classList.add('focus-mode');
+      btnFocusToggle.classList.add('active');
+      centerActiveLine();
+      showToast('Fokus-modus aktiveret', 'target');
+    } else {
+      workspace.classList.remove('focus-mode');
+      editorTextarea.classList.remove('focus-mode');
+      btnFocusToggle.classList.remove('active');
+      showToast('Fokus-modus deaktiveret', 'target');
+    }
+  }
+
+  function centerActiveLine() {
+    if (!isFocusMode || !editorTextarea) return;
+    const text = editorTextarea.value;
+    const selStart = editorTextarea.selectionStart;
+    const lines = text.substring(0, selStart).split('\n');
+    const currentLineIdx = lines.length - 1;
+    
+    // Approximate line height (1.6 * 0.95rem ≈ 24px)
+    const lineHeight = 24.3;
+    const targetScrollTop = (currentLineIdx * lineHeight) - (editorTextarea.clientHeight / 2) + (lineHeight / 2);
+    
+    editorTextarea.scrollTo({
+      top: Math.max(0, targetScrollTop),
+      behavior: 'smooth'
+    });
+  }
+
+  if (btnFocusToggle) {
+    btnFocusToggle.addEventListener('click', toggleFocusMode);
+  }
+
+  editorTextarea.addEventListener('keyup', () => {
+    if (isFocusMode) centerActiveLine();
+  });
+  editorTextarea.addEventListener('click', () => {
+    if (isFocusMode) centerActiveLine();
+  });
+
+  // Keyboard Shortcuts Modal Toggle
+  function openShortcutModal() {
+    if (shortcutModal) {
+      shortcutModal.classList.remove('hidden');
+    }
+  }
+
+  function closeShortcutModal() {
+    if (shortcutModal) {
+      shortcutModal.classList.add('hidden');
+    }
+  }
+
+  if (btnShortcuts) {
+    btnShortcuts.addEventListener('click', openShortcutModal);
+  }
+
+  if (btnCloseShortcutModal) {
+    btnCloseShortcutModal.addEventListener('click', closeShortcutModal);
+  }
+
+  if (shortcutModal) {
+    shortcutModal.addEventListener('click', (e) => {
+      if (e.target === shortcutModal) {
+        closeShortcutModal();
+      }
+    });
+  }
+
   // Dark / Light Theme Toggle
   btnThemeToggle.addEventListener('click', () => {
     const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -532,6 +645,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
 
   // Download File Action: yymmdd titel.md
   btnExportMd.addEventListener('click', () => {
+    if (exportDropdown) exportDropdown.classList.remove('open');
     const markdownContent = generateFullMarkdown();
     const filename = getExportFilename();
 
@@ -692,19 +806,57 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     showToast(`Filen "${fileName}" blev indlæst!`, 'upload');
   }
 
-  // Keyboard Shortcuts (Ctrl/Cmd + S to Export, Ctrl/Cmd + B for Bold, Ctrl/Cmd + I for Italic)
+  // Global Keyboard Shortcuts
   document.addEventListener('keydown', (e) => {
+    // ESC key: close modal or dropdown
+    if (e.key === 'Escape') {
+      closeShortcutModal();
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      return;
+    }
+
+    const isInputActive = ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
+
+    // Press '?' key to open shortcut modal when not typing in text field
+    if (e.key === '?' && !isInputActive) {
+      e.preventDefault();
+      openShortcutModal();
+      return;
+    }
+
     if (e.ctrlKey || e.metaKey) {
       const key = e.key.toLowerCase();
-      if (key === 's') {
+      if (e.shiftKey && key === 'f') {
+        e.preventDefault();
+        toggleFocusMode();
+      } else if (e.shiftKey && key === 'p') {
+        e.preventDefault();
+        // Cycle view mode: split -> editor -> preview -> split
+        if (workspace.classList.contains('mode-split')) setViewMode('editor');
+        else if (workspace.classList.contains('mode-editor')) setViewMode('preview');
+        else setViewMode('split');
+      } else if (key === 's') {
         e.preventDefault();
         btnExportMd.click();
+      } else if (key === 'p' && !e.shiftKey) {
+        e.preventDefault();
+        window.print();
+      } else if (key === '/') {
+        e.preventDefault();
+        if (shortcutModal && !shortcutModal.classList.contains('hidden')) {
+          closeShortcutModal();
+        } else {
+          openShortcutModal();
+        }
       } else if (key === 'b') {
         e.preventDefault();
         applyFormat('bold');
       } else if (key === 'i') {
         e.preventDefault();
         applyFormat('italic');
+      } else if (key === 'k') {
+        e.preventDefault();
+        applyFormat('link');
       }
     }
   });

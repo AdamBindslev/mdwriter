@@ -32,11 +32,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const chipLocation = document.getElementById('chipLocation');
   const chipNoteNo = document.getElementById('chipNoteNo');
 
-  // Actions
+  // Actions & Dropdowns
+  const exportDropdown = document.getElementById('exportDropdown');
+  const btnExportMenu = document.getElementById('btnExportMenu');
   const btnExportMd = document.getElementById('btnExportMd');
+  const btnPrintPdf = document.getElementById('btnPrintPdf');
+  const btnCopyMdDropdown = document.getElementById('btnCopyMdDropdown');
   const btnCopyMd = document.getElementById('btnCopyMd');
   const btnClear = document.getElementById('btnClear');
   const btnLoadSample = document.getElementById('btnLoadSample');
+  const btnFocusToggle = document.getElementById('btnFocusToggle');
+  const btnShortcuts = document.getElementById('btnShortcuts');
+  const shortcutModal = document.getElementById('shortcutModal');
+  const btnCloseShortcutModal = document.getElementById('btnCloseShortcutModal');
   const toast = document.getElementById('toast');
 
   // Stats / Odometer
@@ -812,11 +820,150 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     floatingExitFs.addEventListener('click', toggleFullscreen);
   }
 
-  // Keyboard shortcut: Alt + F to toggle distraction-free mode
+  // Export Dropdown Toggle Logic
+  if (btnExportMenu && exportDropdown) {
+    btnExportMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+      exportDropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!exportDropdown.contains(e.target)) {
+        exportDropdown.classList.remove('open');
+      }
+    });
+  }
+
+  if (btnPrintPdf) {
+    btnPrintPdf.addEventListener('click', () => {
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      window.print();
+    });
+  }
+
+  if (btnCopyMdDropdown) {
+    btnCopyMdDropdown.addEventListener('click', () => {
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      btnCopyMd.click();
+    });
+  }
+
+  // Focus Mode & Vertical Line Centering
+  let isFocusMode = false;
+
+  function toggleFocusMode() {
+    isFocusMode = !isFocusMode;
+    if (isFocusMode) {
+      if (editorTextarea) editorTextarea.classList.add('focus-mode');
+      if (btnFocusToggle) btnFocusToggle.classList.add('active');
+      centerActiveLine();
+      showToast('Fokus-modus aktiveret', 'target');
+    } else {
+      if (editorTextarea) editorTextarea.classList.remove('focus-mode');
+      if (btnFocusToggle) btnFocusToggle.classList.remove('active');
+      showToast('Fokus-modus deaktiveret', 'target');
+    }
+  }
+
+  function centerActiveLine() {
+    if (!isFocusMode || !editorTextarea) return;
+    const text = editorTextarea.value;
+    const selStart = editorTextarea.selectionStart;
+    const lines = text.substring(0, selStart).split('\n');
+    const currentLineIdx = lines.length - 1;
+    
+    const lineHeight = 30; // Approx line height in typewriter textarea (1.05rem * 1.8)
+    const targetScrollTop = (currentLineIdx * lineHeight) - (editorTextarea.clientHeight / 2) + (lineHeight / 2);
+    
+    editorTextarea.scrollTo({
+      top: Math.max(0, targetScrollTop),
+      behavior: 'smooth'
+    });
+  }
+
+  if (btnFocusToggle) {
+    btnFocusToggle.addEventListener('click', toggleFocusMode);
+  }
+
+  if (editorTextarea) {
+    editorTextarea.addEventListener('keyup', () => {
+      if (isFocusMode) centerActiveLine();
+    });
+    editorTextarea.addEventListener('click', () => {
+      if (isFocusMode) centerActiveLine();
+    });
+  }
+
+  // Keyboard Shortcuts Modal Toggle
+  function openShortcutModal() {
+    if (shortcutModal) {
+      shortcutModal.classList.remove('hidden');
+    }
+  }
+
+  function closeShortcutModal() {
+    if (shortcutModal) {
+      shortcutModal.classList.add('hidden');
+    }
+  }
+
+  if (btnShortcuts) {
+    btnShortcuts.addEventListener('click', openShortcutModal);
+  }
+
+  if (btnCloseShortcutModal) {
+    btnCloseShortcutModal.addEventListener('click', closeShortcutModal);
+  }
+
+  if (shortcutModal) {
+    shortcutModal.addEventListener('click', (e) => {
+      if (e.target === shortcutModal) {
+        closeShortcutModal();
+      }
+    });
+  }
+
+  // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeShortcutModal();
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      return;
+    }
+
+    const isInputActive = ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
+
+    if (e.key === '?' && !isInputActive) {
+      e.preventDefault();
+      openShortcutModal();
+      return;
+    }
+
     if (e.altKey && (e.key === 'f' || e.key === 'F')) {
       e.preventDefault();
       toggleFullscreen();
+      return;
+    }
+
+    if (e.ctrlKey || e.metaKey) {
+      const key = e.key.toLowerCase();
+      if (e.shiftKey && key === 'f') {
+        e.preventDefault();
+        toggleFocusMode();
+      } else if (key === 's') {
+        e.preventDefault();
+        if (btnExportMd) btnExportMd.click();
+      } else if (key === 'p' && !e.shiftKey) {
+        e.preventDefault();
+        window.print();
+      } else if (key === '/') {
+        e.preventDefault();
+        if (shortcutModal && !shortcutModal.classList.contains('hidden')) {
+          closeShortcutModal();
+        } else {
+          openShortcutModal();
+        }
+      }
     }
   });
 

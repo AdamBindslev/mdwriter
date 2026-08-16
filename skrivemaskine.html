@@ -55,12 +55,29 @@
           <i data-feather="maximize" id="fullscreenIcon"></i> Fuldskærm
         </button>
 
+        <button id="btnShortcuts" class="tw-btn tw-btn-icon" title="Tastatur-genveje (?)">
+          <i data-feather="help-circle"></i> Hjælp
+        </button>
+
         <div class="tw-v-divider"></div>
 
-        <!-- Export Action -->
-        <button id="btnExportMd" class="tw-btn tw-btn-primary" title="Download som .md fil">
-          <i data-feather="download"></i> Download .md
-        </button>
+        <!-- Export Dropdown -->
+        <div class="dropdown" id="exportDropdown">
+          <button id="btnExportMenu" class="tw-btn tw-btn-primary dropdown-toggle" title="Eksportmuligheder (Cmd+S / Cmd+P)">
+            <i data-feather="download"></i> Eksportér <i data-feather="chevron-down" class="chevron"></i>
+          </button>
+          <div class="dropdown-menu tw-dropdown-menu">
+            <button id="btnExportMd" class="dropdown-item">
+              <i data-feather="file-text"></i> Download .md fil <span class="shortcut-tag">⌘S</span>
+            </button>
+            <button id="btnPrintPdf" class="dropdown-item">
+              <i data-feather="printer"></i> Gem som PDF / Print <span class="shortcut-tag">⌘P</span>
+            </button>
+            <button id="btnCopyMdDropdown" class="dropdown-item">
+              <i data-feather="copy"></i> Kopier ren MD
+            </button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -116,8 +133,11 @@
         <div class="key-divider"></div>
 
         <div class="keycap-group right-keys">
+          <button class="tw-key tw-key-focus" id="btnFocusToggle" title="Toggle Fokus-modus & Linjecentrering (⌘⇧F)">
+            <i data-feather="target"></i> Fokus
+          </button>
           <button class="tw-key tw-key-sample" id="btnLoadSample" title="Indlæs Møns Klint Feltjournal">
-            <i data-feather="file-text"></i> Indlæs Eksempel
+            <i data-feather="file-text"></i> Eksempel
           </button>
           <button class="tw-key tw-key-copy" id="btnCopyMd" title="Kopier Markdown til udklipsholder">
             <i data-feather="copy"></i> Kopier MD
@@ -215,6 +235,51 @@
   <button id="floatingExitFs" class="floating-exit-fs hidden" title="Forlad Fuldskærm (ESC)">
     <i data-feather="minimize-2"></i> Forlad Fuldskærm <kbd>ESC</kbd>
   </button>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div class="modal-backdrop hidden" id="shortcutModal">
+    <div class="modal-card tw-modal-card">
+      <div class="modal-header">
+        <h3><i data-feather="command"></i> Skrivemaskine Genveje</h3>
+        <button class="modal-close" id="btnCloseShortcutModal" title="Luk (Esc)">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="shortcut-grid">
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Download .md fil</span>
+            <kbd>⌘ / Ctrl</kbd> + <kbd>S</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Gem som PDF / Print</span>
+            <kbd>⌘ / Ctrl</kbd> + <kbd>P</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Toggle Fokus-modus</span>
+            <kbd>⌘ / Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Fuldskærm skrivemodus</span>
+            <kbd>Alt</kbd> + <kbd>F</kbd> / <kbd>ESC</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Vis denne Genvejs-dialog</span>
+            <kbd>?</kbd> eller <kbd>⌘ / Ctrl</kbd> + <kbd>/</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Fed Tekst</span>
+            <kbd>⌘ / Ctrl</kbd> + <kbd>B</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Kursiv Tekst</span>
+            <kbd>⌘ / Ctrl</kbd> + <kbd>I</kbd>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span class="modal-hint">Tryk <kbd>ESC</kbd> eller klik udenfor for at lukke</span>
+      </div>
+    </div>
+  </div>
 
   <script src="typewriter.js"></script>
 </body>

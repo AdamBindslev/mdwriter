@@ -797,3 +797,331 @@ body {
     justify-content: space-between;
   }
 }
+
+/* ==========================================================================
+   Export Dropdown Menu
+   ========================================================================== */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dropdown-toggle .chevron {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+}
+
+.dropdown.open .chevron {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 220px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 500;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dropdown.open .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-align: left;
+}
+
+.dropdown-item i {
+  width: 15px;
+  height: 15px;
+  margin-right: 8px;
+  color: var(--primary);
+}
+
+.dropdown-item:hover {
+  background: var(--bg-card-hover);
+  color: var(--primary);
+}
+
+.shortcut-tag {
+  font-family: var(--font-mono);
+  font-size: 0.725rem;
+  color: var(--text-subtle);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-left: auto;
+}
+
+/* ==========================================================================
+   Focus Mode & Toolbar Active States
+   ========================================================================== */
+.tb-btn.active {
+  background: rgba(59, 130, 246, 0.2) !important;
+  color: var(--primary) !important;
+  border-color: var(--primary);
+}
+
+#editorTextarea.focus-mode {
+  scroll-behavior: smooth;
+  transition: background 0.3s ease;
+}
+
+/* Workspace in focus mode */
+.workspace.focus-mode .pane-editor {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+/* ==========================================================================
+   Modal Dialog (Keyboard Shortcuts)
+   ========================================================================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 1;
+  visibility: visible;
+  transition: all 0.25s ease;
+}
+
+.modal-backdrop.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.modal-card {
+  background: var(--bg-pane);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 520px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-main);
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+}
+
+.modal-close:hover {
+  color: var(--text-main);
+}
+
+.modal-body {
+  padding: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.shortcut-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+}
+
+.shortcut-desc {
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+kbd {
+  display: inline-block;
+  padding: 3px 7px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.modal-footer {
+  padding: 12px 20px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.modal-hint {
+  font-size: 0.775rem;
+  color: var(--text-subtle);
+}
+
+/* ==========================================================================
+   Print & PDF Export Stylesheet (@media print)
+   ========================================================================== */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .top-header,
+  .meta-section,
+  .toolbar,
+  .pane-editor,
+  .pane-header,
+  .status-bar,
+  .toast,
+  .modal-backdrop,
+  .drag-drop-overlay,
+  .view-toggle-group,
+  .quick-chips {
+    display: none !important;
+  }
+
+  .app-container,
+  .workspace,
+  .pane-preview,
+  .preview-content {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .markdown-body {
+    color: #0f172a !important;
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+    padding: 1cm !important;
+  }
+
+  .markdown-body h1 {
+    color: #0f172a !important;
+    border-bottom: 2pt solid #e2e8f0 !important;
+    font-size: 22pt !important;
+    margin-top: 0 !important;
+  }
+
+  .markdown-body h2 {
+    color: #1e293b !important;
+    font-size: 16pt !important;
+  }
+
+  .markdown-body h3 {
+    color: #334155 !important;
+    font-size: 13pt !important;
+  }
+
+  .markdown-body em.meta-tag, .markdown-body p > em:first-child {
+    background: #f1f5f9 !important;
+    color: #0284c7 !important;
+    border-left: 3pt solid #0284c7 !important;
+  }
+
+  .markdown-body blockquote {
+    background: #f8fafc !important;
+    border-left: 4pt solid #3b82f6 !important;
+    color: #475569 !important;
+  }
+
+  .markdown-body code {
+    background: #f1f5f9 !important;
+    color: #d97706 !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  .markdown-body pre {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+}

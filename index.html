@@ -53,9 +53,27 @@
           <i data-feather="sun" id="themeIcon"></i>
         </button>
 
-        <button id="btnExportMd" class="btn btn-primary" title="Download .md-fil med dags dato og titel">
-          <i data-feather="download"></i> Download .md
+        <button id="btnShortcuts" class="btn btn-icon" title="Tastatur-genveje (?)">
+          <i data-feather="help-circle"></i>
         </button>
+
+        <!-- Export Dropdown -->
+        <div class="dropdown" id="exportDropdown">
+          <button id="btnExportMenu" class="btn btn-primary dropdown-toggle" title="Eksportmuligheder (Cmd+S / Cmd+P)">
+            <i data-feather="download"></i> Eksportér <i data-feather="chevron-down" class="chevron"></i>
+          </button>
+          <div class="dropdown-menu">
+            <button id="btnExportMd" class="dropdown-item">
+              <i data-feather="file-text"></i> Download .md fil <span class="shortcut-tag">⌘S</span>
+            </button>
+            <button id="btnPrintPdf" class="dropdown-item">
+              <i data-feather="printer"></i> Gem som PDF / Print <span class="shortcut-tag">⌘P</span>
+            </button>
+            <button id="btnCopyMdDropdown" class="dropdown-item">
+              <i data-feather="copy"></i> Kopier ren MD
+            </button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -129,6 +147,9 @@
       <div class="tb-divider"></div>
 
       <div class="toolbar-group ml-auto">
+        <button type="button" id="btnFocusToggle" class="tb-btn" title="Toggle Fokus-modus & Linjecentrering (⌘⇧F)">
+          <i data-feather="target"></i> Fokus
+        </button>
         <button type="button" id="btnCopyMd" class="tb-btn tb-action" title="Kopier ren MD til udklipsholder">
           <i data-feather="copy"></i> Kopier MD
         </button>
@@ -186,6 +207,55 @@
 
   <!-- Toast Notification -->
   <div class="toast" id="toast"></div>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div class="modal-backdrop hidden" id="shortcutModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i data-feather="command"></i> Tastatur-genveje</h3>
+        <button class="modal-close" id="btnCloseShortcutModal" title="Luk (Esc)">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="shortcut-grid">
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Download .md fil</span>
+            <kbd>⌘ / Ctrl</kbd> + <kbd>S</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Gem som PDF / Print</span>
+            <kbd>⌘ / Ctrl</kbd> + <kbd>P</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Toggle Fokus-modus</span>
+            <kbd>⌘ / Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Skift Visning (Split/Edit/Prev)</span>
+            <kbd>⌘ / Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Vis denne Genvejs-dialog</span>
+            <kbd>?</kbd> eller <kbd>⌘ / Ctrl</kbd> + <kbd>/</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Fed Tekst</span>
+            <kbd>⌘ / Ctrl</kbd> + <kbd>B</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Kursiv Tekst</span>
+            <kbd>⌘ / Ctrl</kbd> + <kbd>I</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Indsæt Link</span>
+            <kbd>⌘ / Ctrl</kbd> + <kbd>K</kbd>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span class="modal-hint">Tryk <kbd>ESC</kbd> eller klik udenfor for at lukke</span>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

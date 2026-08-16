@@ -816,3 +816,273 @@ body.distraction-free-mode .paper-sheet {
   }
 }
 
+/* ==========================================================================
+   Typewriter Export Dropdown & Modal Styles
+   ========================================================================== */
+.tw-key-focus.active {
+  background: #b91c1c !important;
+  color: #ffffff !important;
+  border-color: #ef4444 !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dropdown-toggle .chevron {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+}
+
+.dropdown.open .chevron {
+  transform: rotate(180deg);
+}
+
+.tw-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 220px;
+  background: #1c1917;
+  border: 1px solid #44403c;
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 500;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dropdown.open .tw-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.tw-dropdown-menu .dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  color: #f5f5f4;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-align: left;
+}
+
+.tw-dropdown-menu .dropdown-item i {
+  width: 15px;
+  height: 15px;
+  margin-right: 8px;
+  color: #f87171;
+}
+
+.tw-dropdown-menu .dropdown-item:hover {
+  background: #292524;
+  color: #f87171;
+}
+
+.shortcut-tag {
+  font-family: var(--font-typewriter);
+  font-size: 0.725rem;
+  color: #a8a29e;
+  background: #09090b;
+  border: 1px solid #3f3f46;
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-left: auto;
+}
+
+/* Modal Dialog in Typewriter Theme */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 10, 9, 0.85);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 1;
+  visibility: visible;
+  transition: all 0.25s ease;
+}
+
+.modal-backdrop.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.tw-modal-card {
+  background: #1c1917;
+  border: 1px solid #44403c;
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 520px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+  color: #f5f5f4;
+}
+
+.tw-modal-card .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #0c0a09;
+  border-bottom: 1px solid #292524;
+}
+
+.tw-modal-card .modal-header h3 {
+  font-family: var(--font-typewriter);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f87171;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tw-modal-card .modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #a8a29e;
+  cursor: pointer;
+}
+
+.tw-modal-card .modal-close:hover {
+  color: #ffffff;
+}
+
+.tw-modal-card .modal-body {
+  padding: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.shortcut-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #292524;
+  border: 1px solid #44403c;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+}
+
+.tw-modal-card kbd {
+  display: inline-block;
+  padding: 3px 7px;
+  font-family: var(--font-typewriter);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #f87171;
+  background: #0c0a09;
+  border: 1px solid #44403c;
+  border-radius: 4px;
+}
+
+.tw-modal-card .modal-footer {
+  padding: 12px 20px;
+  background: #0c0a09;
+  border-top: 1px solid #292524;
+  text-align: center;
+}
+
+.tw-modal-card .modal-hint {
+  font-family: var(--font-sans);
+  font-size: 0.775rem;
+  color: #78716c;
+}
+
+/* ==========================================================================
+   Typewriter Print Styles (@media print)
+   ========================================================================== */
+@media print {
+  body, .typewriter-body {
+    background: #ffffff !important;
+    color: #1c1917 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .tw-header,
+  .tw-carriage,
+  .tw-toolbar,
+  .mode-tabs,
+  .tw-footer,
+  .toast,
+  .modal-backdrop,
+  .floating-exit-fs,
+  .paper-header-fields,
+  .paper-divider {
+    display: none !important;
+  }
+
+  .desk-container,
+  .tw-machine,
+  .paper-wrapper,
+  .paper-sheet {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 1cm !important;
+    margin: 0 !important;
+  }
+
+  .margin-line {
+    display: none !important;
+  }
+
+  .tw-textarea {
+    display: block !important;
+    font-family: 'Courier Prime', Courier, monospace !important;
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+    color: #0c0a09 !important;
+    white-space: pre-wrap !important;
+  }
+
+  .tw-rendered-body {
+    display: block !important;
+    font-family: inherit !important;
+    font-size: 11pt !important;
+    color: #0c0a09 !important;
+  }
+}
+
