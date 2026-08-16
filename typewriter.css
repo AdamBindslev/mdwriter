@@ -1046,7 +1046,9 @@ body.distraction-free-mode .paper-sheet {
   .modal-backdrop,
   .floating-exit-fs,
   .paper-header-fields,
-  .paper-divider {
+  .paper-divider,
+  #editorView,
+  .tw-textarea {
     display: none !important;
   }
 
@@ -1061,7 +1063,7 @@ body.distraction-free-mode .paper-sheet {
     background: #ffffff !important;
     border: none !important;
     box-shadow: none !important;
-    padding: 1cm !important;
+    padding: 0 !important;
     margin: 0 !important;
   }
 
@@ -1069,20 +1071,20 @@ body.distraction-free-mode .paper-sheet {
     display: none !important;
   }
 
-  .tw-textarea {
+  /* Force rendered HTML view to display when printing */
+  #previewView,
+  .tw-view-container#previewView,
+  .tw-view-container.hidden#previewView {
     display: block !important;
-    font-family: 'Courier Prime', Courier, monospace !important;
-    font-size: 11pt !important;
-    line-height: 1.6 !important;
-    color: #0c0a09 !important;
-    white-space: pre-wrap !important;
   }
 
   .tw-rendered-body {
     display: block !important;
-    font-family: inherit !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
     font-size: 11pt !important;
+    line-height: 1.6 !important;
     color: #0c0a09 !important;
+    padding: 1.5cm 1cm !important;
   }
 }
 

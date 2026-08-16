@@ -1053,6 +1053,7 @@ kbd {
   .meta-section,
   .toolbar,
   .pane-editor,
+  #paneEditor,
   .pane-header,
   .status-bar,
   .toast,
@@ -1064,9 +1065,7 @@ kbd {
   }
 
   .app-container,
-  .workspace,
-  .pane-preview,
-  .preview-content {
+  .workspace {
     display: block !important;
     width: 100% !important;
     height: auto !important;
@@ -1078,11 +1077,32 @@ kbd {
     overflow: visible !important;
   }
 
+  /* Force preview pane to show regardless of mode-editor class */
+  .workspace.mode-editor .pane-preview,
+  .workspace.mode-split .pane-preview,
+  .workspace.mode-preview .pane-preview,
+  .pane-preview,
+  #panePreview {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .preview-content {
+    display: block !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
   .markdown-body {
     color: #0f172a !important;
     font-size: 11pt !important;
     line-height: 1.6 !important;
-    padding: 1cm !important;
+    padding: 1.5cm 1cm !important;
   }
 
   .markdown-body h1 {

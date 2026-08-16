@@ -834,12 +834,18 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     });
   }
 
-  if (btnPrintPdf) {
-    btnPrintPdf.addEventListener('click', () => {
-      if (exportDropdown) exportDropdown.classList.remove('open');
-      window.print();
-    });
+  // Print / PDF Export Action
+  function triggerPdfPrint() {
+    if (exportDropdown) exportDropdown.classList.remove('open');
+    renderPreview();
+    window.print();
   }
+
+  if (btnPrintPdf) {
+    btnPrintPdf.addEventListener('click', triggerPdfPrint);
+  }
+
+  window.addEventListener('beforeprint', renderPreview);
 
   if (btnCopyMdDropdown) {
     btnCopyMdDropdown.addEventListener('click', () => {
