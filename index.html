@@ -147,9 +147,6 @@
       <div class="tb-divider"></div>
 
       <div class="toolbar-group ml-auto">
-        <button type="button" id="btnFocusToggle" class="tb-btn" title="Toggle Fokus-modus & Linjecentrering (⌘⇧F)">
-          <i data-feather="target"></i> Fokus
-        </button>
         <button type="button" id="btnCopyMd" class="tb-btn tb-action" title="Kopier ren MD til udklipsholder">
           <i data-feather="copy"></i> Kopier MD
         </button>
@@ -167,10 +164,7 @@
           <span><i data-feather="code"></i> Markdown Brødtekst</span>
           <span class="file-drop-hint"><i data-feather="upload-cloud"></i> Træk en .md fil herind</span>
         </div>
-        <div class="editor-wrapper">
-          <div id="activeLineHighlight" class="active-line-highlight"></div>
-          <textarea id="editorTextarea" placeholder="Skriv din brødtekst her i Markdown..." spellcheck="false"></textarea>
-        </div>
+        <textarea id="editorTextarea" placeholder="Skriv din brødtekst her i Markdown..." spellcheck="false"></textarea>
       </div>
 
       <!-- Drag & Drop Overlay -->
@@ -227,10 +221,6 @@
           <div class="shortcut-item">
             <span class="shortcut-desc">Gem som PDF / Print</span>
             <kbd>⌘ / Ctrl</kbd> + <kbd>P</kbd>
-          </div>
-          <div class="shortcut-item">
-            <span class="shortcut-desc">Toggle Fokus-modus</span>
-            <kbd>⌘ / Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd>
           </div>
           <div class="shortcut-item">
             <span class="shortcut-desc">Skift Visning (Split/Edit/Prev)</span>

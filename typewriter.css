@@ -260,59 +260,7 @@ body.typewriter-body {
   position: relative;
 }
 
-/* Mechanical Carriage Bar */
-.tw-carriage {
-  display: flex;
-  align-items: center;
-  background: linear-gradient(180deg, #27272a 0%, #18181b 100%);
-  border-bottom: 2px solid #09090b;
-  padding: 6px 12px;
-  position: relative;
-}
 
-.carriage-knob {
-  width: 24px;
-  height: 24px;
-  background: var(--metal-chrome);
-  border-radius: 50%;
-  border: 1px solid #18181b;
-  box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.carriage-bar {
-  flex: 1;
-  margin: 0 12px;
-  height: 20px;
-  background: #09090b;
-  border: 1px solid #3f3f46;
-  border-radius: 3px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.metal-ruler {
-  display: flex;
-  justify-content: space-around;
-  width: 90%;
-  font-size: 0.65rem;
-  color: #a1a1aa;
-  font-family: var(--font-sans);
-  letter-spacing: 0.1em;
-}
-
-.paper-guide-left, .paper-guide-right {
-  width: 14px;
-  height: 22px;
-  background: var(--metal-chrome);
-  position: absolute;
-  top: -2px;
-  border: 1px solid #18181b;
-  border-radius: 2px;
-}
-.paper-guide-left { left: 5%; }
-.paper-guide-right { right: 5%; }
 
 /* Keycap Formatting Toolbar */
 .tw-toolbar {
@@ -834,64 +782,7 @@ body.distraction-free-mode .paper-sheet {
   overflow: hidden;
 }
 
-.active-line-highlight.tw-active-line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 32px;
-  background: rgba(239, 68, 68, 0.12) !important;
-  border-top: 1px dashed #ef4444 !important;
-  border-bottom: 1px dashed #ef4444 !important;
-  border-left: 4px solid #ef4444 !important;
-  pointer-events: none !important;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  z-index: 1;
-}
 
-.tw-textarea {
-  position: relative;
-  z-index: 2;
-  pointer-events: auto;
-  background: transparent;
-  transition: padding 0.3s ease;
-}
-
-.tw-textarea.focus-mode {
-  padding-top: 40vh !important;
-  padding-bottom: 50vh !important;
-  scroll-behavior: auto !important;
-}
-
-body.focus-mode-active .active-line-highlight {
-  opacity: 1;
-}
-
-/* Environment dimming in Focus Mode for Typewriter Theme */
-body.focus-mode-active .tw-header,
-body.focus-mode-active .tw-carriage,
-body.focus-mode-active .tw-footer,
-body.focus-mode-active .mode-tabs,
-body.focus-mode-active .paper-header-fields {
-  opacity: 0.25;
-  filter: grayscale(40%);
-  transition: opacity 0.3s ease, filter 0.3s ease;
-}
-
-body.focus-mode-active .tw-header:hover,
-body.focus-mode-active .tw-carriage:hover,
-body.focus-mode-active .tw-footer:hover,
-body.focus-mode-active .mode-tabs:hover,
-body.focus-mode-active .paper-header-fields:hover {
-  opacity: 0.95;
-  filter: none;
-}
-
-body.focus-mode-active .paper-sheet {
-  box-shadow: 0 0 45px rgba(239, 68, 68, 0.3), 0 10px 40px rgba(0, 0, 0, 0.6) !important;
-}
 
 .dropdown {
   position: relative;

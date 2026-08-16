@@ -84,25 +84,6 @@
     <!-- Typewriter Machine & Paper Assembly -->
     <main class="tw-machine">
 
-      <!-- Mechanical Roller / Carriage Bar Header -->
-      <div class="tw-carriage">
-        <div class="carriage-knob knob-left"></div>
-        <div class="carriage-bar">
-          <div class="metal-ruler">
-            <span class="ruler-mark">10</span>
-            <span class="ruler-mark">20</span>
-            <span class="ruler-mark">30</span>
-            <span class="ruler-mark">40</span>
-            <span class="ruler-mark">50</span>
-            <span class="ruler-mark">60</span>
-            <span class="ruler-mark">70</span>
-            <span class="ruler-mark">80</span>
-          </div>
-          <div class="paper-guide-left"></div>
-          <div class="paper-guide-right"></div>
-        </div>
-        <div class="carriage-knob knob-right"></div>
-      </div>
 
       <!-- Keycap Formatting Toolbar -->
       <div class="tw-toolbar">
@@ -133,9 +114,6 @@
         <div class="key-divider"></div>
 
         <div class="keycap-group right-keys">
-          <button class="tw-key tw-key-focus" id="btnFocusToggle" title="Toggle Fokus-modus & Linjecentrering (⌘⇧F)">
-            <i data-feather="target"></i> Fokus
-          </button>
           <button class="tw-key tw-key-sample" id="btnLoadSample" title="Indlæs Møns Klint Feltjournal">
             <i data-feather="file-text"></i> Eksempel
           </button>
@@ -189,10 +167,7 @@
 
           <!-- Main Text Editor View -->
           <div class="tw-view-container" id="editorView">
-            <div class="editor-wrapper">
-              <div id="activeLineHighlight" class="active-line-highlight tw-active-line"></div>
-              <textarea id="editorTextarea" class="tw-textarea" placeholder="Begynd at skrive på din skrivemaskine..." spellcheck="false"></textarea>
-            </div>
+            <textarea id="editorTextarea" class="tw-textarea" placeholder="Begynd at skrive på din skrivemaskine..." spellcheck="false"></textarea>
           </div>
 
           <!-- Rendered HTML View -->
@@ -255,10 +230,6 @@
           <div class="shortcut-item">
             <span class="shortcut-desc">Gem som PDF / Print</span>
             <kbd>⌘ / Ctrl</kbd> + <kbd>P</kbd>
-          </div>
-          <div class="shortcut-item">
-            <span class="shortcut-desc">Toggle Fokus-modus</span>
-            <kbd>⌘ / Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd>
           </div>
           <div class="shortcut-item">
             <span class="shortcut-desc">Fuldskærm skrivemodus</span>

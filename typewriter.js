@@ -41,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCopyMd = document.getElementById('btnCopyMd');
   const btnClear = document.getElementById('btnClear');
   const btnLoadSample = document.getElementById('btnLoadSample');
-  const btnFocusToggle = document.getElementById('btnFocusToggle');
   const btnShortcuts = document.getElementById('btnShortcuts');
   const shortcutModal = document.getElementById('shortcutModal');
   const btnCloseShortcutModal = document.getElementById('btnCloseShortcutModal');
@@ -854,58 +853,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     });
   }
 
-  // Focus Mode & Static Typewriter Line Scrolling
-  let isFocusMode = false;
-
-  function centerActiveLine() {
-    if (!isFocusMode || !editorTextarea) return;
-    const text = editorTextarea.value;
-    const selStart = editorTextarea.selectionStart;
-    const lines = text.substring(0, selStart).split('\n');
-    const currentLineIdx = lines.length - 1;
-
-    const lineHeight = 30;
-    const paddingTop = window.innerHeight * 0.4;
-    const lineTop = paddingTop + (currentLineIdx * lineHeight);
-    const targetScrollTop = lineTop - (editorTextarea.clientHeight / 2) + (lineHeight / 2);
-
-    editorTextarea.scrollTop = Math.max(0, targetScrollTop);
-  }
-
-  function toggleFocusMode() {
-    isFocusMode = !isFocusMode;
-    if (isFocusMode) {
-      document.body.classList.add('focus-mode-active');
-      if (editorTextarea) editorTextarea.classList.add('focus-mode');
-      if (btnFocusToggle) btnFocusToggle.classList.add('active');
-      if (editorTextarea) editorTextarea.focus();
-      centerActiveLine();
-      showToast('🎯 Fokus-modus aktiveret', 'target');
-    } else {
-      document.body.classList.remove('focus-mode-active');
-      if (editorTextarea) editorTextarea.classList.remove('focus-mode');
-      if (btnFocusToggle) btnFocusToggle.classList.remove('active');
-      if (editorTextarea) editorTextarea.focus();
-      showToast('Fokus-modus deaktiveret', 'target');
-    }
-  }
-
-  if (btnFocusToggle) {
-    btnFocusToggle.addEventListener('click', toggleFocusMode);
-  }
-
-  if (editorTextarea) {
-    editorTextarea.addEventListener('input', () => {
-      if (isFocusMode) centerActiveLine();
-    });
-    editorTextarea.addEventListener('keyup', () => {
-      if (isFocusMode) centerActiveLine();
-    });
-    editorTextarea.addEventListener('click', () => {
-      if (isFocusMode) centerActiveLine();
-    });
-  }
-
   // Keyboard Shortcuts Modal Toggle
   function openShortcutModal() {
     if (shortcutModal) {
@@ -959,10 +906,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
 
     if (e.ctrlKey || e.metaKey) {
       const key = e.key.toLowerCase();
-      if (e.shiftKey && key === 'f') {
-        e.preventDefault();
-        toggleFocusMode();
-      } else if (key === 's') {
+      if (key === 's') {
         e.preventDefault();
         if (btnExportMd) btnExportMd.click();
       } else if (key === 'p' && !e.shiftKey) {

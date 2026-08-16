@@ -38,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCopyMd = document.getElementById('btnCopyMd');
   const btnClear = document.getElementById('btnClear');
   const btnLoadSample = document.getElementById('btnLoadSample');
-  const btnFocusToggle = document.getElementById('btnFocusToggle');
   const btnShortcuts = document.getElementById('btnShortcuts');
   const shortcutModal = document.getElementById('shortcutModal');
   const btnCloseShortcutModal = document.getElementById('btnCloseShortcutModal');
@@ -562,59 +561,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     });
   }
 
-  // Focus Mode & Static Typewriter Line Scrolling
-  let isFocusMode = false;
-
-  function centerActiveLine() {
-    if (!isFocusMode || !editorTextarea) return;
-    const text = editorTextarea.value;
-    const selStart = editorTextarea.selectionStart;
-    const lines = text.substring(0, selStart).split('\n');
-    const currentLineIdx = lines.length - 1;
-
-    const lineHeight = 24.3;
-    // In focus mode, padding-top of editorTextarea is 40vh (0.4 * window.innerHeight)
-    const paddingTop = window.innerHeight * 0.4;
-    const lineTop = paddingTop + (currentLineIdx * lineHeight);
-    const targetScrollTop = lineTop - (editorTextarea.clientHeight / 2) + (lineHeight / 2);
-
-    editorTextarea.scrollTop = Math.max(0, targetScrollTop);
-  }
-
-  function toggleFocusMode() {
-    isFocusMode = !isFocusMode;
-    if (isFocusMode) {
-      document.body.classList.add('focus-mode-active');
-      workspace.classList.add('focus-mode');
-      editorTextarea.classList.add('focus-mode');
-      if (btnFocusToggle) btnFocusToggle.classList.add('active');
-      editorTextarea.focus();
-      centerActiveLine();
-      showToast('🎯 Fokus-modus aktiveret', 'target');
-    } else {
-      document.body.classList.remove('focus-mode-active');
-      workspace.classList.remove('focus-mode');
-      editorTextarea.classList.remove('focus-mode');
-      if (btnFocusToggle) btnFocusToggle.classList.remove('active');
-      editorTextarea.focus();
-      showToast('Fokus-modus deaktiveret', 'target');
-    }
-  }
-
-  if (btnFocusToggle) {
-    btnFocusToggle.addEventListener('click', toggleFocusMode);
-  }
-
-  editorTextarea.addEventListener('input', () => {
-    if (isFocusMode) centerActiveLine();
-  });
-  editorTextarea.addEventListener('keyup', () => {
-    if (isFocusMode) centerActiveLine();
-  });
-  editorTextarea.addEventListener('click', () => {
-    if (isFocusMode) centerActiveLine();
-  });
-
   // Keyboard Shortcuts Modal Toggle
   function openShortcutModal() {
     if (shortcutModal) {
@@ -837,10 +783,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
 
     if (e.ctrlKey || e.metaKey) {
       const key = e.key.toLowerCase();
-      if (e.shiftKey && key === 'f') {
-        e.preventDefault();
-        toggleFocusMode();
-      } else if (e.shiftKey && key === 'p') {
+      if (e.shiftKey && key === 'p') {
         e.preventDefault();
         // Cycle view mode: split -> editor -> preview -> split
         if (workspace.classList.contains('mode-split')) setViewMode('editor');
