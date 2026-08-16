@@ -147,24 +147,68 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     };
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
     } catch (e) {}
     updateSaveIndicator();
   }
 
   function loadDraft() {
+    let draft = null;
+
+    // 1. Check URL query parameters (?draft=...)
     try {
-      const saved = localStorage.getItem(DRAFT_KEY);
-      if (saved) {
-        const draft = JSON.parse(saved);
-        if (draft) {
-          if (docTitleInput && draft.title !== undefined) docTitleInput.value = draft.title;
-          if (docCategoriesInput && draft.categories !== undefined) docCategoriesInput.value = draft.categories;
-          if (editorTextarea && draft.body !== undefined) editorTextarea.value = draft.body;
-          return true;
-        }
+      const urlParams = new URLSearchParams(window.location.search);
+      const draftParam = urlParams.get('draft');
+      if (draftParam) {
+        draft = JSON.parse(decodeURIComponent(draftParam));
+        window.history.replaceState({}, document.title, window.location.pathname);
       }
     } catch (e) {}
+
+    // 2. Check sessionStorage
+    if (!draft) {
+      try {
+        const savedSession = sessionStorage.getItem(DRAFT_KEY);
+        if (savedSession) draft = JSON.parse(savedSession);
+      } catch (e) {}
+    }
+
+    // 3. Check localStorage
+    if (!draft) {
+      try {
+        const savedLocal = localStorage.getItem(DRAFT_KEY);
+        if (savedLocal) draft = JSON.parse(savedLocal);
+      } catch (e) {}
+    }
+
+    if (draft) {
+      if (docTitleInput && draft.title !== undefined) docTitleInput.value = draft.title;
+      if (docCategoriesInput && draft.categories !== undefined) docCategoriesInput.value = draft.categories;
+      if (editorTextarea && draft.body !== undefined) editorTextarea.value = draft.body;
+
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      } catch (e) {}
+
+      return true;
+    }
     return false;
+  }
+
+  function navigateWithDraft(targetUrl) {
+    const draft = {
+      title: docTitleInput ? docTitleInput.value : '',
+      categories: docCategoriesInput ? docCategoriesInput.value : '',
+      body: editorTextarea ? editorTextarea.value : '',
+      updatedAt: Date.now()
+    };
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch (e) {}
+    const encoded = encodeURIComponent(JSON.stringify(draft));
+    window.location.href = `${targetUrl}?draft=${encoded}`;
   }
 
   function updateSaveIndicator() {
@@ -524,6 +568,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       editorTextarea.value = '';
       try {
         localStorage.removeItem(DRAFT_KEY);
+        sessionStorage.removeItem(DRAFT_KEY);
       } catch (e) {}
       renderPreview();
       showToast('Tekst ryddet', 'trash-2');
@@ -533,8 +578,9 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   // Save draft when clicking to switch mode (Skrivemaskine)
   const btnSwitchMode = document.querySelector('a[href="skrivemaskine.html"]');
   if (btnSwitchMode) {
-    btnSwitchMode.addEventListener('click', () => {
-      saveDraft();
+    btnSwitchMode.addEventListener('click', (e) => {
+      e.preventDefault();
+      navigateWithDraft('skrivemaskine.html');
     });
   }
 
