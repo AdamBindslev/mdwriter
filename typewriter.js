@@ -114,7 +114,9 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   async function loadWavSample(url) {
     try {
       initAudio();
-      const res = await fetch(url);
+      // Bypass browser HTTP cache to ensure newly updated .wav files play immediately
+      const cacheBustUrl = `${url}?v=${Date.now()}`;
+      const res = await fetch(cacheBustUrl, { cache: 'no-cache' });
       if (!res.ok) return null;
       const arrayBuf = await res.arrayBuffer();
       return await audioCtx.decodeAudioData(arrayBuf);
