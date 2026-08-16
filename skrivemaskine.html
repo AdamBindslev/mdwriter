@@ -189,7 +189,10 @@
 
           <!-- Main Text Editor View -->
           <div class="tw-view-container" id="editorView">
-            <textarea id="editorTextarea" class="tw-textarea" placeholder="Begynd at skrive på din skrivemaskine..." spellcheck="false"></textarea>
+            <div class="editor-wrapper">
+              <div id="activeLineHighlight" class="active-line-highlight tw-active-line"></div>
+              <textarea id="editorTextarea" class="tw-textarea" placeholder="Begynd at skrive på din skrivemaskine..." spellcheck="false"></textarea>
+            </div>
           </div>
 
           <!-- Rendered HTML View -->

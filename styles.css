@@ -889,23 +889,74 @@ body {
 }
 
 /* ==========================================================================
-   Focus Mode & Toolbar Active States
+   Focus Mode & Active Line Highlight
    ========================================================================== */
 .tb-btn.active {
-  background: rgba(59, 130, 246, 0.2) !important;
+  background: rgba(59, 130, 246, 0.25) !important;
   color: var(--primary) !important;
-  border-color: var(--primary);
+  border: 1px solid var(--primary) !important;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3) !important;
+}
+
+.editor-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.active-line-highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 24.3px;
+  background: rgba(59, 130, 246, 0.12);
+  border-left: 3px solid var(--primary);
+  pointer-events: none;
+  opacity: 0;
+  transition: top 0.1s ease-out, opacity 0.25s ease;
+  z-index: 1;
+}
+
+body.focus-mode-active .active-line-highlight {
+  opacity: 1;
+}
+
+/* Environment dimming in Focus Mode */
+body.focus-mode-active .top-header,
+body.focus-mode-active .meta-section,
+body.focus-mode-active .toolbar,
+body.focus-mode-active .status-bar,
+body.focus-mode-active .pane-preview {
+  opacity: 0.25;
+  filter: grayscale(40%);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+/* Hovering dimmed panels temporarily restores full opacity */
+body.focus-mode-active .top-header:hover,
+body.focus-mode-active .meta-section:hover,
+body.focus-mode-active .toolbar:hover,
+body.focus-mode-active .status-bar:hover,
+body.focus-mode-active .pane-preview:hover {
+  opacity: 0.95;
+  filter: none;
+}
+
+/* Elevated Focus Editor */
+body.focus-mode-active .pane-editor {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.35), 0 0 0 2px var(--primary) !important;
+  transform: scale(1.005);
+  transition: all 0.3s ease;
+  z-index: 10;
 }
 
 #editorTextarea.focus-mode {
   scroll-behavior: smooth;
-  transition: background 0.3s ease;
-}
-
-/* Workspace in focus mode */
-.workspace.focus-mode .pane-editor {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+  z-index: 2;
+  position: relative;
 }
 
 /* ==========================================================================

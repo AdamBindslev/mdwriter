@@ -562,23 +562,29 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     });
   }
 
-  // Focus Mode & Vertical Typewriter Centering
+  // Focus Mode & Active Line Highlight & Vertical Centering
   let isFocusMode = false;
+  const activeLineHighlight = document.getElementById('activeLineHighlight');
 
-  function toggleFocusMode() {
-    isFocusMode = !isFocusMode;
-    if (isFocusMode) {
-      workspace.classList.add('focus-mode');
-      editorTextarea.classList.add('focus-mode');
-      btnFocusToggle.classList.add('active');
-      centerActiveLine();
-      showToast('Fokus-modus aktiveret', 'target');
-    } else {
-      workspace.classList.remove('focus-mode');
-      editorTextarea.classList.remove('focus-mode');
-      btnFocusToggle.classList.remove('active');
-      showToast('Fokus-modus deaktiveret', 'target');
+  function updateActiveLineHighlight() {
+    if (!activeLineHighlight || !editorTextarea) return;
+    if (!isFocusMode) {
+      activeLineHighlight.style.opacity = '0';
+      return;
     }
+
+    const text = editorTextarea.value;
+    const selStart = editorTextarea.selectionStart;
+    const lines = text.substring(0, selStart).split('\n');
+    const currentLineIdx = lines.length - 1;
+
+    const lineHeight = 24.3;
+    const paddingTop = 16;
+    const topOffset = paddingTop + (currentLineIdx * lineHeight) - editorTextarea.scrollTop;
+
+    activeLineHighlight.style.top = `${topOffset}px`;
+    activeLineHighlight.style.height = `${lineHeight}px`;
+    activeLineHighlight.style.opacity = '1';
   }
 
   function centerActiveLine() {
@@ -587,15 +593,37 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     const selStart = editorTextarea.selectionStart;
     const lines = text.substring(0, selStart).split('\n');
     const currentLineIdx = lines.length - 1;
-    
-    // Approximate line height (1.6 * 0.95rem ≈ 24px)
+
     const lineHeight = 24.3;
-    const targetScrollTop = (currentLineIdx * lineHeight) - (editorTextarea.clientHeight / 2) + (lineHeight / 2);
-    
+    const paddingTop = 16;
+    const lineTop = paddingTop + (currentLineIdx * lineHeight);
+    const targetScrollTop = lineTop - (editorTextarea.clientHeight / 2) + (lineHeight / 2);
+
     editorTextarea.scrollTo({
       top: Math.max(0, targetScrollTop),
       behavior: 'smooth'
     });
+
+    updateActiveLineHighlight();
+  }
+
+  function toggleFocusMode() {
+    isFocusMode = !isFocusMode;
+    if (isFocusMode) {
+      document.body.classList.add('focus-mode-active');
+      workspace.classList.add('focus-mode');
+      editorTextarea.classList.add('focus-mode');
+      if (btnFocusToggle) btnFocusToggle.classList.add('active');
+      centerActiveLine();
+      showToast('🎯 Fokus-modus aktiveret (alt udenom dæmpes)', 'target');
+    } else {
+      document.body.classList.remove('focus-mode-active');
+      workspace.classList.remove('focus-mode');
+      editorTextarea.classList.remove('focus-mode');
+      if (btnFocusToggle) btnFocusToggle.classList.remove('active');
+      if (activeLineHighlight) activeLineHighlight.style.opacity = '0';
+      showToast('Fokus-modus deaktiveret', 'target');
+    }
   }
 
   if (btnFocusToggle) {
@@ -604,10 +632,14 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
 
   editorTextarea.addEventListener('keyup', () => {
     if (isFocusMode) centerActiveLine();
+    else updateActiveLineHighlight();
   });
   editorTextarea.addEventListener('click', () => {
     if (isFocusMode) centerActiveLine();
+    else updateActiveLineHighlight();
   });
+  editorTextarea.addEventListener('selectionchange', updateActiveLineHighlight);
+  editorTextarea.addEventListener('scroll', updateActiveLineHighlight);
 
   // Keyboard Shortcuts Modal Toggle
   function openShortcutModal() {
