@@ -135,6 +135,51 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     return fullMarkdown;
   }
 
+  // Draft Storage & Sync Management
+  const DRAFT_KEY = 'md_writer_draft';
+
+  function saveDraft() {
+    const draft = {
+      title: docTitleInput ? docTitleInput.value : '',
+      categories: docCategoriesInput ? docCategoriesInput.value : '',
+      body: editorTextarea ? editorTextarea.value : '',
+      updatedAt: Date.now()
+    };
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch (e) {}
+    updateSaveIndicator();
+  }
+
+  function loadDraft() {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) {
+        const draft = JSON.parse(saved);
+        if (draft) {
+          if (docTitleInput && draft.title !== undefined) docTitleInput.value = draft.title;
+          if (docCategoriesInput && draft.categories !== undefined) docCategoriesInput.value = draft.categories;
+          if (editorTextarea && draft.body !== undefined) editorTextarea.value = draft.body;
+          return true;
+        }
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  function updateSaveIndicator() {
+    if (!saveIndicator) return;
+    const hasContent = (docTitleInput && docTitleInput.value.trim()) ||
+                       (docCategoriesInput && docCategoriesInput.value.trim()) ||
+                       (editorTextarea && editorTextarea.value.trim());
+    if (hasContent) {
+      saveIndicator.innerHTML = '<i data-feather="check"></i> Gemt automatisk';
+    } else {
+      saveIndicator.innerHTML = '<i data-feather="file-text"></i> Tomt dokument';
+    }
+    if (window.feather) feather.replace();
+  }
+
   // Update Rendered HTML Preview & Counters
   function renderPreview() {
     const markdownText = generateFullMarkdown();
@@ -149,6 +194,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
 
     updateCounters();
     updateFilenameBadge();
+    saveDraft();
   }
 
   // Update Word / Character / Reading Time Statistics
@@ -173,16 +219,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     setTimeout(() => {
       toast.classList.remove('show');
     }, 2800);
-  }
-
-  // Clear all fields on startup
-  function clearAllFields() {
-    docTitleInput.value = '';
-    docCategoriesInput.value = '';
-    editorTextarea.value = '';
-    try {
-      localStorage.removeItem('md_writer_draft');
-    } catch (e) {}
   }
 
   // Formatting Toolbar Helper Actions
@@ -486,10 +522,21 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       docTitleInput.value = '';
       docCategoriesInput.value = '';
       editorTextarea.value = '';
+      try {
+        localStorage.removeItem(DRAFT_KEY);
+      } catch (e) {}
       renderPreview();
       showToast('Tekst ryddet', 'trash-2');
     }
   });
+
+  // Save draft when clicking to switch mode (Skrivemaskine)
+  const btnSwitchMode = document.querySelector('a[href="skrivemaskine.html"]');
+  if (btnSwitchMode) {
+    btnSwitchMode.addEventListener('click', () => {
+      saveDraft();
+    });
+  }
 
   // Load Sample Action (Møns Klint)
   btnLoadSample.addEventListener('click', () => {
@@ -616,7 +663,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     }
   });
 
-  // Initial Startup Execution - Always starts 100% clean and empty
-  clearAllFields();
+  // Initial Startup Execution - Load saved draft if present
+  loadDraft();
   renderPreview();
 });

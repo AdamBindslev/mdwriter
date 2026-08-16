@@ -420,6 +420,37 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     filenamePreview.textContent = getExportFilename();
   }
 
+  // Draft Storage & Sync Management
+  const DRAFT_KEY = 'md_writer_draft';
+
+  function saveDraft() {
+    const draft = {
+      title: docTitleInput ? docTitleInput.value : '',
+      categories: docCategoriesInput ? docCategoriesInput.value : '',
+      body: editorTextarea ? editorTextarea.value : '',
+      updatedAt: Date.now()
+    };
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch (e) {}
+  }
+
+  function loadDraft() {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) {
+        const draft = JSON.parse(saved);
+        if (draft) {
+          if (docTitleInput && draft.title !== undefined) docTitleInput.value = draft.title;
+          if (docCategoriesInput && draft.categories !== undefined) docCategoriesInput.value = draft.categories;
+          if (editorTextarea && draft.body !== undefined) editorTextarea.value = draft.body;
+          return true;
+        }
+      }
+    } catch (e) {}
+    return false;
+  }
+
   function renderPreview() {
     const markdownText = generateFullMarkdown();
 
@@ -432,6 +463,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     }
 
     updateOdometer();
+    saveDraft();
   }
 
   // Toast Notification
@@ -601,10 +633,21 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       docTitleInput.value = '';
       docCategoriesInput.value = '';
       editorTextarea.value = '';
+      try {
+        localStorage.removeItem(DRAFT_KEY);
+      } catch (e) {}
       renderPreview();
-      showToast('Papirryddet', 'trash-2');
+      showToast('Papir ryddet', 'trash-2');
     }
   });
+
+  // Save draft when clicking to switch to standard app
+  const btnSwitchMode = document.querySelector('a[href="index.html"]');
+  if (btnSwitchMode) {
+    btnSwitchMode.addEventListener('click', () => {
+      saveDraft();
+    });
+  }
 
   btnLoadSample.addEventListener('click', () => {
     playBellSound();
@@ -616,9 +659,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   });
 
   // Startup Init
-  docTitleInput.value = '';
-  docCategoriesInput.value = '';
-  editorTextarea.value = '';
+  loadDraft();
   renderPreview();
   preloadRealWavSounds();
 });
