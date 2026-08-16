@@ -124,13 +124,17 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   }
 
   async function preloadRealWavSounds() {
-    // Try loading sounds/key.wav or sounds/key1.wav..sounds/key5.wav
-    const kSingle = await loadWavSample('sounds/key.wav');
-    if (kSingle) soundBuffers.keys.push(kSingle);
+    soundBuffers.keys = [];
+    const k1 = await loadWavSample('sounds/key1.wav');
+    if (k1) soundBuffers.keys.push(k1);
 
-    for (let i = 1; i <= 5; i++) {
-      const k = await loadWavSample(`sounds/key${i}.wav`);
-      if (k) soundBuffers.keys.push(k);
+    const k2 = await loadWavSample('sounds/key2.wav');
+    if (k2) soundBuffers.keys.push(k2);
+
+    // Fallback to single key.wav if key1/key2 not present
+    if (soundBuffers.keys.length === 0) {
+      const kSingle = await loadWavSample('sounds/key.wav');
+      if (kSingle) soundBuffers.keys.push(kSingle);
     }
 
     soundBuffers.space = await loadWavSample('sounds/space.wav');
@@ -138,18 +142,38 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     soundBuffers.backspace = await loadWavSample('sounds/backspace.wav');
   }
 
-  function playSample(buffer, pitchVar = true) {
+  let lastKeyIndex = -1;
+
+  function playSample(buffer, pitchVar = true, isKeyClick = false) {
     if (!soundEnabled || !buffer || !audioCtx) return false;
     try {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const source = audioCtx.createBufferSource();
       source.buffer = buffer;
-      if (pitchVar) {
-        source.playbackRate.value = 0.96 + Math.random() * 0.08;
-      }
+      
       const gainNode = audioCtx.createGain();
-      gainNode.gain.value = 1.0;
-      source.connect(gainNode);
+
+      if (isKeyClick) {
+        // Organic pitch variation (+/- 8%)
+        source.playbackRate.value = 0.92 + Math.random() * 0.16;
+        // Organic gain variation
+        gainNode.gain.value = 0.85 + Math.random() * 0.3;
+
+        // Subtle tone tinting via lowpass filter for extra acoustic realism
+        const toneFilter = audioCtx.createBiquadFilter();
+        toneFilter.type = 'lowpass';
+        toneFilter.frequency.setValueAtTime(3200 + Math.random() * 2500, audioCtx.currentTime);
+
+        source.connect(toneFilter);
+        toneFilter.connect(gainNode);
+      } else {
+        if (pitchVar) {
+          source.playbackRate.value = 0.96 + Math.random() * 0.08;
+        }
+        gainNode.gain.value = 1.0;
+        source.connect(gainNode);
+      }
+
       gainNode.connect(audioCtx.destination);
       source.start(0);
       return true;
@@ -163,10 +187,15 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     if (!soundEnabled) return;
     initAudio();
 
-    // 1. Play real .wav sample if loaded
+    // 1. Play real .wav sample if loaded (alternating between key1 and key2 with organic pitch & tone variation)
     if (soundBuffers.keys.length > 0) {
-      const randomBuf = soundBuffers.keys[Math.floor(Math.random() * soundBuffers.keys.length)];
-      if (playSample(randomBuf, true)) return;
+      let idx = Math.floor(Math.random() * soundBuffers.keys.length);
+      if (soundBuffers.keys.length > 1 && idx === lastKeyIndex && Math.random() > 0.3) {
+        idx = (idx + 1) % soundBuffers.keys.length;
+      }
+      lastKeyIndex = idx;
+      const selectedBuf = soundBuffers.keys[idx];
+      if (playSample(selectedBuf, true, true)) return;
     }
 
     // 2. Fallback to Web Audio synthesis
