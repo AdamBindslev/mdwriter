@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sound & Controls
   const btnSoundToggle = document.getElementById('btnSoundToggle');
   const soundIcon = document.getElementById('soundIcon');
+  const btnFullscreen = document.getElementById('btnFullscreen');
+  const fullscreenIcon = document.getElementById('fullscreenIcon');
+  const floatingExitFs = document.getElementById('floatingExitFs');
   const ribbonBtns = document.querySelectorAll('.ribbon-btn');
 
   // Chips
@@ -656,6 +659,88 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     editorTextarea.value = sampleData.body;
     renderPreview();
     showToast('Eksempel (Møns Klint) indlæst på skrivemaskinen!', 'file-text');
+  });
+
+  // ----------------------------------------------------
+  // FULLSCREEN & DISTRACTION-FREE MODE LOGIC
+  // ----------------------------------------------------
+  function toggleFullscreen() {
+    playKeyClickSound();
+    const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.body.classList.contains('distraction-free-mode'));
+    
+    if (!isFullscreen) {
+      // Enter Fullscreen & Distraction-Free mode
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen().catch(() => {});
+      }
+      document.body.classList.add('distraction-free-mode');
+      if (floatingExitFs) floatingExitFs.classList.remove('hidden');
+      if (btnFullscreen) {
+        btnFullscreen.classList.add('active');
+        btnFullscreen.setAttribute('title', 'Forlad Fuldskærm (Alt+F eller ESC)');
+      }
+      showToast('Fuldskærm & Distraktionsfri Skrivemodus Aktiveret', 'maximize');
+    } else {
+      // Exit Fullscreen & Distraction-Free mode
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen().catch(() => {});
+        }
+      }
+      document.body.classList.remove('distraction-free-mode');
+      if (floatingExitFs) floatingExitFs.classList.add('hidden');
+      if (btnFullscreen) {
+        btnFullscreen.classList.remove('active');
+        btnFullscreen.setAttribute('title', 'Fuldskærm / Distraktionsfri Skrivemodus (Alt+F eller ESC)');
+      }
+      showToast('Forladt Fuldskærm', 'minimize-2');
+    }
+
+    if (window.feather) {
+      setTimeout(() => feather.replace(), 50);
+    }
+  }
+
+  function handleFullscreenChange() {
+    const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    if (!isFs) {
+      document.body.classList.remove('distraction-free-mode');
+      if (floatingExitFs) floatingExitFs.classList.add('hidden');
+      if (btnFullscreen) {
+        btnFullscreen.classList.remove('active');
+      }
+    } else {
+      document.body.classList.add('distraction-free-mode');
+      if (floatingExitFs) floatingExitFs.classList.remove('hidden');
+      if (btnFullscreen) {
+        btnFullscreen.classList.add('active');
+      }
+    }
+    if (window.feather) {
+      setTimeout(() => feather.replace(), 50);
+    }
+  }
+
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+  if (btnFullscreen) {
+    btnFullscreen.addEventListener('click', toggleFullscreen);
+  }
+  if (floatingExitFs) {
+    floatingExitFs.addEventListener('click', toggleFullscreen);
+  }
+
+  // Keyboard shortcut: Alt + F to toggle distraction-free mode
+  document.addEventListener('keydown', (e) => {
+    if (e.altKey && (e.key === 'f' || e.key === 'F')) {
+      e.preventDefault();
+      toggleFullscreen();
+    }
   });
 
   // Startup Init

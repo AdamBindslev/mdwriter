@@ -50,6 +50,13 @@
           <i data-feather="volume-2" id="soundIcon"></i> Lyd Tastes
         </button>
 
+        <!-- Distraction Free Fullscreen Toggle -->
+        <button id="btnFullscreen" class="tw-btn tw-btn-icon" title="Fuldskærm / Distraktionsfri Skrivemodus (Alt+F eller ESC)">
+          <i data-feather="maximize" id="fullscreenIcon"></i> Fuldskærm
+        </button>
+
+        <div class="tw-v-divider"></div>
+
         <!-- Export Action -->
         <button id="btnExportMd" class="tw-btn tw-btn-primary" title="Download som .md fil">
           <i data-feather="download"></i> Download .md
@@ -203,6 +210,11 @@
 
   <!-- Toast Notification -->
   <div class="toast" id="toast"></div>
+
+  <!-- Floating Exit Fullscreen Button (Visible in Distraction-Free / Fullscreen Mode) -->
+  <button id="floatingExitFs" class="floating-exit-fs hidden" title="Forlad Fuldskærm (ESC)">
+    <i data-feather="minimize-2"></i> Forlad Fuldskærm <kbd>ESC</kbd>
+  </button>
 
   <script src="typewriter.js"></script>
 </body>
