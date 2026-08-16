@@ -76,10 +76,17 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   };
 
   // ----------------------------------------------------
-  // WEB AUDIO API — Typewriter Sound Synthesizer Engine
+  // REAL AUDIO SAMPLE PLAYER (.wav files) WITH FALLBACK
   // ----------------------------------------------------
   let soundEnabled = true;
   let audioCtx = null;
+
+  const soundBuffers = {
+    keys: [],       // Decoded AudioBuffers for key clicks
+    space: null,    // AudioBuffer for spacebar
+    enter: null,    // AudioBuffer for enter/return/bell
+    backspace: null // AudioBuffer for backspace
+  };
 
   function initAudio() {
     if (!audioCtx) {
@@ -100,20 +107,73 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     }, { once: false, passive: true });
   });
 
-  // Synthesize Realistic Mechanical Character Key Strike ("Clack-Snap")
+  // Preload real .wav audio files from sounds/ folder
+  async function loadWavSample(url) {
+    try {
+      initAudio();
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const arrayBuf = await res.arrayBuffer();
+      return await audioCtx.decodeAudioData(arrayBuf);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function preloadRealWavSounds() {
+    // Try loading sounds/key.wav or sounds/key1.wav..sounds/key5.wav
+    const kSingle = await loadWavSample('sounds/key.wav');
+    if (kSingle) soundBuffers.keys.push(kSingle);
+
+    for (let i = 1; i <= 5; i++) {
+      const k = await loadWavSample(`sounds/key${i}.wav`);
+      if (k) soundBuffers.keys.push(k);
+    }
+
+    soundBuffers.space = await loadWavSample('sounds/space.wav');
+    soundBuffers.enter = await loadWavSample('sounds/enter.wav') || await loadWavSample('sounds/return.wav') || await loadWavSample('sounds/bell.wav');
+    soundBuffers.backspace = await loadWavSample('sounds/backspace.wav');
+  }
+
+  function playSample(buffer, pitchVar = true) {
+    if (!soundEnabled || !buffer || !audioCtx) return false;
+    try {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const source = audioCtx.createBufferSource();
+      source.buffer = buffer;
+      if (pitchVar) {
+        source.playbackRate.value = 0.96 + Math.random() * 0.08;
+      }
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.value = 1.0;
+      source.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      source.start(0);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Synthesize/Play Mechanical Character Key Strike ("Clack-Snap")
   function playKeyClickSound() {
     if (!soundEnabled) return;
     initAudio();
-    if (!audioCtx) return;
 
+    // 1. Play real .wav sample if loaded
+    if (soundBuffers.keys.length > 0) {
+      const randomBuf = soundBuffers.keys[Math.floor(Math.random() * soundBuffers.keys.length)];
+      if (playSample(randomBuf, true)) return;
+    }
+
+    // 2. Fallback to Web Audio synthesis
+    if (!audioCtx) return;
     try {
       const now = audioCtx.currentTime;
-      // Slight pitch and volume variation per keystroke for organic mechanical typewriter feel
-      const pitchVariation = 0.9 + Math.random() * 0.22; // 0.9 - 1.12
+      const pitchVariation = 0.9 + Math.random() * 0.22;
       const gainVariation = 0.8 + Math.random() * 0.3;
 
-      // 1. High-frequency Metal Type-Bar Strike (Noise burst through sharp bandpass)
-      const noiseLength = 0.04; // 40ms
+      const noiseLength = 0.04;
       const bufferSize = audioCtx.sampleRate * noiseLength;
       const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
       const output = buffer.getChannelData(0);
@@ -138,7 +198,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       noiseGain.connect(audioCtx.destination);
       noise.start(now);
 
-      // 2. Lever Mechanism Metallic Snap (Triangle Sweep)
       const osc = audioCtx.createOscillator();
       const oscGain = audioCtx.createGain();
       osc.type = 'triangle';
@@ -152,36 +211,23 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       oscGain.connect(audioCtx.destination);
       osc.start(now);
       osc.stop(now + 0.02);
-
-      // 3. Platen Wood/Rubber Roller Body Resonance (Low sine thud)
-      const body = audioCtx.createOscillator();
-      const bodyGain = audioCtx.createGain();
-      body.type = 'sine';
-      body.frequency.setValueAtTime(280 * pitchVariation, now);
-      body.frequency.exponentialRampToValueAtTime(70, now + 0.025);
-
-      bodyGain.gain.setValueAtTime(0.25 * gainVariation, now);
-      bodyGain.gain.linearRampToValueAtTime(0.0001, now + 0.025);
-
-      body.connect(bodyGain);
-      bodyGain.connect(audioCtx.destination);
-      body.start(now);
-      body.stop(now + 0.025);
     } catch (e) {
       console.error('Audio error:', e);
     }
   }
 
-  // Synthesize Spacebar (Deeper frame impact + mechanical spring)
+  // Synthesize/Play Spacebar
   function playSpaceSound() {
     if (!soundEnabled) return;
     initAudio();
-    if (!audioCtx) return;
 
+    if (soundBuffers.space) {
+      if (playSample(soundBuffers.space, false)) return;
+    }
+
+    if (!audioCtx) return;
     try {
       const now = audioCtx.currentTime;
-      
-      // Heavy low impact
       const body = audioCtx.createOscillator();
       const bodyGain = audioCtx.createGain();
       body.type = 'sine';
@@ -195,40 +241,21 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       bodyGain.connect(audioCtx.destination);
       body.start(now);
       body.stop(now + 0.06);
-
-      // Soft mechanical spring release noise
-      const noiseLength = 0.03;
-      const bufferSize = audioCtx.sampleRate * noiseLength;
-      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-      const output = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        output[i] = (Math.random() * 2 - 1);
-      }
-      const noise = audioCtx.createBufferSource();
-      noise.buffer = buffer;
-      const filter = audioCtx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(900, now);
-
-      const noiseGain = audioCtx.createGain();
-      noiseGain.gain.setValueAtTime(0.25, now);
-      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.03);
-
-      noise.connect(filter);
-      filter.connect(noiseGain);
-      noiseGain.connect(audioCtx.destination);
-      noise.start(now);
     } catch (e) {
       console.error(e);
     }
   }
 
-  // Synthesize Backspace / Delete (Double mechanical ratchet click)
+  // Synthesize/Play Backspace / Delete
   function playBackspaceSound() {
     if (!soundEnabled) return;
     initAudio();
-    if (!audioCtx) return;
 
+    if (soundBuffers.backspace) {
+      if (playSample(soundBuffers.backspace, false)) return;
+    }
+
+    if (!audioCtx) return;
     try {
       const now = audioCtx.currentTime;
       playRatchetClick(now);
@@ -252,16 +279,19 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     osc.stop(t + 0.012);
   }
 
-  // Synthesize Carriage Return Bell ("Ding!") + Carriage Slide
+  // Synthesize/Play Carriage Return Bell ("Ding!")
   function playBellSound() {
     if (!soundEnabled) return;
     initAudio();
-    if (!audioCtx) return;
 
+    if (soundBuffers.enter) {
+      if (playSample(soundBuffers.enter, false)) return;
+    }
+
+    if (!audioCtx) return;
     try {
       const now = audioCtx.currentTime;
 
-      // 1. High Metallic Bell Chime (Pure sine 2650Hz with 1.1s exponential decay)
       const bell = audioCtx.createOscillator();
       const bellGain = audioCtx.createGain();
       bell.type = 'sine';
@@ -275,21 +305,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       bell.start(now);
       bell.stop(now + 1.1);
 
-      // 2. Harmonic overtone (5300Hz)
-      const overtone = audioCtx.createOscillator();
-      const overtoneGain = audioCtx.createGain();
-      overtone.type = 'sine';
-      overtone.frequency.setValueAtTime(5300, now);
-
-      overtoneGain.gain.setValueAtTime(0.2, now);
-      overtoneGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
-
-      overtone.connect(overtoneGain);
-      overtoneGain.connect(audioCtx.destination);
-      overtone.start(now);
-      overtone.stop(now + 0.5);
-
-      // 3. Mechanical Carriage Return Ratchet Slide
       for (let i = 0; i < 4; i++) {
         playRatchetClick(now + 0.08 + i * 0.025);
       }
@@ -605,4 +620,5 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   docCategoriesInput.value = '';
   editorTextarea.value = '';
   renderPreview();
+  preloadRealWavSounds();
 });
