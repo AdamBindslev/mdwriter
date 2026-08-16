@@ -854,29 +854,8 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     });
   }
 
-  // Focus Mode & Active Line Highlight & Vertical Line Centering
+  // Focus Mode & Static Typewriter Line Scrolling
   let isFocusMode = false;
-  const activeLineHighlight = document.getElementById('activeLineHighlight');
-
-  function updateActiveLineHighlight() {
-    if (!activeLineHighlight || !editorTextarea) return;
-    if (!isFocusMode) {
-      activeLineHighlight.style.opacity = '0';
-      return;
-    }
-
-    const text = editorTextarea.value;
-    const selStart = editorTextarea.selectionStart;
-    const lines = text.substring(0, selStart).split('\n');
-    const currentLineIdx = lines.length - 1;
-
-    const lineHeight = 30; // Approx line height in typewriter textarea (1.05rem * 1.8)
-    const topOffset = (currentLineIdx * lineHeight) - editorTextarea.scrollTop;
-
-    activeLineHighlight.style.top = `${topOffset}px`;
-    activeLineHighlight.style.height = `${lineHeight}px`;
-    activeLineHighlight.style.opacity = '1';
-  }
 
   function centerActiveLine() {
     if (!isFocusMode || !editorTextarea) return;
@@ -886,12 +865,11 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     const currentLineIdx = lines.length - 1;
 
     const lineHeight = 30;
-    const lineTop = (currentLineIdx * lineHeight);
+    const paddingTop = window.innerHeight * 0.4;
+    const lineTop = paddingTop + (currentLineIdx * lineHeight);
     const targetScrollTop = lineTop - (editorTextarea.clientHeight / 2) + (lineHeight / 2);
 
-    // Direct scrollTop assignment to prevent scroll animation locks while typing
     editorTextarea.scrollTop = Math.max(0, targetScrollTop);
-    updateActiveLineHighlight();
   }
 
   function toggleFocusMode() {
@@ -907,7 +885,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       document.body.classList.remove('focus-mode-active');
       if (editorTextarea) editorTextarea.classList.remove('focus-mode');
       if (btnFocusToggle) btnFocusToggle.classList.remove('active');
-      if (activeLineHighlight) activeLineHighlight.style.opacity = '0';
       if (editorTextarea) editorTextarea.focus();
       showToast('Fokus-modus deaktiveret', 'target');
     }
@@ -920,17 +897,13 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   if (editorTextarea) {
     editorTextarea.addEventListener('input', () => {
       if (isFocusMode) centerActiveLine();
-      else updateActiveLineHighlight();
     });
     editorTextarea.addEventListener('keyup', () => {
       if (isFocusMode) centerActiveLine();
-      else updateActiveLineHighlight();
     });
     editorTextarea.addEventListener('click', () => {
       if (isFocusMode) centerActiveLine();
-      else updateActiveLineHighlight();
     });
-    editorTextarea.addEventListener('scroll', updateActiveLineHighlight);
   }
 
   // Keyboard Shortcuts Modal Toggle

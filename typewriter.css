@@ -838,12 +838,16 @@ body.distraction-free-mode .paper-sheet {
   position: absolute;
   left: 0;
   right: 0;
-  height: 30px;
-  background: rgba(239, 68, 68, 0.15) !important;
-  border-left: 3px solid #ef4444 !important;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 32px;
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-top: 1px dashed #ef4444 !important;
+  border-bottom: 1px dashed #ef4444 !important;
+  border-left: 4px solid #ef4444 !important;
   pointer-events: none !important;
   opacity: 0;
-  transition: top 0.05s ease-out, opacity 0.25s ease;
+  transition: opacity 0.25s ease;
   z-index: 1;
 }
 
@@ -852,6 +856,13 @@ body.distraction-free-mode .paper-sheet {
   z-index: 2;
   pointer-events: auto;
   background: transparent;
+  transition: padding 0.3s ease;
+}
+
+.tw-textarea.focus-mode {
+  padding-top: 40vh !important;
+  padding-bottom: 50vh !important;
+  scroll-behavior: auto !important;
 }
 
 body.focus-mode-active .active-line-highlight {

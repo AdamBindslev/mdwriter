@@ -906,16 +906,21 @@ body {
   overflow: hidden;
 }
 
+/* Static Red Typewriter Line fixed in exact center of editor pane */
 .active-line-highlight {
   position: absolute;
   left: 0;
   right: 0;
-  height: 24.3px;
-  background: rgba(59, 130, 246, 0.14);
-  border-left: 3px solid var(--primary);
+  top: 50%;
+  transform: translateY(-50%);
+  height: 26px;
+  background: rgba(59, 130, 246, 0.12);
+  border-top: 1px dashed var(--primary);
+  border-bottom: 1px dashed var(--primary);
+  border-left: 4px solid var(--primary);
   pointer-events: none !important;
   opacity: 0;
-  transition: top 0.05s ease-out, opacity 0.25s ease;
+  transition: opacity 0.25s ease;
   z-index: 1;
 }
 
@@ -924,6 +929,14 @@ body {
   z-index: 2;
   pointer-events: auto;
   background: transparent;
+  transition: padding 0.3s ease;
+}
+
+/* In Focus Mode, add generous vertical padding so any line can scroll to center */
+#editorTextarea.focus-mode {
+  padding-top: 40vh !important;
+  padding-bottom: 50vh !important;
+  scroll-behavior: auto !important;
 }
 
 body.focus-mode-active .active-line-highlight {
