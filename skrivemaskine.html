@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="da" data-ribbon="black">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MD Writer — Skrivemaskine Udgave</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Special+Elite&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Feather Icons -->
+  <script src="https://unpkg.com/feather-icons"></script>
+  <!-- Marked parser and DOMPurify CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+  <link rel="stylesheet" href="typewriter.css">
+</head>
+<body class="typewriter-body">
+  <div class="desk-container">
+
+    <!-- Top Header Bar -->
+    <header class="tw-header">
+      <div class="tw-brand">
+        <div class="tw-logo-key"><i data-feather="edit-3"></i></div>
+        <div class="tw-brand-info">
+          <h1>MD WRITER <span class="tw-badge">SKRIVEMASKINE</span></h1>
+          <span class="tw-sub">Klassisk Mekanisk Tekstbehandler</span>
+        </div>
+      </div>
+
+      <div class="tw-header-controls">
+        <!-- Return to Standard App -->
+        <a href="index.html" class="tw-btn tw-btn-nav" title="Skift til Standard Visning">
+          <i data-feather="monitor"></i> Standard App
+        </a>
+
+        <div class="tw-v-divider"></div>
+
+        <!-- Ribbon Selector -->
+        <div class="ribbon-selector" title="Skift Blækbånd / Farve">
+          <span class="ribbon-label"><i data-feather="sliders"></i> Blækbånd:</span>
+          <button class="ribbon-btn active" data-ribbon="black" title="Sort Blækbånd"><span class="dot dot-black"></span> Sort</button>
+          <button class="ribbon-btn" data-ribbon="red" title="Rødt Blækbånd"><span class="dot dot-red"></span> Rød</button>
+          <button class="ribbon-btn" data-ribbon="sepia" title="Klassisk Sepia"><span class="dot dot-sepia"></span> Sepia</button>
+        </div>
+
+        <div class="tw-v-divider"></div>
+
+        <!-- Audio Sound FX Toggle -->
+        <button id="btnSoundToggle" class="tw-btn tw-btn-icon active" title="Mekanisk lyd slået til">
+          <i data-feather="volume-2" id="soundIcon"></i> Lyd Tastes
+        </button>
+
+        <!-- Export Action -->
+        <button id="btnExportMd" class="tw-btn tw-btn-primary" title="Download som .md fil">
+          <i data-feather="download"></i> Download .md
+        </button>
+      </div>
+    </header>
+
+    <!-- Typewriter Machine & Paper Assembly -->
+    <main class="tw-machine">
+
+      <!-- Mechanical Roller / Carriage Bar Header -->
+      <div class="tw-carriage">
+        <div class="carriage-knob knob-left"></div>
+        <div class="carriage-bar">
+          <div class="metal-ruler">
+            <span class="ruler-mark">10</span>
+            <span class="ruler-mark">20</span>
+            <span class="ruler-mark">30</span>
+            <span class="ruler-mark">40</span>
+            <span class="ruler-mark">50</span>
+            <span class="ruler-mark">60</span>
+            <span class="ruler-mark">70</span>
+            <span class="ruler-mark">80</span>
+          </div>
+          <div class="paper-guide-left"></div>
+          <div class="paper-guide-right"></div>
+        </div>
+        <div class="carriage-knob knob-right"></div>
+      </div>
+
+      <!-- Keycap Formatting Toolbar -->
+      <div class="tw-toolbar">
+        <div class="keycap-group">
+          <button class="tw-key" data-cmd="h1" title="Overskrift 1 (#)">H1</button>
+          <button class="tw-key" data-cmd="h2" title="Overskrift 2 (##)">H2</button>
+          <button class="tw-key" data-cmd="h3" title="Overskrift 3 (###)">H3</button>
+        </div>
+
+        <div class="key-divider"></div>
+
+        <div class="keycap-group">
+          <button class="tw-key" data-cmd="bold" title="Fed tekst (**tekst**)"><b>B</b></button>
+          <button class="tw-key" data-cmd="italic" title="Kursiv tekst (*tekst*)"><i>I</i></button>
+          <button class="tw-key" data-cmd="strikethrough" title="Gennemstreget (~~tekst~~)"><s>S</s></button>
+          <button class="tw-key" data-cmd="quote" title="Citat (>)">” ”</button>
+        </div>
+
+        <div class="key-divider"></div>
+
+        <div class="keycap-group">
+          <button class="tw-key" data-cmd="ul" title="Punktopstilling (-)">• List</button>
+          <button class="tw-key" data-cmd="ol" title="Nummereret (1.)">1. List</button>
+          <button class="tw-key" data-cmd="task" title="Tjekliste (- [ ])">[✓]</button>
+          <button class="tw-key" data-cmd="code" title="Inline Kode (`kode`)">&lt;/&gt;</button>
+        </div>
+
+        <div class="key-divider"></div>
+
+        <div class="keycap-group right-keys">
+          <button class="tw-key tw-key-sample" id="btnLoadSample" title="Indlæs Møns Klint Feltjournal">
+            <i data-feather="file-text"></i> Indlæs Eksempel
+          </button>
+          <button class="tw-key tw-key-copy" id="btnCopyMd" title="Kopier Markdown til udklipsholder">
+            <i data-feather="copy"></i> Kopier MD
+          </button>
+          <button class="tw-key tw-key-clear" id="btnClear" title="Ryd Papir">
+            <i data-feather="trash-2"></i> Ryd
+          </button>
+        </div>
+      </div>
+
+      <!-- Mode View Selector (Paper vs Rendered) -->
+      <div class="mode-tabs">
+        <button id="tabPaper" class="tw-tab active">
+          <i data-feather="file"></i> Papirark (Typewriter)
+        </button>
+        <button id="tabPreview" class="tw-tab">
+          <i data-feather="eye"></i> HTML Renderet Visning
+        </button>
+      </div>
+
+      <!-- Paper Sheet Container -->
+      <div class="paper-wrapper">
+        <div class="paper-sheet" id="paperSheet">
+          
+          <!-- Red Margin Line -->
+          <div class="margin-line"></div>
+
+          <!-- Document Header Fields (Title & Categories) -->
+          <div class="paper-header-fields">
+            <div class="tw-field-group">
+              <label for="docTitle" class="tw-field-label">DOKUMENTTITEL:</label>
+              <input type="text" id="docTitle" class="tw-input tw-title-input" placeholder="f.eks. Feltdagbog: Vandring ved Møns Klint" autocomplete="off" />
+            </div>
+
+            <div class="tw-field-group">
+              <label for="docCategories" class="tw-field-label">NOTEFELT & KATEGORIER (*):</label>
+              <div class="tw-input-with-chips">
+                <input type="text" id="docCategories" class="tw-input tw-meta-input" placeholder="f.eks. Dato: 14. august 2026 | Sted: Møns Klint, Danmark | Notat #042" autocomplete="off" />
+                <div class="tw-chips">
+                  <button class="tw-chip" id="chipDate">+ Dato</button>
+                  <button class="tw-chip" id="chipLocation">+ Sted</button>
+                  <button class="tw-chip" id="chipNoteNo">+ Notat #</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="paper-divider"></div>
+
+          <!-- Main Text Editor View -->
+          <div class="tw-view-container" id="editorView">
+            <textarea id="editorTextarea" class="tw-textarea" placeholder="Begynd at skrive på din skrivemaskine..." spellcheck="false"></textarea>
+          </div>
+
+          <!-- Rendered HTML View -->
+          <div class="tw-view-container hidden" id="previewView">
+            <div class="markdown-body tw-rendered-body" id="previewContainer"></div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Odometer Style Mechanical Footer Status Bar -->
+    <footer class="tw-footer">
+      <div class="odometer-group">
+        <span class="odometer-label">MEKANISK TÆLLER:</span>
+        <div class="odometer" id="odometerWords">
+          <span class="digit">0</span><span class="digit">0</span><span class="digit">0</span><span class="digit">0</span><span class="digit">0</span>
+        </div>
+        <span class="odometer-unit">ORD</span>
+      </div>
+
+      <div class="tw-footer-stats">
+        <span id="statChars" class="stat-badge">0 tegn</span>
+        <span class="stat-sep">•</span>
+        <span id="statLines" class="stat-badge">0 linjer</span>
+        <span class="stat-sep">•</span>
+        <span id="statReadTime" class="stat-badge">&lt; 1 min læsetid</span>
+      </div>
+
+      <div class="tw-footer-export">
+        <span class="fn-label">FILNAVN:</span>
+        <code id="filenamePreview" class="tw-filename">260816 dokument.md</code>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <script src="typewriter.js"></script>
+</body>
+</html>
