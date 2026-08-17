@@ -59,6 +59,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Setup Turndown for HTML-to-Markdown conversion
+  let turndownService = null;
+  if (window.TurndownService) {
+    turndownService = new window.TurndownService({
+      headingStyle: 'atx',
+      codeBlockStyle: 'fenced',
+      emDelimiter: '*',
+      strongDelimiter: '**',
+      bulletListMarker: '-'
+    });
+
+    // Custom rule for strikethrough (<del>, <s>, <strike>)
+    turndownService.addRule('strikethrough', {
+      filter: ['del', 's', 'strike'],
+      replacement: function (content) {
+        return '~~' + content + '~~';
+      }
+    });
+
+    // Custom rule for task list checkboxes
+    turndownService.addRule('tasklist', {
+      filter: function (node) {
+        return node.tagName === 'INPUT' && node.getAttribute('type') === 'checkbox';
+      },
+      replacement: function (content, node) {
+        return node.checked ? '[x] ' : '[ ] ';
+      }
+    });
+  }
+
+  let isUpdatingFromVisual = false;
+  let isUpdatingFromMarkdown = false;
+  let activeEditorTarget = 'markdown';
+
   // Sample Data (Møns Klint Field Diary matching prompt attachment)
   const sampleData = {
     title: 'Feltdagbog: Vandring ved Møns Klint',
@@ -233,6 +267,9 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
 
   // Update Rendered HTML Preview & Counters
   function renderPreview() {
+    if (isUpdatingFromVisual) return;
+    isUpdatingFromMarkdown = true;
+
     const markdownText = generateFullMarkdown();
 
     if (window.marked && window.DOMPurify) {
@@ -246,6 +283,47 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     updateCounters();
     updateFilenameBadge();
     saveDraft();
+
+    isUpdatingFromMarkdown = false;
+  }
+
+  // Visual Direct Editing Handler (HTML -> Markdown via Turndown)
+  function handleVisualInput() {
+    if (isUpdatingFromMarkdown || !turndownService || !previewContainer) return;
+    isUpdatingFromVisual = true;
+
+    let md = turndownService.turndown(previewContainer.innerHTML);
+    md = md.trim();
+
+    const lines = md.split('\n');
+    let bodyStartLine = 0;
+
+    if (lines.length > 0 && lines[0].startsWith('# ')) {
+      const titleFromVisual = lines[0].replace(/^#\s+/, '').trim();
+      if (docTitleInput) docTitleInput.value = titleFromVisual;
+      bodyStartLine = 1;
+      if (lines.length > bodyStartLine && lines[bodyStartLine].trim() === '') {
+        bodyStartLine++;
+      }
+    }
+
+    if (lines.length > bodyStartLine && lines[bodyStartLine].startsWith('*') && lines[bodyStartLine].endsWith('*') && lines[bodyStartLine].length > 2) {
+      const catFromVisual = lines[bodyStartLine].slice(1, -1).trim();
+      if (docCategoriesInput) docCategoriesInput.value = catFromVisual;
+      bodyStartLine++;
+      if (lines.length > bodyStartLine && lines[bodyStartLine].trim() === '') {
+        bodyStartLine++;
+      }
+    }
+
+    const bodyMd = lines.slice(bodyStartLine).join('\n');
+    if (editorTextarea) editorTextarea.value = bodyMd;
+
+    updateCounters();
+    updateFilenameBadge();
+    saveDraft();
+
+    isUpdatingFromVisual = false;
   }
 
   // Update Word / Character / Reading Time Statistics
@@ -274,6 +352,30 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
 
   // Formatting Toolbar Helper Actions
   function applyFormat(command) {
+    if (activeEditorTarget === 'visual' && (document.activeElement === previewContainer || previewContainer.contains(document.activeElement))) {
+      document.execCommand('styleWithCSS', false, false);
+      switch (command) {
+        case 'h1': document.execCommand('formatBlock', false, '<h1>'); break;
+        case 'h2': document.execCommand('formatBlock', false, '<h2>'); break;
+        case 'h3': document.execCommand('formatBlock', false, '<h3>'); break;
+        case 'bold': document.execCommand('bold', false, null); break;
+        case 'italic': document.execCommand('italic', false, null); break;
+        case 'strikethrough': document.execCommand('strikeThrough', false, null); break;
+        case 'code': document.execCommand('formatBlock', false, '<pre>'); break;
+        case 'quote': document.execCommand('formatBlock', false, '<blockquote>'); break;
+        case 'ul': document.execCommand('insertUnorderedList', false, null); break;
+        case 'ol': document.execCommand('insertOrderedList', false, null); break;
+        case 'link':
+          const url = prompt('Indtast URL:');
+          if (url) document.execCommand('createLink', false, url);
+          break;
+        case 'hr': document.execCommand('insertHorizontalRule', false, null); break;
+        default: break;
+      }
+      handleVisualInput();
+      return;
+    }
+
     const start = editorTextarea.selectionStart;
     const end = editorTextarea.selectionEnd;
     const selectedText = editorTextarea.value.substring(start, end);
@@ -697,6 +799,37 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     renderPreview();
     showToast('Eksempel på feltdagbog indlæst!', 'file-text');
   });
+
+  // Toggle Visual Edit Mode Button
+  const btnToggleVisualEdit = document.getElementById('btnToggleVisualEdit');
+  let isVisualEditEnabled = true;
+
+  if (btnToggleVisualEdit && previewContainer) {
+    btnToggleVisualEdit.addEventListener('click', () => {
+      isVisualEditEnabled = !isVisualEditEnabled;
+      previewContainer.contentEditable = isVisualEditEnabled ? 'true' : 'false';
+      btnToggleVisualEdit.classList.toggle('active', isVisualEditEnabled);
+      btnToggleVisualEdit.innerHTML = isVisualEditEnabled
+        ? '<i data-feather="edit-2"></i> Direkte Redigering Til'
+        : '<i data-feather="eye"></i> Kun Visning';
+      if (window.feather) feather.replace();
+      showToast(isVisualEditEnabled ? 'Visuel redigering aktiveret' : 'Visuel redigering deaktiveret');
+    });
+  }
+
+  // Active Editor Tracking for formatting actions
+  if (editorTextarea) {
+    editorTextarea.addEventListener('focus', () => { activeEditorTarget = 'markdown'; });
+  }
+  if (previewContainer) {
+    previewContainer.addEventListener('focus', () => { activeEditorTarget = 'visual'; });
+    previewContainer.addEventListener('input', handleVisualInput);
+    previewContainer.addEventListener('keyup', (e) => {
+      if (['Enter', 'Backspace', 'Delete'].includes(e.key)) {
+        handleVisualInput();
+      }
+    });
+  }
 
   // Input Listeners for Realtime Sync
   docTitleInput.addEventListener('input', renderPreview);

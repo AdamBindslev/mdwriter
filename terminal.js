@@ -77,6 +77,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Setup Turndown for HTML-to-Markdown conversion
+  let turndownService = null;
+  if (window.TurndownService) {
+    turndownService = new window.TurndownService({
+      headingStyle: 'atx',
+      codeBlockStyle: 'fenced',
+      emDelimiter: '*',
+      strongDelimiter: '**',
+      bulletListMarker: '-'
+    });
+
+    turndownService.addRule('strikethrough', {
+      filter: ['del', 's', 'strike'],
+      replacement: function (content) {
+        return '~~' + content + '~~';
+      }
+    });
+
+    turndownService.addRule('tasklist', {
+      filter: function (node) {
+        return node.tagName === 'INPUT' && node.getAttribute('type') === 'checkbox';
+      },
+      replacement: function (content, node) {
+        return node.checked ? '[x] ' : '[ ] ';
+      }
+    });
+  }
+
+  let isUpdatingFromVisual = false;
+  let isUpdatingFromMarkdown = false;
+
   // Sample Data (Møns Klint Field Diary)
   const sampleData = {
     title: 'Feltdagbog: Vandring ved Møns Klint',
@@ -456,14 +487,25 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   updateClock();
 
   // ----------------------------------------------------
-  // PREVIEW RENDERER
+  // PREVIEW RENDERER & VISUAL SYNC
   // ----------------------------------------------------
   function renderPreview() {
-    if (!window.marked || !window.DOMPurify) return;
+    if (isUpdatingFromVisual || !window.marked || !window.DOMPurify) return;
+    isUpdatingFromMarkdown = true;
     const rawMarkdown = editorTextarea.value;
     const rawHtml = marked.parse(rawMarkdown);
     const cleanHtml = DOMPurify.sanitize(rawHtml);
     previewContainer.innerHTML = cleanHtml;
+    isUpdatingFromMarkdown = false;
+  }
+
+  function handleVisualInput() {
+    if (isUpdatingFromMarkdown || !turndownService || !previewContainer) return;
+    isUpdatingFromVisual = true;
+    let md = turndownService.turndown(previewContainer.innerHTML);
+    editorTextarea.value = md.trim();
+    saveDraft();
+    isUpdatingFromVisual = false;
   }
 
   // Tab switching
@@ -733,6 +775,15 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   btnCloseShortcutModal.addEventListener('click', () => {
     shortcutModal.classList.add('hidden');
   });
+
+  if (previewContainer) {
+    previewContainer.addEventListener('input', handleVisualInput);
+    previewContainer.addEventListener('keyup', (e) => {
+      if (['Enter', 'Backspace', 'Delete'].includes(e.key)) {
+        handleVisualInput();
+      }
+    });
+  }
 
   function showToast(msg) {
     const toastMsg = document.getElementById('toastMsg');
