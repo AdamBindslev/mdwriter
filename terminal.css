@@ -842,6 +842,26 @@ html[data-flicker="true"] .overlay-flicker {
   margin: 1em 0;
 }
 
+.term-rendered-body strong,
+.term-rendered-body b {
+  font-weight: 800;
+  color: var(--ph-text-bright);
+  background-color: var(--ph-badge-bg);
+  border-bottom: 1.5px solid var(--ph-border-bright);
+  padding: 1px 5px;
+  border-radius: 3px;
+  text-shadow: 0 0 8px var(--ph-glow);
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+
+.term-rendered-body em,
+.term-rendered-body i {
+  font-style: italic;
+  color: var(--ph-text-bright);
+  opacity: 0.95;
+}
+
 .term-rendered-body pre code {
   background: transparent;
   border: none;
