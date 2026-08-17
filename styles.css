@@ -826,6 +826,48 @@ body {
   color: var(--border-color);
 }
 
+.status-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-subtle);
+}
+
+.status-author .heart-icon {
+  width: 13px;
+  height: 13px;
+  color: #ef4444;
+  fill: #ef4444;
+}
+
+.author-header-link,
+.author-link,
+.modal-author-credit a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s ease, text-decoration 0.15s ease;
+}
+
+.author-header-link:hover,
+.author-link:hover,
+.modal-author-credit a:hover {
+  text-decoration: underline;
+  color: var(--primary-hover, var(--primary));
+}
+
+.modal-author-credit {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--text-subtle);
+}
+
 .status-bar code {
   font-family: var(--font-mono);
   color: var(--primary);

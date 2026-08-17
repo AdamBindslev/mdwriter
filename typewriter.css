@@ -694,6 +694,36 @@ body.typewriter-body {
   font-weight: 700;
 }
 
+.tw-author-link {
+  color: #d97706;
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: color 0.15s ease;
+}
+
+.tw-author-link:hover,
+.tw-sub .tw-author-link:hover {
+  text-decoration: underline;
+  color: #f59e0b;
+}
+
+.tw-sub .tw-author-link {
+  color: #d97706;
+  font-weight: 600;
+}
+
+.modal-author-credit {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #78716c;
+}
+
+.modal-author-credit a {
+  color: #d97706;
+  text-decoration: underline;
+}
+
 .tw-filename {
   font-family: var(--font-typewriter);
   font-size: 0.8rem;
