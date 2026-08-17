@@ -88,6 +88,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return node.checked ? '[x] ' : '[ ] ';
       }
     });
+
+    turndownService.addRule('ignoreReturnSymbols', {
+      filter: function (node) {
+        return node.classList && node.classList.contains('return-symbol');
+      },
+      replacement: function () {
+        return '';
+      }
+    });
   }
 
   let isUpdatingFromVisual = false;
@@ -574,8 +583,10 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     const markdownText = generateFullMarkdown();
 
     if (window.marked && window.DOMPurify) {
-      const rawHtml = marked.parse(markdownText);
-      const cleanHtml = DOMPurify.sanitize(rawHtml);
+      let rawHtml = marked.parse(markdownText);
+      rawHtml = rawHtml.replace(/<br\s*\/?>/gi, '<span class="return-symbol br-symbol" contenteditable="false">↵</span><br>');
+      rawHtml = rawHtml.replace(/<\/p>/gi, '<span class="return-symbol p-symbol" contenteditable="false">↵</span></p>');
+      const cleanHtml = DOMPurify.sanitize(rawHtml, { ADD_ATTR: ['contenteditable'] });
       previewContainer.innerHTML = cleanHtml;
     } else {
       previewContainer.textContent = markdownText;

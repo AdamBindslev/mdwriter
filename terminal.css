@@ -806,33 +806,24 @@ html[data-flicker="true"] .overlay-flicker {
 
 .term-rendered-body p {
   margin-bottom: 1.25rem;
-  position: relative;
 }
 
-.term-rendered-body p::after {
-  content: " ↵";
-  opacity: 0.5;
-  font-size: 0.85em;
+.term-rendered-body .return-symbol {
+  display: inline;
+  color: var(--ph-text-bright, #00ff66);
+  opacity: 0.9;
+  font-size: 0.9em;
   font-family: var(--font-terminal);
-  color: var(--ph-border-bright);
   margin-left: 4px;
+  margin-right: 2px;
   user-select: none;
   font-weight: bold;
+  pointer-events: none;
+  text-shadow: 0 0 6px var(--ph-glow, rgba(0, 255, 102, 0.6));
 }
 
-.term-rendered-body p:empty {
-  min-height: 1.5em;
-  margin-bottom: 1.25rem;
-}
-
-.term-rendered-body p:empty::before {
-  content: "↵";
-  opacity: 0.5;
-  font-size: 0.85em;
-  font-family: var(--font-terminal);
-  color: var(--ph-border-bright);
-  user-select: none;
-  font-weight: bold;
+.term-rendered-body .return-symbol.p-symbol {
+  opacity: 1;
 }
 
 .term-rendered-body ul,

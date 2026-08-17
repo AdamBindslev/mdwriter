@@ -685,33 +685,23 @@ body {
 
 .markdown-body p {
   margin-bottom: 1rem;
-  position: relative;
 }
 
-.markdown-body p::after {
-  content: " ↵";
-  opacity: 0.35;
+.markdown-body .return-symbol {
+  display: inline;
+  color: var(--primary);
+  opacity: 0.75;
   font-size: 0.85em;
   font-family: var(--font-mono);
-  color: var(--primary);
   margin-left: 4px;
+  margin-right: 2px;
   user-select: none;
-  font-weight: normal;
+  font-weight: 600;
+  pointer-events: none;
 }
 
-.markdown-body p:empty {
-  min-height: 1.5em;
-  margin-bottom: 1rem;
-}
-
-.markdown-body p:empty::before {
-  content: "↵";
-  opacity: 0.35;
-  font-size: 0.85em;
-  font-family: var(--font-mono);
-  color: var(--primary);
-  user-select: none;
-  font-weight: normal;
+.markdown-body .return-symbol.p-symbol {
+  opacity: 0.9;
 }
 
 .markdown-body em.meta-tag, .markdown-body p > em:first-child {

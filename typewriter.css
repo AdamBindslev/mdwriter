@@ -529,33 +529,23 @@ body.typewriter-body {
 
 .tw-rendered-body p {
   margin-bottom: 1.25rem;
-  position: relative;
 }
 
-.tw-rendered-body p::after {
-  content: " ↵";
-  opacity: 0.4;
-  font-size: 0.85em;
-  font-family: var(--font-typewriter);
+.tw-rendered-body .return-symbol {
+  display: inline;
   color: var(--ink-current);
+  opacity: 0.85;
+  font-size: 0.9em;
+  font-family: var(--font-typewriter);
   margin-left: 4px;
+  margin-right: 2px;
   user-select: none;
   font-weight: bold;
+  pointer-events: none;
 }
 
-.tw-rendered-body p:empty {
-  min-height: 1.5em;
-  margin-bottom: 1.25rem;
-}
-
-.tw-rendered-body p:empty::before {
-  content: "↵";
-  opacity: 0.4;
-  font-size: 0.85em;
-  font-family: var(--font-typewriter);
-  color: var(--ink-current);
-  user-select: none;
-  font-weight: bold;
+.tw-rendered-body .return-symbol.p-symbol {
+  opacity: 0.95;
 }
 
 .tw-rendered-body h1 {

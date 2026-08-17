@@ -103,6 +103,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return node.checked ? '[x] ' : '[ ] ';
       }
     });
+
+    turndownService.addRule('ignoreReturnSymbols', {
+      filter: function (node) {
+        return node.classList && node.classList.contains('return-symbol');
+      },
+      replacement: function () {
+        return '';
+      }
+    });
   }
 
   let isUpdatingFromVisual = false;
@@ -493,8 +502,10 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     if (isUpdatingFromVisual || !window.marked || !window.DOMPurify) return;
     isUpdatingFromMarkdown = true;
     const rawMarkdown = editorTextarea.value;
-    const rawHtml = marked.parse(rawMarkdown);
-    const cleanHtml = DOMPurify.sanitize(rawHtml);
+    let rawHtml = marked.parse(rawMarkdown);
+    rawHtml = rawHtml.replace(/<br\s*\/?>/gi, '<span class="return-symbol br-symbol" contenteditable="false">↵</span><br>');
+    rawHtml = rawHtml.replace(/<\/p>/gi, '<span class="return-symbol p-symbol" contenteditable="false">↵</span></p>');
+    const cleanHtml = DOMPurify.sanitize(rawHtml, { ADD_ATTR: ['contenteditable'] });
     previewContainer.innerHTML = cleanHtml;
     isUpdatingFromMarkdown = false;
   }
