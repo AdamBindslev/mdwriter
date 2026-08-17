@@ -371,6 +371,14 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     const activeCmds = new Set();
 
     if (activeEditorTarget === 'visual') {
+      try {
+        if (document.queryCommandState('bold')) activeCmds.add('bold');
+        if (document.queryCommandState('italic')) activeCmds.add('italic');
+        if (document.queryCommandState('strikethrough')) activeCmds.add('strikethrough');
+        if (document.queryCommandState('insertUnorderedList')) activeCmds.add('ul');
+        if (document.queryCommandState('insertOrderedList')) activeCmds.add('ol');
+      } catch (e) {}
+
       const sel = window.getSelection();
       if (sel && sel.rangeCount > 0) {
         let node = sel.anchorNode;
@@ -394,14 +402,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
             if (tag === 'pre' || tag === 'code') activeCmds.add('code');
             curr = curr.parentNode;
           }
-
-          try {
-            if (document.queryCommandState('bold')) activeCmds.add('bold');
-            if (document.queryCommandState('italic')) activeCmds.add('italic');
-            if (document.queryCommandState('strikethrough')) activeCmds.add('strikethrough');
-            if (document.queryCommandState('insertUnorderedList')) activeCmds.add('ul');
-            if (document.queryCommandState('insertOrderedList')) activeCmds.add('ol');
-          } catch (e) {}
         }
       }
     } else {
@@ -452,6 +452,64 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     });
   }
 
+  // Toggle inline formatting with robust cursor breakout
+  function toggleInlineFormat(cmd, tagNames) {
+    if (previewContainer) previewContainer.focus();
+    document.execCommand('styleWithCSS', false, false);
+
+    const sel = window.getSelection();
+    const isCollapsed = sel && sel.isCollapsed;
+
+    let isCurrentlyActive = false;
+    try { isCurrentlyActive = document.queryCommandState(cmd); } catch (e) {}
+
+    let insideTag = false;
+    if (sel && sel.rangeCount > 0) {
+      let node = sel.anchorNode;
+      if (node && node.nodeType === 3) node = node.parentNode;
+      if (node && node.closest(tagNames)) insideTag = true;
+    }
+
+    if (!isCurrentlyActive && !insideTag && isCollapsed) {
+      document.execCommand(cmd, false, null);
+      const btn = document.querySelector(`.tb-btn[data-cmd="${cmd}"], .term-key[data-cmd="${cmd}"]`);
+      if (btn) btn.classList.add('active');
+      return;
+    }
+
+    if ((isCurrentlyActive || insideTag) && isCollapsed) {
+      document.execCommand(cmd, false, null);
+
+      if (sel && sel.rangeCount > 0) {
+        let node = sel.anchorNode;
+        if (node && node.nodeType === 3) node = node.parentNode;
+        const matchingEl = node ? node.closest(tagNames) : null;
+
+        if (matchingEl && matchingEl.parentNode) {
+          let nextTextNode = matchingEl.nextSibling;
+          if (!nextTextNode || nextTextNode.nodeType !== 3) {
+            nextTextNode = document.createTextNode('\u200B');
+            matchingEl.parentNode.insertBefore(nextTextNode, matchingEl.nextSibling);
+          }
+          const range = document.createRange();
+          range.setStart(nextTextNode, nextTextNode.length || 0);
+          range.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }
+
+      const btn = document.querySelector(`.tb-btn[data-cmd="${cmd}"], .term-key[data-cmd="${cmd}"]`);
+      if (btn) btn.classList.remove('active');
+      handleVisualInput();
+      return;
+    }
+
+    document.execCommand(cmd, false, null);
+    handleVisualInput();
+    updateToolbarStates();
+  }
+
   // Formatting Toolbar Helper Actions
   function applyFormat(command) {
     if (activeEditorTarget === 'visual') {
@@ -461,18 +519,9 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         case 'h1': document.execCommand('formatBlock', false, '<h1>'); break;
         case 'h2': document.execCommand('formatBlock', false, '<h2>'); break;
         case 'h3': document.execCommand('formatBlock', false, '<h3>'); break;
-        case 'bold':
-          document.execCommand('bold', false, null);
-          ensureUnformattedSpace('strong, b');
-          break;
-        case 'italic':
-          document.execCommand('italic', false, null);
-          ensureUnformattedSpace('em, i');
-          break;
-        case 'strikethrough':
-          document.execCommand('strikeThrough', false, null);
-          ensureUnformattedSpace('del, s, strike');
-          break;
+        case 'bold': toggleInlineFormat('bold', 'strong, b'); return;
+        case 'italic': toggleInlineFormat('italic', 'em, i'); return;
+        case 'strikethrough': toggleInlineFormat('strikeThrough', 'del, s, strike'); return;
         case 'code': document.execCommand('formatBlock', false, '<pre>'); break;
         case 'quote': document.execCommand('formatBlock', false, '<blockquote>'); break;
         case 'ul': document.execCommand('insertUnorderedList', false, null); break;

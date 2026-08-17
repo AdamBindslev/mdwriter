@@ -634,6 +634,63 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     });
   }
 
+  function toggleTermInlineFormat(cmd, tagNames) {
+    if (previewContainer) previewContainer.focus();
+    document.execCommand('styleWithCSS', false, false);
+
+    const sel = window.getSelection();
+    const isCollapsed = sel && sel.isCollapsed;
+
+    let isCurrentlyActive = false;
+    try { isCurrentlyActive = document.queryCommandState(cmd); } catch (e) {}
+
+    let insideTag = false;
+    if (sel && sel.rangeCount > 0) {
+      let node = sel.anchorNode;
+      if (node && node.nodeType === 3) node = node.parentNode;
+      if (node && node.closest(tagNames)) insideTag = true;
+    }
+
+    if (!isCurrentlyActive && !insideTag && isCollapsed) {
+      document.execCommand(cmd, false, null);
+      const btn = document.querySelector(`.term-key[data-cmd="${cmd}"]`);
+      if (btn) btn.classList.add('active');
+      return;
+    }
+
+    if ((isCurrentlyActive || insideTag) && isCollapsed) {
+      document.execCommand(cmd, false, null);
+
+      if (sel && sel.rangeCount > 0) {
+        let node = sel.anchorNode;
+        if (node && node.nodeType === 3) node = node.parentNode;
+        const matchingEl = node ? node.closest(tagNames) : null;
+
+        if (matchingEl && matchingEl.parentNode) {
+          let nextTextNode = matchingEl.nextSibling;
+          if (!nextTextNode || nextTextNode.nodeType !== 3) {
+            nextTextNode = document.createTextNode('\u200B');
+            matchingEl.parentNode.insertBefore(nextTextNode, matchingEl.nextSibling);
+          }
+          const range = document.createRange();
+          range.setStart(nextTextNode, nextTextNode.length || 0);
+          range.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }
+
+      const btn = document.querySelector(`.term-key[data-cmd="${cmd}"]`);
+      if (btn) btn.classList.remove('active');
+      handleVisualInput();
+      return;
+    }
+
+    document.execCommand(cmd, false, null);
+    handleVisualInput();
+    updateToolbarStates();
+  }
+
   // ----------------------------------------------------
   // TOOLBAR COMMANDS
   // ----------------------------------------------------
@@ -646,10 +703,10 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       if (prefix === '# ') document.execCommand('formatBlock', false, '<h1>');
       else if (prefix === '## ') document.execCommand('formatBlock', false, '<h2>');
       else if (prefix === '### ') document.execCommand('formatBlock', false, '<h3>');
-      else if (prefix === '**') document.execCommand('bold', false, null);
-      else if (prefix === '*') document.execCommand('italic', false, null);
+      else if (prefix === '**') { toggleTermInlineFormat('bold', 'strong, b'); return; }
+      else if (prefix === '*') { toggleTermInlineFormat('italic', 'em, i'); return; }
       else if (prefix === '`') document.execCommand('formatBlock', false, '<pre>');
-      else if (prefix === '> ') document.execCommand('formatBlock', false, '<blockquote>');
+      else if (prefix === '> ') document.execCommand('formatBlock', false, 'blockquote');
       else if (prefix === '- ') document.execCommand('insertUnorderedList', false, null);
       else if (prefix === '1. ') document.execCommand('insertOrderedList', false, null);
       else if (prefix === '- [ ] ') document.execCommand('insertUnorderedList', false, null);
