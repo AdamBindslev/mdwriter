@@ -527,6 +527,37 @@ body.typewriter-body {
   line-height: 1.7;
 }
 
+.tw-rendered-body p {
+  margin-bottom: 1.25rem;
+  position: relative;
+}
+
+.tw-rendered-body p::after {
+  content: " ↵";
+  opacity: 0.4;
+  font-size: 0.85em;
+  font-family: var(--font-typewriter);
+  color: var(--ink-current);
+  margin-left: 4px;
+  user-select: none;
+  font-weight: bold;
+}
+
+.tw-rendered-body p:empty {
+  min-height: 1.5em;
+  margin-bottom: 1.25rem;
+}
+
+.tw-rendered-body p:empty::before {
+  content: "↵";
+  opacity: 0.4;
+  font-size: 0.85em;
+  font-family: var(--font-typewriter);
+  color: var(--ink-current);
+  user-select: none;
+  font-weight: bold;
+}
+
 .tw-rendered-body h1 {
   font-family: var(--font-typewriter);
   font-size: 1.75rem;
@@ -542,6 +573,22 @@ body.typewriter-body {
   margin-bottom: 8px;
 }
 
+.tw-rendered-body h3 {
+  font-family: var(--font-typewriter);
+  font-size: 1.15rem;
+  margin-top: 16px;
+  margin-bottom: 6px;
+}
+
+.tw-rendered-body ul, .tw-rendered-body ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+}
+
+.tw-rendered-body li {
+  margin-bottom: 0.35rem;
+}
+
 .tw-rendered-body blockquote {
   border-left: 3px dashed var(--ink-current);
   padding-left: 14px;
@@ -555,6 +602,27 @@ body.typewriter-body {
   background: rgba(0, 0, 0, 0.06);
   padding: 2px 5px;
   border-radius: 3px;
+}
+
+.tw-rendered-body pre {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px dashed var(--ink-current);
+  padding: 12px 16px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 1.25rem 0;
+}
+
+.tw-rendered-body pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.tw-rendered-body hr {
+  border: none;
+  border-top: 1px dashed var(--ink-current);
+  margin: 1.5rem 0;
+  opacity: 0.5;
 }
 
 /* Odometer Mechanical Footer */

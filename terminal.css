@@ -805,7 +805,34 @@ html[data-flicker="true"] .overlay-flicker {
 .term-rendered-body h3 { font-size: 1.1rem; }
 
 .term-rendered-body p {
-  margin-bottom: 1em;
+  margin-bottom: 1.25rem;
+  position: relative;
+}
+
+.term-rendered-body p::after {
+  content: " ↵";
+  opacity: 0.5;
+  font-size: 0.85em;
+  font-family: var(--font-terminal);
+  color: var(--ph-border-bright);
+  margin-left: 4px;
+  user-select: none;
+  font-weight: bold;
+}
+
+.term-rendered-body p:empty {
+  min-height: 1.5em;
+  margin-bottom: 1.25rem;
+}
+
+.term-rendered-body p:empty::before {
+  content: "↵";
+  opacity: 0.5;
+  font-size: 0.85em;
+  font-family: var(--font-terminal);
+  color: var(--ph-border-bright);
+  user-select: none;
+  font-weight: bold;
 }
 
 .term-rendered-body ul,

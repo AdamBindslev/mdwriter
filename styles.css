@@ -641,6 +641,33 @@ body {
 
 .markdown-body p {
   margin-bottom: 1rem;
+  position: relative;
+}
+
+.markdown-body p::after {
+  content: " ↵";
+  opacity: 0.35;
+  font-size: 0.85em;
+  font-family: var(--font-mono);
+  color: var(--primary);
+  margin-left: 4px;
+  user-select: none;
+  font-weight: normal;
+}
+
+.markdown-body p:empty {
+  min-height: 1.5em;
+  margin-bottom: 1rem;
+}
+
+.markdown-body p:empty::before {
+  content: "↵";
+  opacity: 0.35;
+  font-size: 0.85em;
+  font-family: var(--font-mono);
+  color: var(--primary);
+  user-select: none;
+  font-weight: normal;
 }
 
 .markdown-body em.meta-tag, .markdown-body p > em:first-child {
