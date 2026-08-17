@@ -439,6 +439,23 @@ body {
   color: var(--text-main);
 }
 
+.tb-btn.active {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px var(--primary-glow);
+}
+
+/* Clear Strikethrough Visual Styling */
+.markdown-body del,
+.markdown-body s,
+.markdown-body strike {
+  text-decoration: line-through;
+  text-decoration-color: var(--primary);
+  text-decoration-thickness: 2px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
 .tb-btn i {
   width: 15px;
   height: 15px;

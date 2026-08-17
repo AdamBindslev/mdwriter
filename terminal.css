@@ -548,6 +548,14 @@ html[data-flicker="true"] .overlay-flicker {
   box-shadow: 0 0 6px var(--ph-glow-subtle);
 }
 
+.term-key.active {
+  background-color: var(--ph-border-bright) !important;
+  color: #000000 !important;
+  border-color: var(--ph-border-bright) !important;
+  box-shadow: 0 0 10px var(--ph-glow) !important;
+  font-weight: bold;
+}
+
 .fn-tag {
   color: var(--ph-text-dim);
   font-size: 0.7rem;

@@ -362,6 +362,92 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     }, 2800);
   }
 
+  // Dynamic Toolbar Active State Highlight Tracker
+  function updateToolbarStates() {
+    const activeCmds = new Set();
+
+    if (activeEditorTarget === 'visual') {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        let node = sel.anchorNode;
+        if (node && node.nodeType === 3) node = node.parentNode;
+
+        if (node && previewContainer && previewContainer.contains(node)) {
+          let curr = node;
+          while (curr && curr !== previewContainer) {
+            const tag = curr.tagName ? curr.tagName.toLowerCase() : '';
+            if (tag === 'strong' || tag === 'b') activeCmds.add('bold');
+            if (tag === 'em' || tag === 'i') activeCmds.add('italic');
+            if (tag === 'del' || tag === 's' || tag === 'strike' || (curr.style && curr.style.textDecoration && curr.style.textDecoration.includes('line-through'))) {
+              activeCmds.add('strikethrough');
+            }
+            if (tag === 'h1') activeCmds.add('h1');
+            if (tag === 'h2') activeCmds.add('h2');
+            if (tag === 'h3') activeCmds.add('h3');
+            if (tag === 'blockquote') activeCmds.add('quote');
+            if (tag === 'ul') activeCmds.add('ul');
+            if (tag === 'ol') activeCmds.add('ol');
+            if (tag === 'pre' || tag === 'code') activeCmds.add('code');
+            curr = curr.parentNode;
+          }
+
+          try {
+            if (document.queryCommandState('bold')) activeCmds.add('bold');
+            if (document.queryCommandState('italic')) activeCmds.add('italic');
+            if (document.queryCommandState('strikethrough')) activeCmds.add('strikethrough');
+            if (document.queryCommandState('insertUnorderedList')) activeCmds.add('ul');
+            if (document.queryCommandState('insertOrderedList')) activeCmds.add('ol');
+          } catch (e) {}
+        }
+      }
+    } else {
+      if (editorTextarea) {
+        const text = editorTextarea.value;
+        const start = editorTextarea.selectionStart;
+        const end = editorTextarea.selectionEnd;
+
+        const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+        let lineEnd = text.indexOf('\n', start);
+        if (lineEnd === -1) lineEnd = text.length;
+        const lineText = text.substring(lineStart, lineEnd);
+
+        if (/^#\s+/.test(lineText)) activeCmds.add('h1');
+        else if (/^##\s+/.test(lineText)) activeCmds.add('h2');
+        else if (/^###\s+/.test(lineText)) activeCmds.add('h3');
+        else if (/^>\s+/.test(lineText)) activeCmds.add('quote');
+        else if (/^-\s+/.test(lineText) || /^\*\s+/.test(lineText)) activeCmds.add('ul');
+        else if (/^\d+\.\s+/.test(lineText)) activeCmds.add('ol');
+        else if (/^-\s+\[[ x]\]\s+/.test(lineText)) activeCmds.add('task');
+
+        const selText = text.substring(start, end);
+        const prefix = text.substring(Math.max(0, start - 3), start);
+        const suffix = text.substring(end, Math.min(text.length, end + 3));
+
+        if ((prefix.endsWith('**') && suffix.startsWith('**')) || (selText.startsWith('**') && selText.endsWith('**') && selText.length >= 4)) {
+          activeCmds.add('bold');
+        }
+        if ((prefix.endsWith('*') && !prefix.endsWith('**') && suffix.startsWith('*') && !suffix.startsWith('**')) || (selText.startsWith('*') && selText.endsWith('*') && selText.length >= 2)) {
+          activeCmds.add('italic');
+        }
+        if ((prefix.endsWith('~~') && suffix.startsWith('~~')) || (selText.startsWith('~~') && selText.endsWith('~~') && selText.length >= 4)) {
+          activeCmds.add('strikethrough');
+        }
+        if ((prefix.endsWith('`') && suffix.startsWith('`')) || (selText.startsWith('`') && selText.endsWith('`') && selText.length >= 2)) {
+          activeCmds.add('code');
+        }
+      }
+    }
+
+    document.querySelectorAll('.tb-btn[data-cmd], .term-key[data-cmd]').forEach(btn => {
+      const cmd = btn.getAttribute('data-cmd');
+      if (activeCmds.has(cmd)) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+
   // Formatting Toolbar Helper Actions
   function applyFormat(command) {
     if (activeEditorTarget === 'visual') {
@@ -387,6 +473,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         default: break;
       }
       handleVisualInput();
+      updateToolbarStates();
       return;
     }
 
@@ -835,17 +922,26 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     });
   }
 
-  // Active Editor Tracking for formatting actions
+  // Active Editor Tracking & Toolbar Highlight Triggers
+  document.addEventListener('selectionchange', updateToolbarStates);
+
   if (editorTextarea) {
-    editorTextarea.addEventListener('focus', () => { activeEditorTarget = 'markdown'; });
+    editorTextarea.addEventListener('focus', () => { activeEditorTarget = 'markdown'; updateToolbarStates(); });
+    editorTextarea.addEventListener('click', () => { activeEditorTarget = 'markdown'; updateToolbarStates(); });
+    editorTextarea.addEventListener('keyup', updateToolbarStates);
   }
   if (previewContainer) {
-    previewContainer.addEventListener('focus', () => { activeEditorTarget = 'visual'; });
-    previewContainer.addEventListener('input', handleVisualInput);
+    previewContainer.addEventListener('focus', () => { activeEditorTarget = 'visual'; updateToolbarStates(); });
+    previewContainer.addEventListener('click', () => { activeEditorTarget = 'visual'; updateToolbarStates(); });
+    previewContainer.addEventListener('input', () => {
+      handleVisualInput();
+      updateToolbarStates();
+    });
     previewContainer.addEventListener('keyup', (e) => {
       if (['Enter', 'Backspace', 'Delete'].includes(e.key)) {
         handleVisualInput();
       }
+      updateToolbarStates();
     });
   }
 
