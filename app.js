@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sample Data (Møns Klint Field Diary matching prompt attachment)
   const sampleData = {
     title: 'Feltdagbog: Vandring ved Møns Klint',
-    categories: 'Dato: 14. august 2026 | Sted: Møns Klint, Danmark | Notat #042',
+    categories: 'Dato: 14. august 2026 | Sted: Møns Klint, Danmark | Tags: feltarbejde, dagbog',
     body: `Tågen lå tæt over kridtskrænterne i morges, da jeg startede turen ned ad trapperne mod stranden. Det føles som et helt andet landskab, når Østersøen viser tænder og gråtonerne dominerer horisonten.
 
 ## Observationer i felten
@@ -496,11 +496,45 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   });
 
   chipLocation.addEventListener('click', () => {
-    appendCategoryTag('Sted: ');
+    if (!navigator.geolocation) {
+      appendCategoryTag('Sted: ');
+      return;
+    }
+    showToast('Søger efter placering...', 'map-pin');
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+          if (res.ok) {
+            const data = await res.json();
+            const addr = data.address || {};
+            const city = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
+            const country = addr.country || '';
+            let locationStr = 'Sted: ';
+            if (city && country) {
+              locationStr += `${city}, ${country}`;
+            } else if (city || country) {
+              locationStr += (city || country);
+            }
+            appendCategoryTag(locationStr);
+            showToast('Placering tilføjet', 'map-pin');
+          } else {
+            appendCategoryTag('Sted: ');
+          }
+        } catch (e) {
+          appendCategoryTag('Sted: ');
+        }
+      },
+      () => {
+        appendCategoryTag('Sted: ');
+      },
+      { timeout: 7000 }
+    );
   });
 
   chipNoteNo.addEventListener('click', () => {
-    appendCategoryTag('Notat #: ');
+    appendCategoryTag('Tags: ');
   });
 
   // View Mode Buttons
