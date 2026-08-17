@@ -711,8 +711,8 @@ html[data-flicker="true"] .overlay-flicker {
 }
 
 .line-numbers {
-  width: 45px;
-  padding: 12px 8px;
+  min-width: 48px;
+  padding: 12px 8px 12px 6px;
   font-family: var(--font-mono);
   font-size: 0.95rem;
   line-height: 1.6;
@@ -720,8 +720,9 @@ html[data-flicker="true"] .overlay-flicker {
   border-right: 1px solid var(--ph-border);
   text-align: right;
   user-select: none;
-  background-color: rgba(0,0,0,0.2);
+  background-color: rgba(0,0,0,0.25);
   overflow: hidden;
+  white-space: pre;
 }
 
 .term-textarea {
@@ -730,7 +731,7 @@ html[data-flicker="true"] .overlay-flicker {
   height: 100%;
   padding: 12px;
   font-family: var(--font-mono);
-  font-size: 0.98rem;
+  font-size: 0.95rem;
   line-height: 1.6;
   background: transparent;
   color: var(--ph-text-bright);
@@ -738,6 +739,8 @@ html[data-flicker="true"] .overlay-flicker {
   outline: none;
   resize: none;
   caret-color: var(--ph-text-bright);
+  white-space: pre;
+  overflow-x: auto;
 }
 
 /* Custom Scrollbar for Terminal */

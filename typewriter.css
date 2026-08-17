@@ -80,8 +80,10 @@ body.typewriter-body {
   background: #1c1917;
   border: 1px solid #332d29;
   border-radius: var(--radius-md);
-  padding: 8px 16px;
+  padding: 10px 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .tw-brand {
@@ -139,7 +141,8 @@ body.typewriter-body {
 .tw-header-controls {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .tw-v-divider {
