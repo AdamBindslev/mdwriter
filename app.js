@@ -366,9 +366,12 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     }, 2800);
   }
 
+  const pendingFormatStates = new Set();
+
   // Dynamic Toolbar Active State Highlight Tracker
   function updateToolbarStates() {
     const activeCmds = new Set();
+    pendingFormatStates.forEach(cmd => activeCmds.add(cmd));
 
     if (activeEditorTarget === 'visual') {
       try {
@@ -452,7 +455,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     });
   }
 
-  // Toggle inline formatting with robust cursor breakout
+  // Toggle inline formatting with robust cursor breakout and pending state persistence
   function toggleInlineFormat(cmd, tagNames) {
     if (previewContainer) previewContainer.focus();
     document.execCommand('styleWithCSS', false, false);
@@ -470,15 +473,18 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       if (node && node.closest(tagNames)) insideTag = true;
     }
 
-    if (!isCurrentlyActive && !insideTag && isCollapsed) {
+    const isPending = pendingFormatStates.has(cmd);
+
+    if (!isCurrentlyActive && !insideTag && isCollapsed && !isPending) {
       document.execCommand(cmd, false, null);
-      const btn = document.querySelector(`.tb-btn[data-cmd="${cmd}"], .term-key[data-cmd="${cmd}"]`);
-      if (btn) btn.classList.add('active');
+      pendingFormatStates.add(cmd);
+      updateToolbarStates();
       return;
     }
 
-    if ((isCurrentlyActive || insideTag) && isCollapsed) {
+    if ((isCurrentlyActive || insideTag || isPending) && isCollapsed) {
       document.execCommand(cmd, false, null);
+      pendingFormatStates.delete(cmd);
 
       if (sel && sel.rangeCount > 0) {
         let node = sel.anchorNode;
@@ -499,9 +505,8 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         }
       }
 
-      const btn = document.querySelector(`.tb-btn[data-cmd="${cmd}"], .term-key[data-cmd="${cmd}"]`);
-      if (btn) btn.classList.remove('active');
       handleVisualInput();
+      updateToolbarStates();
       return;
     }
 
@@ -996,6 +1001,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     previewContainer.addEventListener('focus', () => { activeEditorTarget = 'visual'; updateToolbarStates(); });
     previewContainer.addEventListener('click', () => { activeEditorTarget = 'visual'; updateToolbarStates(); });
     previewContainer.addEventListener('input', () => {
+      pendingFormatStates.clear();
       handleVisualInput();
       updateToolbarStates();
     });

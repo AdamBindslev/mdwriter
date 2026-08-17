@@ -563,11 +563,22 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     renderPreview();
   });
 
+  const pendingFormatStates = new Set();
+
   function updateToolbarStates() {
     const activeCmds = new Set();
+    pendingFormatStates.forEach(cmd => activeCmds.add(cmd));
     const isVisualMode = previewView && !previewView.classList.contains('hidden');
 
     if (isVisualMode) {
+      try {
+        if (document.queryCommandState('bold')) activeCmds.add('bold');
+        if (document.queryCommandState('italic')) activeCmds.add('italic');
+        if (document.queryCommandState('strikethrough')) activeCmds.add('strikethrough');
+        if (document.queryCommandState('insertUnorderedList')) activeCmds.add('ul');
+        if (document.queryCommandState('insertOrderedList')) activeCmds.add('ol');
+      } catch (e) {}
+
       const sel = window.getSelection();
       if (sel && sel.rangeCount > 0) {
         let node = sel.anchorNode;
@@ -651,15 +662,18 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       if (node && node.closest(tagNames)) insideTag = true;
     }
 
-    if (!isCurrentlyActive && !insideTag && isCollapsed) {
+    const isPending = pendingFormatStates.has(cmd);
+
+    if (!isCurrentlyActive && !insideTag && isCollapsed && !isPending) {
       document.execCommand(cmd, false, null);
-      const btn = document.querySelector(`.term-key[data-cmd="${cmd}"]`);
-      if (btn) btn.classList.add('active');
+      pendingFormatStates.add(cmd);
+      updateToolbarStates();
       return;
     }
 
-    if ((isCurrentlyActive || insideTag) && isCollapsed) {
+    if ((isCurrentlyActive || insideTag || isPending) && isCollapsed) {
       document.execCommand(cmd, false, null);
+      pendingFormatStates.delete(cmd);
 
       if (sel && sel.rangeCount > 0) {
         let node = sel.anchorNode;
@@ -680,9 +694,8 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         }
       }
 
-      const btn = document.querySelector(`.term-key[data-cmd="${cmd}"]`);
-      if (btn) btn.classList.remove('active');
       handleVisualInput();
+      updateToolbarStates();
       return;
     }
 
@@ -977,6 +990,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
 
   if (previewContainer) {
     previewContainer.addEventListener('input', () => {
+      pendingFormatStates.clear();
       handleVisualInput();
       updateToolbarStates();
     });
