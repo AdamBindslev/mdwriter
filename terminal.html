@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="da" data-crt-theme="matrix" data-scanlines="true" data-curved="true" data-glow="true" data-flicker="false">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MD Writer — Terminal Udgave (CRT Matrix / Wargames)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=JetBrains+Mono:wght@400;500;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <!-- Feather Icons -->
+  <script src="https://unpkg.com/feather-icons"></script>
+  <!-- Marked parser and DOMPurify CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+  <link rel="stylesheet" href="terminal.css">
+</head>
+<body class="terminal-body">
+  <div class="crt-monitor-container" id="crtMonitor">
+
+    <!-- CRT Top Navigation Bar -->
+    <header class="term-header">
+      <div class="term-brand">
+        <div class="term-logo-icon"><i data-feather="terminal"></i></div>
+        <div class="term-brand-info">
+          <h1>MD WRITER <span class="term-badge">CRT TERMINAL</span></h1>
+          <span class="term-sub">Retro Phosphor Tekstbehandler</span>
+        </div>
+      </div>
+
+      <div class="term-header-controls">
+        <!-- Navigation to other modes -->
+        <div class="term-nav-group">
+          <a href="index.html" class="term-btn term-btn-nav" title="Skift til Standard Visning">
+            <i data-feather="monitor"></i> Standard App
+          </a>
+          <a href="skrivemaskine.html" class="term-btn term-btn-nav" title="Skift til Skrivemaskine Udgave">
+            <i data-feather="type"></i> Skrivemaskine
+          </a>
+        </div>
+
+        <div class="term-v-divider"></div>
+
+        <!-- CRT Phosphor Color Theme Selector -->
+        <div class="theme-selector" title="Skift Phosphor Farve">
+          <span class="selector-label"><i data-feather="sun"></i> Phosphor:</span>
+          <button class="theme-btn active" data-theme="matrix" title="Matrix Grøn (VT220)"><span class="phosphor-dot dot-matrix"></span> Grøn</button>
+          <button class="theme-btn" data-theme="wargames" title="Wargames Amber (WOPR)"><span class="phosphor-dot dot-wargames"></span> Amber</button>
+          <button class="theme-btn" data-theme="cyan" title="Cyberpunk Cyan (VT100)"><span class="phosphor-dot dot-cyan"></span> Cyan</button>
+          <button class="theme-btn" data-theme="monochrome" title="Paper White"><span class="phosphor-dot dot-mono"></span> Hvid</button>
+        </div>
+
+        <div class="term-v-divider"></div>
+
+        <!-- CRT FX Toggles -->
+        <div class="fx-toggle-group">
+          <button id="btnToggleScanlines" class="term-btn term-btn-icon active" title="Slå CRT Scanlines til/fra">
+            <i data-feather="grid"></i> Scanlines
+          </button>
+          <button id="btnToggleCurved" class="term-btn term-btn-icon active" title="Slå CRT Skærmbue til/fra">
+            <i data-feather="tv"></i> Skærmbue
+          </button>
+          <button id="btnToggleGlow" class="term-btn term-btn-icon active" title="Slå Phosphor Glow til/fra">
+            <i data-feather="zap"></i> Glow
+          </button>
+          <button id="btnToggleFlicker" class="term-btn term-btn-icon" title="Slå Skærmflimmer til/fra">
+            <i data-feather="activity"></i> Flimmer
+          </button>
+        </div>
+
+        <div class="term-v-divider"></div>
+
+        <!-- Audio Sound FX Toggle -->
+        <button id="btnSoundToggle" class="term-btn term-btn-icon active" title="Terminal lyd slået til">
+          <i data-feather="volume-2" id="soundIcon"></i> Lyd Tastes
+        </button>
+
+        <!-- Distraction Free Fullscreen Toggle -->
+        <button id="btnFullscreen" class="term-btn term-btn-icon" title="Fuldskærm / Distraktionsfri Skrivemodus (Alt+F eller ESC)">
+          <i data-feather="maximize" id="fullscreenIcon"></i> Fuldskærm
+        </button>
+
+        <button id="btnShortcuts" class="term-btn term-btn-icon" title="Tastatur-genveje (?)">
+          <i data-feather="help-circle"></i> Hjælp
+        </button>
+
+        <div class="term-v-divider"></div>
+
+        <!-- Export Dropdown -->
+        <div class="dropdown" id="exportDropdown">
+          <button id="btnExportMenu" class="term-btn term-btn-primary dropdown-toggle" title="Eksportmuligheder (Cmd+S / Cmd+P)">
+            <i data-feather="download"></i> Eksportér <i data-feather="chevron-down" class="chevron"></i>
+          </button>
+          <div class="dropdown-menu term-dropdown-menu">
+            <button id="btnExportMd" class="dropdown-item">
+              <i data-feather="file-text"></i> Download .md fil <span class="shortcut-tag">⌘S</span>
+            </button>
+            <button id="btnPrintPdf" class="dropdown-item">
+              <i data-feather="printer"></i> Gem som PDF / Print <span class="shortcut-tag">⌘P</span>
+            </button>
+            <button id="btnCopyMdDropdown" class="dropdown-item">
+              <i data-feather="copy"></i> Kopier ren MD
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main CRT Chassis Frame -->
+    <main class="crt-bezel">
+      <div class="crt-screen" id="crtScreen">
+
+        <!-- CRT Screen Overlay Effects -->
+        <div class="overlay-scanlines" id="scanlinesOverlay"></div>
+        <div class="overlay-vignette"></div>
+        <div class="overlay-flicker" id="flickerOverlay"></div>
+
+        <!-- CRT Terminal Inner Workspace -->
+        <div class="term-workspace">
+          
+          <!-- Terminal System Status Banner -->
+          <div class="term-sys-banner">
+            <div class="sys-left">
+              <span class="blink-dot">●</span>
+              <span class="sys-text">SYSTEM: READY // PORT 8080 // BAUDRATE: 9600 BAUD</span>
+            </div>
+            <div class="sys-right">
+              <span class="sys-badge" id="clockDisplay">00:00:00</span>
+              <span class="sys-badge">TTY_01</span>
+            </div>
+          </div>
+
+          <!-- Function Keys Toolbar -->
+          <div class="term-toolbar">
+            <div class="term-key-group">
+              <button class="term-key" data-cmd="h1" title="Overskrift 1 (#)"><span class="fn-tag">F1</span> H1</button>
+              <button class="term-key" data-cmd="h2" title="Overskrift 2 (##)"><span class="fn-tag">F2</span> H2</button>
+              <button class="term-key" data-cmd="h3" title="Overskrift 3 (###)"><span class="fn-tag">F3</span> H3</button>
+            </div>
+
+            <div class="term-key-divider">|</div>
+
+            <div class="term-key-group">
+              <button class="term-key" data-cmd="bold" title="Fed tekst (**tekst**)"><span class="fn-tag">F4</span> <b>FED</b></button>
+              <button class="term-key" data-cmd="italic" title="Kursiv tekst (*tekst*)"><span class="fn-tag">F5</span> <i>KUR</i></button>
+              <button class="term-key" data-cmd="code" title="Inline Kode (`kode`)"><span class="fn-tag">F6</span> KODE</button>
+              <button class="term-key" data-cmd="quote" title="Citat (>)"><span class="fn-tag">F7</span> CITAT</button>
+            </div>
+
+            <div class="term-key-divider">|</div>
+
+            <div class="term-key-group">
+              <button class="term-key" data-cmd="ul" title="Punktopstilling (-)"><span class="fn-tag">F8</span> LISTE</button>
+              <button class="term-key" data-cmd="ol" title="Nummereret (1.)"><span class="fn-tag">F9</span> NUM</button>
+              <button class="term-key" data-cmd="task" title="Tjekliste (- [ ])"><span class="fn-tag">F10</span> TJEK</button>
+            </div>
+
+            <div class="term-key-divider">|</div>
+
+            <div class="term-key-group term-right-keys">
+              <button class="term-key term-key-sample" id="btnLoadSample" title="Indlæs Møns Klint Feltjournal">
+                <i data-feather="file-text"></i> EKSEMPEL
+              </button>
+              <button class="term-key term-key-copy" id="btnCopyMd" title="Kopier Markdown til udklipsholder">
+                <i data-feather="copy"></i> KOPIER
+              </button>
+              <button class="term-key term-key-clear" id="btnClear" title="Ryd Skærm">
+                <i data-feather="trash-2"></i> RYD
+              </button>
+            </div>
+          </div>
+
+          <!-- View Selector Tabs -->
+          <div class="term-tabs">
+            <button id="tabEditor" class="term-tab active">
+              <i data-feather="terminal"></i> [>_ TERMINAL INPUT]
+            </button>
+            <button id="tabPreview" class="term-tab">
+              <i data-feather="eye"></i> [👁 HTML VISNING]
+            </button>
+          </div>
+
+          <!-- Document Input Section -->
+          <div class="term-fields">
+            <div class="term-prompt-line">
+              <label for="docTitle" class="prompt-label">SYS_TITLE&gt;</label>
+              <input type="text" id="docTitle" class="term-input" placeholder="Feltdagbog: Vandring ved Møns Klint" autocomplete="off" />
+            </div>
+
+            <div class="term-prompt-line">
+              <label for="docCategories" class="prompt-label">SYS_META&nbsp;&gt;</label>
+              <div class="term-input-with-chips">
+                <input type="text" id="docCategories" class="term-input" placeholder="Dato: 14. august 2026 | Sted: Møns Klint, Danmark | Notat #042" autocomplete="off" />
+                <div class="term-chips">
+                  <button class="term-chip" id="chipDate">+ Dato</button>
+                  <button class="term-chip" id="chipLocation">+ Sted</button>
+                  <button class="term-chip" id="chipNoteNo">+ Notat #</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="term-divider">====================================================================================================</div>
+
+          <!-- Terminal Content Panes -->
+          <div class="term-content-area">
+            
+            <!-- Editor View -->
+            <div class="term-pane" id="editorView">
+              <div class="editor-wrapper">
+                <div class="line-numbers" id="lineNumbers">1</div>
+                <textarea id="editorTextarea" class="term-textarea" placeholder="INDTAST TEKST ELLER MARKDOWN HER..." spellcheck="false"></textarea>
+              </div>
+            </div>
+
+            <!-- HTML Preview View -->
+            <div class="term-pane hidden" id="previewView">
+              <div class="markdown-body term-rendered-body" id="previewContainer"></div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Retro Terminal Status Bar Footer -->
+    <footer class="term-footer">
+      <div class="term-status-left">
+        <span class="status-indicator online">● ONLINE</span>
+        <span class="stat-sep">|</span>
+        <span id="statWords" class="stat-badge">0 ORD</span>
+        <span class="stat-sep">|</span>
+        <span id="statChars" class="stat-badge">0 TEGN</span>
+        <span class="stat-sep">|</span>
+        <span id="statLines" class="stat-badge">0 LINJER</span>
+        <span class="stat-sep">|</span>
+        <span id="statReadTime" class="stat-badge">&lt; 1 MIN LÆSETID</span>
+      </div>
+
+      <div class="term-status-right">
+        <span class="export-preview-label">FIL:</span>
+        <code id="filenamePreview" class="filename-badge">260814_dokument.md</code>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Floating Exit Fullscreen Button (Shown in Fullscreen Mode) -->
+  <button id="floatingExitFs" class="floating-exit-fs hidden" title="Afslut Fuldskærm (ESC)">
+    <i data-feather="minimize-2"></i> Afslut Fuldskærm (ESC)
+  </button>
+
+  <!-- Shortcuts Help Modal -->
+  <div class="modal-backdrop hidden" id="shortcutModal">
+    <div class="modal-box term-modal">
+      <div class="modal-header">
+        <h3><i data-feather="help-circle"></i> TERMINAL TASTETUR-GENVEJE</h3>
+        <button class="btn-close" id="btnCloseShortcutModal"><i data-feather="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="shortcut-grid">
+          <div class="shortcut-row"><kbd>Alt + F</kbd> <span>Slå Fuldskærmsmodus Til / Fra</span></div>
+          <div class="shortcut-row"><kbd>ESC</kbd> <span>Afslut Fuldskærm / Luk Modaler</span></div>
+          <div class="shortcut-row"><kbd>⌘ / Ctrl + S</kbd> <span>Download Markdown (.md) fil</span></div>
+          <div class="shortcut-row"><kbd>⌘ / Ctrl + P</kbd> <span>Print / Gem som PDF</span></div>
+          <div class="shortcut-row"><kbd>F1 - F3</kbd> <span>Overskrifter (H1, H2, H3)</span></div>
+          <div class="shortcut-row"><kbd>F4 - F7</kbd> <span>Formatér Tekst (Fed, Kursiv, Kode, Citat)</span></div>
+          <div class="shortcut-row"><kbd>Tab</kbd> <span>Indsæt indrykning i editoren</span></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="term-btn term-btn-primary" onclick="document.getElementById('shortcutModal').classList.add('hidden')">Luk [ESC]</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast hidden" id="toast">
+    <i data-feather="info" id="toastIcon"></i>
+    <span id="toastMsg">Meddelelse</span>
+  </div>
+
+  <script src="terminal.js"></script>
+</body>
+</html>
