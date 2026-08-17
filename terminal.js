@@ -513,8 +513,36 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   function handleVisualInput() {
     if (isUpdatingFromMarkdown || !turndownService || !previewContainer) return;
     isUpdatingFromVisual = true;
+
     let md = turndownService.turndown(previewContainer.innerHTML);
-    editorTextarea.value = md.trim();
+    md = md.trim();
+
+    const lines = md.split('\n');
+    let bodyStartLine = 0;
+
+    if (lines.length > 0 && docTitleInput && docTitleInput.value.trim()) {
+      const expectedTitleHeader = `# ${docTitleInput.value.trim()}`;
+      if (lines[0].trim() === expectedTitleHeader) {
+        bodyStartLine = 1;
+        if (lines.length > bodyStartLine && lines[bodyStartLine].trim() === '') {
+          bodyStartLine++;
+        }
+      }
+    }
+
+    if (lines.length > bodyStartLine && docCategoriesInput && docCategoriesInput.value.trim()) {
+      const expectedCatHeader = `*${docCategoriesInput.value.trim()}*`;
+      if (lines[bodyStartLine].trim() === expectedCatHeader) {
+        bodyStartLine++;
+        if (lines.length > bodyStartLine && lines[bodyStartLine].trim() === '') {
+          bodyStartLine++;
+        }
+      }
+    }
+
+    const bodyMd = lines.slice(bodyStartLine).join('\n');
+    if (editorTextarea) editorTextarea.value = bodyMd;
+
     saveDraft();
     isUpdatingFromVisual = false;
   }

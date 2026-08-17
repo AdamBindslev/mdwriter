@@ -310,21 +310,25 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     const lines = md.split('\n');
     let bodyStartLine = 0;
 
-    if (lines.length > 0 && lines[0].startsWith('# ')) {
-      const titleFromVisual = lines[0].replace(/^#\s+/, '').trim();
-      if (docTitleInput) docTitleInput.value = titleFromVisual;
-      bodyStartLine = 1;
-      if (lines.length > bodyStartLine && lines[bodyStartLine].trim() === '') {
-        bodyStartLine++;
+    // Only skip rendered title line if it matches the current title input value
+    if (lines.length > 0 && docTitleInput && docTitleInput.value.trim()) {
+      const expectedTitleHeader = `# ${docTitleInput.value.trim()}`;
+      if (lines[0].trim() === expectedTitleHeader) {
+        bodyStartLine = 1;
+        if (lines.length > bodyStartLine && lines[bodyStartLine].trim() === '') {
+          bodyStartLine++;
+        }
       }
     }
 
-    if (lines.length > bodyStartLine && lines[bodyStartLine].startsWith('*') && lines[bodyStartLine].endsWith('*') && lines[bodyStartLine].length > 2) {
-      const catFromVisual = lines[bodyStartLine].slice(1, -1).trim();
-      if (docCategoriesInput) docCategoriesInput.value = catFromVisual;
-      bodyStartLine++;
-      if (lines.length > bodyStartLine && lines[bodyStartLine].trim() === '') {
+    // Only skip rendered categories line if it matches the current categories input value
+    if (lines.length > bodyStartLine && docCategoriesInput && docCategoriesInput.value.trim()) {
+      const expectedCatHeader = `*${docCategoriesInput.value.trim()}*`;
+      if (lines[bodyStartLine].trim() === expectedCatHeader) {
         bodyStartLine++;
+        if (lines.length > bodyStartLine && lines[bodyStartLine].trim() === '') {
+          bodyStartLine++;
+        }
       }
     }
 
