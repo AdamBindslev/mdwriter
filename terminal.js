@@ -539,6 +539,25 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   // TOOLBAR COMMANDS
   // ----------------------------------------------------
   function insertFormatting(prefix, suffix = '') {
+    const isVisualMode = previewView && !previewView.classList.contains('hidden');
+
+    if (isVisualMode) {
+      if (previewContainer) previewContainer.focus();
+      document.execCommand('styleWithCSS', false, false);
+      if (prefix === '# ') document.execCommand('formatBlock', false, '<h1>');
+      else if (prefix === '## ') document.execCommand('formatBlock', false, '<h2>');
+      else if (prefix === '### ') document.execCommand('formatBlock', false, '<h3>');
+      else if (prefix === '**') document.execCommand('bold', false, null);
+      else if (prefix === '*') document.execCommand('italic', false, null);
+      else if (prefix === '`') document.execCommand('formatBlock', false, '<pre>');
+      else if (prefix === '> ') document.execCommand('formatBlock', false, '<blockquote>');
+      else if (prefix === '- ') document.execCommand('insertUnorderedList', false, null);
+      else if (prefix === '1. ') document.execCommand('insertOrderedList', false, null);
+      else if (prefix === '- [ ] ') document.execCommand('insertUnorderedList', false, null);
+      handleVisualInput();
+      return;
+    }
+
     const start = editorTextarea.selectionStart;
     const end = editorTextarea.selectionEnd;
     const selected = editorTextarea.value.substring(start, end);
@@ -552,7 +571,11 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   }
 
   document.querySelectorAll('.term-key[data-cmd]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+    });
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
       const cmd = btn.getAttribute('data-cmd');
       switch (cmd) {
         case 'h1': insertFormatting('# '); break;

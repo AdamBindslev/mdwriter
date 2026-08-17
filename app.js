@@ -364,7 +364,8 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
 
   // Formatting Toolbar Helper Actions
   function applyFormat(command) {
-    if (activeEditorTarget === 'visual' && (document.activeElement === previewContainer || previewContainer.contains(document.activeElement))) {
+    if (activeEditorTarget === 'visual') {
+      if (previewContainer) previewContainer.focus();
       document.execCommand('styleWithCSS', false, false);
       switch (command) {
         case 'h1': document.execCommand('formatBlock', false, '<h1>'); break;
@@ -377,6 +378,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         case 'quote': document.execCommand('formatBlock', false, '<blockquote>'); break;
         case 'ul': document.execCommand('insertUnorderedList', false, null); break;
         case 'ol': document.execCommand('insertOrderedList', false, null); break;
+        case 'task': document.execCommand('insertUnorderedList', false, null); break;
         case 'link':
           const url = prompt('Indtast URL:');
           if (url) document.execCommand('createLink', false, url);
@@ -584,9 +586,13 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     renderPreview();
   }
 
-  // Toolbar Button Click Listeners
+  // Toolbar Button Click Listeners (Prevent focus theft on mousedown)
   document.querySelectorAll('.tb-btn[data-cmd]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+    });
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
       const cmd = btn.getAttribute('data-cmd');
       applyFormat(cmd);
     });
