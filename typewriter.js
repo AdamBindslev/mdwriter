@@ -605,29 +605,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     let md = turndownService.turndown(previewContainer.innerHTML);
     md = md.trim();
 
-    const lines = md.split('\n');
-    let bodyStartLine = 0;
-
-    if (lines.length > 0 && lines[0].startsWith('# ')) {
-      const titleFromVisual = lines[0].replace(/^#\s+/, '').trim();
-      if (docTitleInput) docTitleInput.value = titleFromVisual;
-      bodyStartLine = 1;
-      if (lines.length > bodyStartLine && lines[bodyStartLine].trim() === '') {
-        bodyStartLine++;
-      }
-    }
-
-    if (lines.length > bodyStartLine && lines[bodyStartLine].startsWith('*') && lines[bodyStartLine].endsWith('*') && lines[bodyStartLine].length > 2) {
-      const catFromVisual = lines[bodyStartLine].slice(1, -1).trim();
-      if (docCategoriesInput) docCategoriesInput.value = catFromVisual;
-      bodyStartLine++;
-      if (lines.length > bodyStartLine && lines[bodyStartLine].trim() === '') {
-        bodyStartLine++;
-      }
-    }
-
-    const bodyMd = lines.slice(bodyStartLine).join('\n');
-    if (editorTextarea) editorTextarea.value = bodyMd;
+    if (editorTextarea) editorTextarea.value = md;
 
     updateOdometer();
     saveDraft();

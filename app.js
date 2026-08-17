@@ -457,9 +457,18 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         case 'h1': document.execCommand('formatBlock', false, '<h1>'); break;
         case 'h2': document.execCommand('formatBlock', false, '<h2>'); break;
         case 'h3': document.execCommand('formatBlock', false, '<h3>'); break;
-        case 'bold': document.execCommand('bold', false, null); break;
-        case 'italic': document.execCommand('italic', false, null); break;
-        case 'strikethrough': document.execCommand('strikeThrough', false, null); break;
+        case 'bold':
+          document.execCommand('bold', false, null);
+          ensureUnformattedSpace('strong, b');
+          break;
+        case 'italic':
+          document.execCommand('italic', false, null);
+          ensureUnformattedSpace('em, i');
+          break;
+        case 'strikethrough':
+          document.execCommand('strikeThrough', false, null);
+          ensureUnformattedSpace('del, s, strike');
+          break;
         case 'code': document.execCommand('formatBlock', false, '<pre>'); break;
         case 'quote': document.execCommand('formatBlock', false, '<blockquote>'); break;
         case 'ul': document.execCommand('insertUnorderedList', false, null); break;
