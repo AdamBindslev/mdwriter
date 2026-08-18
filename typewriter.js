@@ -671,6 +671,18 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         case 'ul': document.execCommand('insertUnorderedList', false, null); break;
         case 'ol': document.execCommand('insertOrderedList', false, null); break;
         case 'task': document.execCommand('insertUnorderedList', false, null); break;
+        case 'link': {
+          const url = prompt('Indtast URL:', 'https://example.com');
+          if (url) document.execCommand('createLink', false, url);
+          break;
+        }
+        case 'codeblock': document.execCommand('formatBlock', false, '<pre>'); break;
+        case 'table': {
+          const tableHtml = '<table><thead><tr><th>Kolonne 1</th><th>Kolonne 2</th><th>Kolonne 3</th></tr></thead><tbody><tr><td>Værdi 1</td><td>Værdi 2</td><td>Værdi 3</td></tr><tr><td>Værdi 4</td><td>Værdi 5</td><td>Værdi 6</td></tr></tbody></table><p></p>';
+          document.execCommand('insertHTML', false, tableHtml);
+          break;
+        }
+        case 'hr': document.execCommand('insertHorizontalRule', false, null); break;
         default: break;
       }
       handleVisualInput();
@@ -740,6 +752,40 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         replacement = selectedText ? selectedText.split('\n').map(l => `- [ ] ${l}`).join('\n') : `- [ ] Opgave 1`;
         selStart = start;
         selEnd = start + replacement.length;
+        break;
+      case 'link':
+        if (selectedText) {
+          replacement = `[${selectedText}](https://example.com)`;
+          selStart = start + 1 + selectedText.length + 2;
+          selEnd = selStart + 'https://example.com'.length;
+        } else {
+          const placeholder = 'Link tekst';
+          replacement = `[${placeholder}](https://example.com)`;
+          selStart = start + 1;
+          selEnd = start + 1 + placeholder.length;
+        }
+        break;
+      case 'codeblock':
+        if (selectedText) {
+          replacement = `\`\`\`javascript\n${selectedText}\n\`\`\``;
+          selStart = start + 14;
+          selEnd = start + 14 + selectedText.length;
+        } else {
+          const placeholder = '// Skriv kode her';
+          replacement = `\`\`\`javascript\n${placeholder}\n\`\`\``;
+          selStart = start + 14;
+          selEnd = start + 14 + placeholder.length;
+        }
+        break;
+      case 'table':
+        replacement = `| Kolonne 1 | Kolonne 2 | Kolonne 3 |\n| --- | --- | --- |\n| Værdi 1 | Værdi 2 | Værdi 3 |\n| Værdi 4 | Værdi 5 | Værdi 6 |`;
+        selStart = start + 2;
+        selEnd = start + 11;
+        break;
+      case 'hr':
+        replacement = `\n---\n`;
+        selStart = start + replacement.length;
+        selEnd = selStart;
         break;
     }
 

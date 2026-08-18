@@ -894,6 +894,39 @@ html[data-flicker="true"] .overlay-flicker {
   padding: 0;
 }
 
+/* CRT Terminal Table Styling */
+.term-rendered-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-family: var(--font-terminal);
+  color: var(--ph-text);
+  font-size: 0.95rem;
+}
+
+.term-rendered-body th,
+.term-rendered-body td {
+  border: 1px solid var(--ph-border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.term-rendered-body th {
+  background-color: var(--ph-badge-bg);
+  color: var(--ph-text-bright);
+  font-weight: bold;
+  border-bottom: 2px solid var(--ph-border-bright);
+  text-shadow: 0 0 4px var(--ph-glow-subtle);
+}
+
+.term-rendered-body tr:nth-child(even) td {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.term-rendered-body td {
+  color: var(--ph-text);
+}
+
 /* --------------------------------------------------------------------------
    CRT FOOTER STATUS BAR
    -------------------------------------------------------------------------- */

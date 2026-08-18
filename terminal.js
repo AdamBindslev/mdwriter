@@ -604,6 +604,54 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         case 'ul': insertFormatting('- '); break;
         case 'ol': insertFormatting('1. '); break;
         case 'task': insertFormatting('- [ ] '); break;
+        case 'link': {
+          const start = editorTextarea.selectionStart;
+          const end = editorTextarea.selectionEnd;
+          const selected = editorTextarea.value.substring(start, end);
+          if (selected) {
+            insertFormatting('[', '](https://example.com)');
+          } else {
+            insertFormatting('[Link tekst](https://example.com)');
+          }
+          break;
+        }
+        case 'codeblock': {
+          const start = editorTextarea.selectionStart;
+          const end = editorTextarea.selectionEnd;
+          const selected = editorTextarea.value.substring(start, end);
+          const block = `\`\`\`javascript\n${selected || '// Skriv kode her'}\n\`\`\``;
+          editorTextarea.value = editorTextarea.value.substring(0, start) + block + editorTextarea.value.substring(end);
+          editorTextarea.focus();
+          editorTextarea.selectionStart = start + 14;
+          editorTextarea.selectionEnd = start + 14 + (selected ? selected.length : 17);
+          saveDraft();
+          updateToolbarStates();
+          break;
+        }
+        case 'table': {
+          const start = editorTextarea.selectionStart;
+          const end = editorTextarea.selectionEnd;
+          const tbl = `| Kolonne 1 | Kolonne 2 | Kolonne 3 |\n| --- | --- | --- |\n| Værdi 1 | Værdi 2 | Værdi 3 |\n| Værdi 4 | Værdi 5 | Værdi 6 |`;
+          editorTextarea.value = editorTextarea.value.substring(0, start) + tbl + editorTextarea.value.substring(end);
+          editorTextarea.focus();
+          editorTextarea.selectionStart = start + 2;
+          editorTextarea.selectionEnd = start + 11;
+          saveDraft();
+          updateToolbarStates();
+          break;
+        }
+        case 'hr': {
+          const start = editorTextarea.selectionStart;
+          const end = editorTextarea.selectionEnd;
+          const hrStr = `\n---\n`;
+          editorTextarea.value = editorTextarea.value.substring(0, start) + hrStr + editorTextarea.value.substring(end);
+          editorTextarea.focus();
+          editorTextarea.selectionStart = start + hrStr.length;
+          editorTextarea.selectionEnd = start + hrStr.length;
+          saveDraft();
+          updateToolbarStates();
+          break;
+        }
       }
       playTerminalTypingSound('char');
     });

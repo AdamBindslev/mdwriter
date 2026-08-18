@@ -156,6 +156,15 @@
 
             <div class="term-key-divider">|</div>
 
+            <div class="term-key-group">
+              <button class="term-key" data-cmd="link" title="Indsæt Link ([titel](url))"><span class="fn-tag">F11</span> LINK</button>
+              <button class="term-key" data-cmd="codeblock" title="Kodeblok (``` kode ```)"><span class="fn-tag">F12</span> BLOK</button>
+              <button class="term-key" data-cmd="table" title="Indsæt Tabel">TABEL</button>
+              <button class="term-key" data-cmd="hr" title="Vandret Linje (---)">LINJE</button>
+            </div>
+
+            <div class="term-key-divider">|</div>
+
             <div class="term-key-group term-right-keys">
               <button class="term-key term-key-sample" id="btnLoadSample" title="Indlæs Møns Klint Feltjournal">
                 <i data-feather="file-text"></i> EKSEMPEL
@@ -261,15 +270,17 @@
         <button class="btn-close" id="btnCloseShortcutModal"><i data-feather="x"></i></button>
       </div>
       <div class="modal-body">
-        <div class="shortcut-grid">
-          <div class="shortcut-row"><kbd>Alt + F</kbd> <span>Slå Fuldskærmsmodus Til / Fra</span></div>
-          <div class="shortcut-row"><kbd>ESC</kbd> <span>Afslut Fuldskærm / Luk Modaler</span></div>
-          <div class="shortcut-row"><kbd>⌘ / Ctrl + S</kbd> <span>Download Markdown (.md) fil</span></div>
-          <div class="shortcut-row"><kbd>⌘ / Ctrl + P</kbd> <span>Print / Gem som PDF</span></div>
-          <div class="shortcut-row"><kbd>F1 - F3</kbd> <span>Overskrifter (H1, H2, H3)</span></div>
-          <div class="shortcut-row"><kbd>F4 - F7</kbd> <span>Formatér Tekst (Fed, Kursiv, Kode, Citat)</span></div>
-          <div class="shortcut-row"><kbd>Tab</kbd> <span>Indsæt indrykning i editoren</span></div>
-        </div>
+          <div class="shortcut-grid">
+            <div class="shortcut-row"><kbd>Alt + F</kbd> <span>Slå Fuldskærmsmodus Til / Fra</span></div>
+            <div class="shortcut-row"><kbd>ESC</kbd> <span>Afslut Fuldskærm / Luk Modaler</span></div>
+            <div class="shortcut-row"><kbd>⌘ / Ctrl + S</kbd> <span>Download Markdown (.md) fil</span></div>
+            <div class="shortcut-row"><kbd>⌘ / Ctrl + P</kbd> <span>Print / Gem som PDF</span></div>
+            <div class="shortcut-row"><kbd>F1 - F3</kbd> <span>Overskrifter (H1, H2, H3)</span></div>
+            <div class="shortcut-row"><kbd>F4 - F7</kbd> <span>Formatér Tekst (Fed, Kursiv, Kode, Citat)</span></div>
+            <div class="shortcut-row"><kbd>F8 - F10</kbd> <span>Lister (Punkt, Nummer, Tjek)</span></div>
+            <div class="shortcut-row"><kbd>F11 - F12</kbd> <span>Link & Kodeblok</span></div>
+            <div class="shortcut-row"><kbd>Tab</kbd> <span>Indsæt indrykning i editoren</span></div>
+          </div>
       </div>
       <div class="modal-footer">
         <span class="modal-author-credit">MD WRITER CRT ER SKABT AF <a href="https://linktr.ee/adambindslev" target="_blank" rel="noopener noreferrer" class="term-author-link">ADAM BINDSLEV</a></span>

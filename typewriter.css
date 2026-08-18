@@ -623,6 +623,32 @@ body.typewriter-body {
   opacity: 0.5;
 }
 
+/* Typewriter Table Styling */
+.tw-rendered-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-family: var(--font-typewriter);
+  font-size: 0.95rem;
+}
+
+.tw-rendered-body th,
+.tw-rendered-body td {
+  border: 1px dashed var(--ink-current);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.tw-rendered-body th {
+  background: rgba(0, 0, 0, 0.05);
+  font-weight: 700;
+  border-bottom: 2px solid var(--ink-current);
+}
+
+.tw-rendered-body tr:nth-child(even) td {
+  background: rgba(0, 0, 0, 0.02);
+}
+
 /* Odometer Mechanical Footer */
 .tw-footer {
   display: flex;
