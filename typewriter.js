@@ -705,19 +705,40 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         selEnd = start + 2 + (selectedText || 'Citattekst').length;
         break;
       case 'ul':
-        replacement = selectedText ? selectedText.split('\n').map(l => `- ${l}`).join('\n') : `- Punkt 1\n- Punkt 2`;
-        selStart = start;
-        selEnd = start + replacement.length;
+        if (selectedText) {
+          replacement = selectedText.split('\n').map(l => `- ${l}`).join('\n');
+          selStart = start;
+          selEnd = start + replacement.length;
+        } else {
+          const placeholder = 'Punkt 1';
+          replacement = `- ${placeholder}`;
+          selStart = start + 2;
+          selEnd = start + 2 + placeholder.length;
+        }
         break;
       case 'ol':
-        replacement = selectedText ? selectedText.split('\n').map((l, i) => `${i + 1}. ${l}`).join('\n') : `1. Første punkt\n2. Andet punkt`;
-        selStart = start;
-        selEnd = start + replacement.length;
+        if (selectedText) {
+          replacement = selectedText.split('\n').map((l, i) => `${i + 1}. ${l}`).join('\n');
+          selStart = start;
+          selEnd = start + replacement.length;
+        } else {
+          const placeholder = 'Første punkt';
+          replacement = `1. ${placeholder}`;
+          selStart = start + 3;
+          selEnd = start + 3 + placeholder.length;
+        }
         break;
       case 'task':
-        replacement = selectedText ? selectedText.split('\n').map(l => `- [ ] ${l}`).join('\n') : `- [ ] Opgave 1`;
-        selStart = start;
-        selEnd = start + replacement.length;
+        if (selectedText) {
+          replacement = selectedText.split('\n').map(l => `- [ ] ${l}`).join('\n');
+          selStart = start;
+          selEnd = start + replacement.length;
+        } else {
+          const placeholder = 'Opgave 1';
+          replacement = `- [ ] ${placeholder}`;
+          selStart = start + 6;
+          selEnd = start + 6 + placeholder.length;
+        }
         break;
       case 'link':
         if (selectedText) {

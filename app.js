@@ -437,7 +437,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
           selEnd = start + replacement.length;
         } else {
           const placeholder = 'Punkt 1';
-          replacement = `- ${placeholder}\n- Punkt 2`;
+          replacement = `- ${placeholder}`;
           selStart = start + 2;
           selEnd = start + 2 + placeholder.length;
         }
@@ -449,7 +449,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
           selEnd = start + replacement.length;
         } else {
           const placeholder = 'Første punkt';
-          replacement = `1. ${placeholder}\n2. Andet punkt`;
+          replacement = `1. ${placeholder}`;
           selStart = start + 3;
           selEnd = start + 3 + placeholder.length;
         }
@@ -461,7 +461,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
           selEnd = start + replacement.length;
         } else {
           const placeholder = 'Opgave 1';
-          replacement = `- [ ] ${placeholder}\n- [ ] Opgave 2`;
+          replacement = `- [ ] ${placeholder}`;
           selStart = start + 6;
           selEnd = start + 6 + placeholder.length;
         }
