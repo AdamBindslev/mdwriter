@@ -92,49 +92,49 @@
       <!-- Keycap Formatting Toolbar -->
       <div class="tw-toolbar">
         <div class="keycap-group">
-          <button class="tw-key" data-cmd="h1" title="Overskrift 1 (#)">H1</button>
-          <button class="tw-key" data-cmd="h2" title="Overskrift 2 (##)">H2</button>
-          <button class="tw-key" data-cmd="h3" title="Overskrift 3 (###)">H3</button>
+          <button class="tw-key" data-cmd="h1" title="Overskrift 1 (#)"><span class="key-symbol">H₁</span></button>
+          <button class="tw-key" data-cmd="h2" title="Overskrift 2 (##)"><span class="key-symbol">H₂</span></button>
+          <button class="tw-key" data-cmd="h3" title="Overskrift 3 (###)"><span class="key-symbol">H₃</span></button>
         </div>
 
         <div class="key-divider"></div>
 
         <div class="keycap-group">
-          <button class="tw-key" data-cmd="bold" title="Fed tekst (**tekst**)"><b>B</b></button>
-          <button class="tw-key" data-cmd="italic" title="Kursiv tekst (*tekst*)"><i>I</i></button>
-          <button class="tw-key" data-cmd="strikethrough" title="Gennemstreget (~~tekst~~)"><s>S</s></button>
-          <button class="tw-key" data-cmd="code" title="Inline Kode (`kode`)">&lt;/&gt;</button>
-          <button class="tw-key" data-cmd="quote" title="Citat (>)">” ”</button>
+          <button class="tw-key" data-cmd="bold" title="Fed tekst (**tekst**)"><i data-feather="bold"></i></button>
+          <button class="tw-key" data-cmd="italic" title="Kursiv tekst (*tekst*)"><i data-feather="italic"></i></button>
+          <button class="tw-key" data-cmd="strikethrough" title="Gennemstreget (~~tekst~~)"><span class="key-symbol strike-symbol">S</span></button>
+          <button class="tw-key" data-cmd="code" title="Inline Kode (`kode`)"><i data-feather="code"></i></button>
+          <button class="tw-key" data-cmd="quote" title="Citat (>)"><i data-feather="message-square"></i></button>
         </div>
 
         <div class="key-divider"></div>
 
         <div class="keycap-group">
-          <button class="tw-key" data-cmd="ul" title="Punktopstilling (-)">• List</button>
-          <button class="tw-key" data-cmd="ol" title="Nummereret (1.)">1. List</button>
-          <button class="tw-key" data-cmd="task" title="Tjekliste (- [ ])">[✓]</button>
+          <button class="tw-key" data-cmd="ul" title="Punktopstilling (-)"><i data-feather="list"></i></button>
+          <button class="tw-key" data-cmd="ol" title="Nummereret (1.)"><span class="key-symbol">1.</span></button>
+          <button class="tw-key" data-cmd="task" title="Tjekliste (- [ ])"><i data-feather="check-square"></i></button>
         </div>
 
         <div class="key-divider"></div>
 
         <div class="keycap-group">
-          <button class="tw-key" data-cmd="link" title="Indsæt Link ([titel](url))"><i data-feather="link"></i> Link</button>
-          <button class="tw-key" data-cmd="codeblock" title="Kodeblok (``` kode ```)"><i data-feather="terminal"></i> Blok</button>
-          <button class="tw-key" data-cmd="table" title="Indsæt Tabel"><i data-feather="grid"></i> Tabel</button>
-          <button class="tw-key" data-cmd="hr" title="Vandret Linje (---)"><i data-feather="more-horizontal"></i> Linje</button>
+          <button class="tw-key" data-cmd="link" title="Indsæt Link ([titel](url))"><i data-feather="link"></i></button>
+          <button class="tw-key" data-cmd="codeblock" title="Kodeblok (``` kode ```)"><i data-feather="terminal"></i></button>
+          <button class="tw-key" data-cmd="table" title="Indsæt Tabel"><i data-feather="grid"></i></button>
+          <button class="tw-key" data-cmd="hr" title="Vandret Linje (---)"><i data-feather="minus"></i></button>
         </div>
 
         <div class="key-divider"></div>
 
         <div class="keycap-group right-keys">
-          <button class="tw-key tw-key-sample" id="btnLoadSample" title="Indlæs Møns Klint Feltjournal">
-            <i data-feather="file-text"></i> Eksempel
+          <button class="tw-key tw-key-action tw-key-sample" id="btnLoadSample" title="Indlæs Møns Klint Feltjournal">
+            <i data-feather="file-text"></i> <span>Eksempel</span>
           </button>
-          <button class="tw-key tw-key-copy" id="btnCopyMd" title="Kopier Markdown til udklipsholder">
-            <i data-feather="copy"></i> Kopier MD
+          <button class="tw-key tw-key-action tw-key-copy" id="btnCopyMd" title="Kopier Markdown til udklipsholder">
+            <i data-feather="copy"></i> <span>Kopier MD</span>
           </button>
-          <button class="tw-key tw-key-clear" id="btnClear" title="Ryd Papir">
-            <i data-feather="trash-2"></i> Ryd
+          <button class="tw-key tw-key-action tw-key-clear" id="btnClear" title="Ryd Papir">
+            <i data-feather="trash-2"></i> <span>Ryd</span>
           </button>
         </div>
       </div>
