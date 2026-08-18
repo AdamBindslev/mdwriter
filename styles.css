@@ -565,50 +565,6 @@ body {
   font-weight: 400;
 }
 
-/* Visual Editing Badge Button */
-.visual-edit-badge {
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 3px 10px;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-card);
-  color: var(--text-muted);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.visual-edit-badge.active {
-  background: var(--badge-bg);
-  color: var(--primary);
-  border-color: var(--primary);
-}
-
-.visual-edit-badge:hover {
-  transform: translateY(-1px);
-  border-color: var(--primary);
-}
-
-/* Contenteditable Preview Styling */
-.preview-content[contenteditable="true"] {
-  outline: none;
-  cursor: text;
-  min-height: 100%;
-}
-
-.preview-content[contenteditable="true"]:focus {
-  box-shadow: inset 0 0 0 2px var(--primary-glow);
-}
-
-.preview-content[contenteditable="true"]:empty::before {
-  content: attr(placeholder);
-  color: var(--text-subtle);
-  font-style: italic;
-}
-
 /* Editor Textarea */
 #editorTextarea {
   flex: 1;

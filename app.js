@@ -59,50 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Setup Turndown for HTML-to-Markdown conversion
-  let turndownService = null;
-  if (window.TurndownService) {
-    turndownService = new window.TurndownService({
-      headingStyle: 'atx',
-      codeBlockStyle: 'fenced',
-      emDelimiter: '*',
-      strongDelimiter: '**',
-      bulletListMarker: '-'
-    });
-
-    // Custom rule for strikethrough (<del>, <s>, <strike>)
-    turndownService.addRule('strikethrough', {
-      filter: ['del', 's', 'strike'],
-      replacement: function (content) {
-        return '~~' + content + '~~';
-      }
-    });
-
-    // Custom rule for task list checkboxes
-    turndownService.addRule('tasklist', {
-      filter: function (node) {
-        return node.tagName === 'INPUT' && node.getAttribute('type') === 'checkbox';
-      },
-      replacement: function (content, node) {
-        return node.checked ? '[x] ' : '[ ] ';
-      }
-    });
-
-    // Custom rule to strip visual return symbols from converted Markdown
-    turndownService.addRule('ignoreReturnSymbols', {
-      filter: function (node) {
-        return node.classList && node.classList.contains('return-symbol');
-      },
-      replacement: function () {
-        return '';
-      }
-    });
-  }
-
-  let isUpdatingFromVisual = false;
-  let isUpdatingFromMarkdown = false;
-  let activeEditorTarget = 'markdown';
-
   // Sample Data (Møns Klint Field Diary matching prompt attachment)
   const sampleData = {
     title: 'Feltdagbog: Vandring ved Møns Klint',
@@ -277,16 +233,13 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
 
   // Update Rendered HTML Preview & Counters
   function renderPreview() {
-    if (isUpdatingFromVisual) return;
-    isUpdatingFromMarkdown = true;
-
     const markdownText = generateFullMarkdown();
 
     if (window.marked && window.DOMPurify) {
       let rawHtml = marked.parse(markdownText);
-      rawHtml = rawHtml.replace(/<br\s*\/?>/gi, '<span class="return-symbol br-symbol" contenteditable="false">↵</span><br>');
-      rawHtml = rawHtml.replace(/<\/p>/gi, '<span class="return-symbol p-symbol" contenteditable="false">↵</span></p>');
-      const cleanHtml = DOMPurify.sanitize(rawHtml, { ADD_ATTR: ['contenteditable'] });
+      rawHtml = rawHtml.replace(/<br\s*\/?>/gi, '<span class="return-symbol br-symbol">↵</span><br>');
+      rawHtml = rawHtml.replace(/<\/p>/gi, '<span class="return-symbol p-symbol">↵</span></p>');
+      const cleanHtml = DOMPurify.sanitize(rawHtml);
       previewContainer.innerHTML = cleanHtml;
     } else {
       previewContainer.textContent = markdownText;
@@ -295,51 +248,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     updateCounters();
     updateFilenameBadge();
     saveDraft();
-
-    isUpdatingFromMarkdown = false;
-  }
-
-  // Visual Direct Editing Handler (HTML -> Markdown via Turndown)
-  function handleVisualInput() {
-    if (isUpdatingFromMarkdown || !turndownService || !previewContainer) return;
-    isUpdatingFromVisual = true;
-
-    let md = turndownService.turndown(previewContainer.innerHTML);
-    md = md.trim();
-
-    const lines = md.split('\n');
-    let bodyStartLine = 0;
-
-    // Only skip rendered title line if it matches the current title input value
-    if (lines.length > 0 && docTitleInput && docTitleInput.value.trim()) {
-      const expectedTitleHeader = `# ${docTitleInput.value.trim()}`;
-      if (lines[0].trim() === expectedTitleHeader) {
-        bodyStartLine = 1;
-        if (lines.length > bodyStartLine && lines[bodyStartLine].trim() === '') {
-          bodyStartLine++;
-        }
-      }
-    }
-
-    // Only skip rendered categories line if it matches the current categories input value
-    if (lines.length > bodyStartLine && docCategoriesInput && docCategoriesInput.value.trim()) {
-      const expectedCatHeader = `*${docCategoriesInput.value.trim()}*`;
-      if (lines[bodyStartLine].trim() === expectedCatHeader) {
-        bodyStartLine++;
-        if (lines.length > bodyStartLine && lines[bodyStartLine].trim() === '') {
-          bodyStartLine++;
-        }
-      }
-    }
-
-    const bodyMd = lines.slice(bodyStartLine).join('\n');
-    if (editorTextarea) editorTextarea.value = bodyMd;
-
-    updateCounters();
-    updateFilenameBadge();
-    saveDraft();
-
-    isUpdatingFromVisual = false;
   }
 
   // Update Word / Character / Reading Time Statistics
@@ -366,82 +274,43 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     }, 2800);
   }
 
-  const pendingFormatStates = new Set();
-
   // Dynamic Toolbar Active State Highlight Tracker
   function updateToolbarStates() {
     const activeCmds = new Set();
-    pendingFormatStates.forEach(cmd => activeCmds.add(cmd));
 
-    if (activeEditorTarget === 'visual') {
-      try {
-        if (document.queryCommandState('bold')) activeCmds.add('bold');
-        if (document.queryCommandState('italic')) activeCmds.add('italic');
-        if (document.queryCommandState('strikethrough')) activeCmds.add('strikethrough');
-        if (document.queryCommandState('insertUnorderedList')) activeCmds.add('ul');
-        if (document.queryCommandState('insertOrderedList')) activeCmds.add('ol');
-      } catch (e) {}
+    if (editorTextarea) {
+      const text = editorTextarea.value;
+      const start = editorTextarea.selectionStart;
+      const end = editorTextarea.selectionEnd;
 
-      const sel = window.getSelection();
-      if (sel && sel.rangeCount > 0) {
-        let node = sel.anchorNode;
-        if (node && node.nodeType === 3) node = node.parentNode;
+      const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+      let lineEnd = text.indexOf('\n', start);
+      if (lineEnd === -1) lineEnd = text.length;
+      const lineText = text.substring(lineStart, lineEnd);
 
-        if (node && previewContainer && previewContainer.contains(node)) {
-          let curr = node;
-          while (curr && curr !== previewContainer) {
-            const tag = curr.tagName ? curr.tagName.toLowerCase() : '';
-            if (tag === 'strong' || tag === 'b') activeCmds.add('bold');
-            if (tag === 'em' || tag === 'i') activeCmds.add('italic');
-            if (tag === 'del' || tag === 's' || tag === 'strike' || (curr.style && curr.style.textDecoration && curr.style.textDecoration.includes('line-through'))) {
-              activeCmds.add('strikethrough');
-            }
-            if (tag === 'h1') activeCmds.add('h1');
-            if (tag === 'h2') activeCmds.add('h2');
-            if (tag === 'h3') activeCmds.add('h3');
-            if (tag === 'blockquote') activeCmds.add('quote');
-            if (tag === 'ul') activeCmds.add('ul');
-            if (tag === 'ol') activeCmds.add('ol');
-            if (tag === 'pre' || tag === 'code') activeCmds.add('code');
-            curr = curr.parentNode;
-          }
-        }
+      if (/^#\s+/.test(lineText)) activeCmds.add('h1');
+      else if (/^##\s+/.test(lineText)) activeCmds.add('h2');
+      else if (/^###\s+/.test(lineText)) activeCmds.add('h3');
+      else if (/^>\s+/.test(lineText)) activeCmds.add('quote');
+      else if (/^-\s+/.test(lineText) || /^\*\s+/.test(lineText)) activeCmds.add('ul');
+      else if (/^\d+\.\s+/.test(lineText)) activeCmds.add('ol');
+      else if (/^-\s+\[[ x]\]\s+/.test(lineText)) activeCmds.add('task');
+
+      const selText = text.substring(start, end);
+      const prefix = text.substring(Math.max(0, start - 3), start);
+      const suffix = text.substring(end, Math.min(text.length, end + 3));
+
+      if ((prefix.endsWith('**') && suffix.startsWith('**')) || (selText.startsWith('**') && selText.endsWith('**') && selText.length >= 4)) {
+        activeCmds.add('bold');
       }
-    } else {
-      if (editorTextarea) {
-        const text = editorTextarea.value;
-        const start = editorTextarea.selectionStart;
-        const end = editorTextarea.selectionEnd;
-
-        const lineStart = text.lastIndexOf('\n', start - 1) + 1;
-        let lineEnd = text.indexOf('\n', start);
-        if (lineEnd === -1) lineEnd = text.length;
-        const lineText = text.substring(lineStart, lineEnd);
-
-        if (/^#\s+/.test(lineText)) activeCmds.add('h1');
-        else if (/^##\s+/.test(lineText)) activeCmds.add('h2');
-        else if (/^###\s+/.test(lineText)) activeCmds.add('h3');
-        else if (/^>\s+/.test(lineText)) activeCmds.add('quote');
-        else if (/^-\s+/.test(lineText) || /^\*\s+/.test(lineText)) activeCmds.add('ul');
-        else if (/^\d+\.\s+/.test(lineText)) activeCmds.add('ol');
-        else if (/^-\s+\[[ x]\]\s+/.test(lineText)) activeCmds.add('task');
-
-        const selText = text.substring(start, end);
-        const prefix = text.substring(Math.max(0, start - 3), start);
-        const suffix = text.substring(end, Math.min(text.length, end + 3));
-
-        if ((prefix.endsWith('**') && suffix.startsWith('**')) || (selText.startsWith('**') && selText.endsWith('**') && selText.length >= 4)) {
-          activeCmds.add('bold');
-        }
-        if ((prefix.endsWith('*') && !prefix.endsWith('**') && suffix.startsWith('*') && !suffix.startsWith('**')) || (selText.startsWith('*') && selText.endsWith('*') && selText.length >= 2)) {
-          activeCmds.add('italic');
-        }
-        if ((prefix.endsWith('~~') && suffix.startsWith('~~')) || (selText.startsWith('~~') && selText.endsWith('~~') && selText.length >= 4)) {
-          activeCmds.add('strikethrough');
-        }
-        if ((prefix.endsWith('`') && suffix.startsWith('`')) || (selText.startsWith('`') && selText.endsWith('`') && selText.length >= 2)) {
-          activeCmds.add('code');
-        }
+      if ((prefix.endsWith('*') && !prefix.endsWith('**') && suffix.startsWith('*') && !suffix.startsWith('**')) || (selText.startsWith('*') && selText.endsWith('*') && selText.length >= 2)) {
+        activeCmds.add('italic');
+      }
+      if ((prefix.endsWith('~~') && suffix.startsWith('~~')) || (selText.startsWith('~~') && selText.endsWith('~~') && selText.length >= 4)) {
+        activeCmds.add('strikethrough');
+      }
+      if ((prefix.endsWith('`') && suffix.startsWith('`')) || (selText.startsWith('`') && selText.endsWith('`') && selText.length >= 2)) {
+        activeCmds.add('code');
       }
     }
 
@@ -455,95 +324,8 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     });
   }
 
-  // Toggle inline formatting with robust cursor breakout and pending state persistence
-  function toggleInlineFormat(cmd, tagNames) {
-    if (previewContainer) previewContainer.focus();
-    document.execCommand('styleWithCSS', false, false);
-
-    const sel = window.getSelection();
-    const isCollapsed = sel && sel.isCollapsed;
-
-    let isCurrentlyActive = false;
-    try { isCurrentlyActive = document.queryCommandState(cmd); } catch (e) {}
-
-    let insideTag = false;
-    if (sel && sel.rangeCount > 0) {
-      let node = sel.anchorNode;
-      if (node && node.nodeType === 3) node = node.parentNode;
-      if (node && node.closest(tagNames)) insideTag = true;
-    }
-
-    const isPending = pendingFormatStates.has(cmd);
-
-    if (!isCurrentlyActive && !insideTag && isCollapsed && !isPending) {
-      document.execCommand(cmd, false, null);
-      pendingFormatStates.add(cmd);
-      updateToolbarStates();
-      return;
-    }
-
-    if ((isCurrentlyActive || insideTag || isPending) && isCollapsed) {
-      document.execCommand(cmd, false, null);
-      pendingFormatStates.delete(cmd);
-
-      if (sel && sel.rangeCount > 0) {
-        let node = sel.anchorNode;
-        if (node && node.nodeType === 3) node = node.parentNode;
-        const matchingEl = node ? node.closest(tagNames) : null;
-
-        if (matchingEl && matchingEl.parentNode) {
-          let nextTextNode = matchingEl.nextSibling;
-          if (!nextTextNode || nextTextNode.nodeType !== 3) {
-            nextTextNode = document.createTextNode('\u200B');
-            matchingEl.parentNode.insertBefore(nextTextNode, matchingEl.nextSibling);
-          }
-          const range = document.createRange();
-          range.setStart(nextTextNode, nextTextNode.length || 0);
-          range.collapse(true);
-          sel.removeAllRanges();
-          sel.addRange(range);
-        }
-      }
-
-      handleVisualInput();
-      updateToolbarStates();
-      return;
-    }
-
-    document.execCommand(cmd, false, null);
-    handleVisualInput();
-    updateToolbarStates();
-  }
-
   // Formatting Toolbar Helper Actions
   function applyFormat(command) {
-    if (activeEditorTarget === 'visual') {
-      if (previewContainer) previewContainer.focus();
-      document.execCommand('styleWithCSS', false, false);
-      switch (command) {
-        case 'h1': document.execCommand('formatBlock', false, '<h1>'); break;
-        case 'h2': document.execCommand('formatBlock', false, '<h2>'); break;
-        case 'h3': document.execCommand('formatBlock', false, '<h3>'); break;
-        case 'bold': toggleInlineFormat('bold', 'strong, b'); return;
-        case 'italic': toggleInlineFormat('italic', 'em, i'); return;
-        case 'strikethrough': toggleInlineFormat('strikeThrough', 'del, s, strike'); return;
-        case 'code': document.execCommand('formatBlock', false, '<pre>'); break;
-        case 'quote': document.execCommand('formatBlock', false, '<blockquote>'); break;
-        case 'ul': document.execCommand('insertUnorderedList', false, null); break;
-        case 'ol': document.execCommand('insertOrderedList', false, null); break;
-        case 'task': document.execCommand('insertUnorderedList', false, null); break;
-        case 'link':
-          const url = prompt('Indtast URL:');
-          if (url) document.execCommand('createLink', false, url);
-          break;
-        case 'hr': document.execCommand('insertHorizontalRule', false, null); break;
-        default: break;
-      }
-      handleVisualInput();
-      updateToolbarStates();
-      return;
-    }
-
     const start = editorTextarea.selectionStart;
     const end = editorTextarea.selectionEnd;
     const selectedText = editorTextarea.value.substring(start, end);
@@ -972,51 +754,18 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     showToast('Eksempel på feltdagbog indlæst!', 'file-text');
   });
 
-  // Toggle Visual Edit Mode Button
-  const btnToggleVisualEdit = document.getElementById('btnToggleVisualEdit');
-  let isVisualEditEnabled = true;
-
-  if (btnToggleVisualEdit && previewContainer) {
-    btnToggleVisualEdit.addEventListener('click', () => {
-      isVisualEditEnabled = !isVisualEditEnabled;
-      previewContainer.contentEditable = isVisualEditEnabled ? 'true' : 'false';
-      btnToggleVisualEdit.classList.toggle('active', isVisualEditEnabled);
-      btnToggleVisualEdit.innerHTML = isVisualEditEnabled
-        ? '<i data-feather="edit-2"></i> Direkte Redigering Til'
-        : '<i data-feather="eye"></i> Kun Visning';
-      if (window.feather) feather.replace();
-      showToast(isVisualEditEnabled ? 'Visuel redigering aktiveret' : 'Visuel redigering deaktiveret');
-    });
-  }
-
   // Active Editor Tracking & Toolbar Highlight Triggers
   document.addEventListener('selectionchange', updateToolbarStates);
 
   if (editorTextarea) {
-    editorTextarea.addEventListener('focus', () => { activeEditorTarget = 'markdown'; updateToolbarStates(); });
-    editorTextarea.addEventListener('click', () => { activeEditorTarget = 'markdown'; updateToolbarStates(); });
     editorTextarea.addEventListener('keyup', updateToolbarStates);
-  }
-  if (previewContainer) {
-    previewContainer.addEventListener('focus', () => { activeEditorTarget = 'visual'; updateToolbarStates(); });
-    previewContainer.addEventListener('click', () => { activeEditorTarget = 'visual'; updateToolbarStates(); });
-    previewContainer.addEventListener('input', () => {
-      pendingFormatStates.clear();
-      handleVisualInput();
-      updateToolbarStates();
-    });
-    previewContainer.addEventListener('keyup', (e) => {
-      if (['Enter', 'Backspace', 'Delete'].includes(e.key)) {
-        handleVisualInput();
-      }
-      updateToolbarStates();
-    });
+    editorTextarea.addEventListener('click', updateToolbarStates);
+    editorTextarea.addEventListener('input', renderPreview);
   }
 
   // Input Listeners for Realtime Sync
   docTitleInput.addEventListener('input', renderPreview);
   docCategoriesInput.addEventListener('input', renderPreview);
-  editorTextarea.addEventListener('input', renderPreview);
 
   // Synchronized Scrolling between Editor and Preview
   let isScrollingEditor = false;

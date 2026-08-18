@@ -496,55 +496,16 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   updateClock();
 
   // ----------------------------------------------------
-  // PREVIEW RENDERER & VISUAL SYNC
+  // HTML RENDER PREVIEW
   // ----------------------------------------------------
   function renderPreview() {
-    if (isUpdatingFromVisual || !window.marked || !window.DOMPurify) return;
-    isUpdatingFromMarkdown = true;
+    if (!window.marked || !window.DOMPurify) return;
     const rawMarkdown = editorTextarea.value;
     let rawHtml = marked.parse(rawMarkdown);
-    rawHtml = rawHtml.replace(/<br\s*\/?>/gi, '<span class="return-symbol br-symbol" contenteditable="false">↵</span><br>');
-    rawHtml = rawHtml.replace(/<\/p>/gi, '<span class="return-symbol p-symbol" contenteditable="false">↵</span></p>');
-    const cleanHtml = DOMPurify.sanitize(rawHtml, { ADD_ATTR: ['contenteditable'] });
+    rawHtml = rawHtml.replace(/<br\s*\/?>/gi, '<span class="return-symbol br-symbol">↵</span><br>');
+    rawHtml = rawHtml.replace(/<\/p>/gi, '<span class="return-symbol p-symbol">↵</span></p>');
+    const cleanHtml = DOMPurify.sanitize(rawHtml);
     previewContainer.innerHTML = cleanHtml;
-    isUpdatingFromMarkdown = false;
-  }
-
-  function handleVisualInput() {
-    if (isUpdatingFromMarkdown || !turndownService || !previewContainer) return;
-    isUpdatingFromVisual = true;
-
-    let md = turndownService.turndown(previewContainer.innerHTML);
-    md = md.trim();
-
-    const lines = md.split('\n');
-    let bodyStartLine = 0;
-
-    if (lines.length > 0 && docTitleInput && docTitleInput.value.trim()) {
-      const expectedTitleHeader = `# ${docTitleInput.value.trim()}`;
-      if (lines[0].trim() === expectedTitleHeader) {
-        bodyStartLine = 1;
-        if (lines.length > bodyStartLine && lines[bodyStartLine].trim() === '') {
-          bodyStartLine++;
-        }
-      }
-    }
-
-    if (lines.length > bodyStartLine && docCategoriesInput && docCategoriesInput.value.trim()) {
-      const expectedCatHeader = `*${docCategoriesInput.value.trim()}*`;
-      if (lines[bodyStartLine].trim() === expectedCatHeader) {
-        bodyStartLine++;
-        if (lines.length > bodyStartLine && lines[bodyStartLine].trim() === '') {
-          bodyStartLine++;
-        }
-      }
-    }
-
-    const bodyMd = lines.slice(bodyStartLine).join('\n');
-    if (editorTextarea) editorTextarea.value = bodyMd;
-
-    saveDraft();
-    isUpdatingFromVisual = false;
   }
 
   // Tab switching
@@ -563,47 +524,10 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     renderPreview();
   });
 
-  const pendingFormatStates = new Set();
-
   function updateToolbarStates() {
     const activeCmds = new Set();
-    pendingFormatStates.forEach(cmd => activeCmds.add(cmd));
-    const isVisualMode = previewView && !previewView.classList.contains('hidden');
 
-    if (isVisualMode) {
-      try {
-        if (document.queryCommandState('bold')) activeCmds.add('bold');
-        if (document.queryCommandState('italic')) activeCmds.add('italic');
-        if (document.queryCommandState('strikethrough')) activeCmds.add('strikethrough');
-        if (document.queryCommandState('insertUnorderedList')) activeCmds.add('ul');
-        if (document.queryCommandState('insertOrderedList')) activeCmds.add('ol');
-      } catch (e) {}
-
-      const sel = window.getSelection();
-      if (sel && sel.rangeCount > 0) {
-        let node = sel.anchorNode;
-        if (node && node.nodeType === 3) node = node.parentNode;
-        if (node && previewContainer && previewContainer.contains(node)) {
-          let curr = node;
-          while (curr && curr !== previewContainer) {
-            const tag = curr.tagName ? curr.tagName.toLowerCase() : '';
-            if (tag === 'strong' || tag === 'b') activeCmds.add('bold');
-            if (tag === 'em' || tag === 'i') activeCmds.add('italic');
-            if (tag === 'del' || tag === 's' || tag === 'strike' || (curr.style && curr.style.textDecoration && curr.style.textDecoration.includes('line-through'))) {
-              activeCmds.add('strikethrough');
-            }
-            if (tag === 'h1') activeCmds.add('h1');
-            if (tag === 'h2') activeCmds.add('h2');
-            if (tag === 'h3') activeCmds.add('h3');
-            if (tag === 'blockquote') activeCmds.add('quote');
-            if (tag === 'ul') activeCmds.add('ul');
-            if (tag === 'ol') activeCmds.add('ol');
-            if (tag === 'pre' || tag === 'code') activeCmds.add('code');
-            curr = curr.parentNode;
-          }
-        }
-      }
-    } else if (editorTextarea) {
+    if (editorTextarea) {
       const text = editorTextarea.value;
       const start = editorTextarea.selectionStart;
       const end = editorTextarea.selectionEnd;
@@ -645,89 +569,10 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     });
   }
 
-  function toggleTermInlineFormat(cmd, tagNames) {
-    if (previewContainer) previewContainer.focus();
-    document.execCommand('styleWithCSS', false, false);
-
-    const sel = window.getSelection();
-    const isCollapsed = sel && sel.isCollapsed;
-
-    let isCurrentlyActive = false;
-    try { isCurrentlyActive = document.queryCommandState(cmd); } catch (e) {}
-
-    let insideTag = false;
-    if (sel && sel.rangeCount > 0) {
-      let node = sel.anchorNode;
-      if (node && node.nodeType === 3) node = node.parentNode;
-      if (node && node.closest(tagNames)) insideTag = true;
-    }
-
-    const isPending = pendingFormatStates.has(cmd);
-
-    if (!isCurrentlyActive && !insideTag && isCollapsed && !isPending) {
-      document.execCommand(cmd, false, null);
-      pendingFormatStates.add(cmd);
-      updateToolbarStates();
-      return;
-    }
-
-    if ((isCurrentlyActive || insideTag || isPending) && isCollapsed) {
-      document.execCommand(cmd, false, null);
-      pendingFormatStates.delete(cmd);
-
-      if (sel && sel.rangeCount > 0) {
-        let node = sel.anchorNode;
-        if (node && node.nodeType === 3) node = node.parentNode;
-        const matchingEl = node ? node.closest(tagNames) : null;
-
-        if (matchingEl && matchingEl.parentNode) {
-          let nextTextNode = matchingEl.nextSibling;
-          if (!nextTextNode || nextTextNode.nodeType !== 3) {
-            nextTextNode = document.createTextNode('\u200B');
-            matchingEl.parentNode.insertBefore(nextTextNode, matchingEl.nextSibling);
-          }
-          const range = document.createRange();
-          range.setStart(nextTextNode, nextTextNode.length || 0);
-          range.collapse(true);
-          sel.removeAllRanges();
-          sel.addRange(range);
-        }
-      }
-
-      handleVisualInput();
-      updateToolbarStates();
-      return;
-    }
-
-    document.execCommand(cmd, false, null);
-    handleVisualInput();
-    updateToolbarStates();
-  }
-
   // ----------------------------------------------------
   // TOOLBAR COMMANDS
   // ----------------------------------------------------
   function insertFormatting(prefix, suffix = '') {
-    const isVisualMode = previewView && !previewView.classList.contains('hidden');
-
-    if (isVisualMode) {
-      if (previewContainer) previewContainer.focus();
-      document.execCommand('styleWithCSS', false, false);
-      if (prefix === '# ') document.execCommand('formatBlock', false, '<h1>');
-      else if (prefix === '## ') document.execCommand('formatBlock', false, '<h2>');
-      else if (prefix === '### ') document.execCommand('formatBlock', false, '<h3>');
-      else if (prefix === '**') { toggleTermInlineFormat('bold', 'strong, b'); return; }
-      else if (prefix === '*') { toggleTermInlineFormat('italic', 'em, i'); return; }
-      else if (prefix === '`') document.execCommand('formatBlock', false, '<pre>');
-      else if (prefix === '> ') document.execCommand('formatBlock', false, 'blockquote');
-      else if (prefix === '- ') document.execCommand('insertUnorderedList', false, null);
-      else if (prefix === '1. ') document.execCommand('insertOrderedList', false, null);
-      else if (prefix === '- [ ] ') document.execCommand('insertUnorderedList', false, null);
-      handleVisualInput();
-      updateToolbarStates();
-      return;
-    }
-
     const start = editorTextarea.selectionStart;
     const end = editorTextarea.selectionEnd;
     const selected = editorTextarea.value.substring(start, end);
@@ -986,21 +831,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   if (editorTextarea) {
     editorTextarea.addEventListener('keyup', updateToolbarStates);
     editorTextarea.addEventListener('click', updateToolbarStates);
-  }
-
-  if (previewContainer) {
-    previewContainer.addEventListener('input', () => {
-      pendingFormatStates.clear();
-      handleVisualInput();
-      updateToolbarStates();
-    });
-    previewContainer.addEventListener('keyup', (e) => {
-      if (['Enter', 'Backspace', 'Delete'].includes(e.key)) {
-        handleVisualInput();
-      }
-      updateToolbarStates();
-    });
-    previewContainer.addEventListener('click', updateToolbarStates);
+    editorTextarea.addEventListener('input', renderPreview);
   }
 
   function showToast(msg) {
