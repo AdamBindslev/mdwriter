@@ -619,11 +619,13 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
           const start = editorTextarea.selectionStart;
           const end = editorTextarea.selectionEnd;
           const selected = editorTextarea.value.substring(start, end);
-          const block = `\`\`\`javascript\n${selected || '// Skriv kode her'}\n\`\`\``;
+          const placeholder = 'Tekstblok';
+          const textToInsert = selected || placeholder;
+          const block = `\`\`\`\n${textToInsert}\n\`\`\``;
           editorTextarea.value = editorTextarea.value.substring(0, start) + block + editorTextarea.value.substring(end);
           editorTextarea.focus();
-          editorTextarea.selectionStart = start + 14;
-          editorTextarea.selectionEnd = start + 14 + (selected ? selected.length : 17);
+          editorTextarea.selectionStart = start + 4;
+          editorTextarea.selectionEnd = start + 4 + textToInsert.length;
           saveDraft();
           updateToolbarStates();
           break;

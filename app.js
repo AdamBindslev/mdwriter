@@ -492,14 +492,14 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         break;
       case 'codeblock':
         if (selectedText) {
-          replacement = `\`\`\`javascript\n${selectedText}\n\`\`\``;
-          selStart = start + 14;
-          selEnd = start + 14 + selectedText.length;
+          replacement = `\`\`\`\n${selectedText}\n\`\`\``;
+          selStart = start + 4;
+          selEnd = start + 4 + selectedText.length;
         } else {
-          const placeholder = '// Skriv kode her';
-          replacement = `\`\`\`javascript\n${placeholder}\n\`\`\``;
-          selStart = start + 14;
-          selEnd = start + 14 + placeholder.length;
+          const placeholder = 'Tekstblok';
+          replacement = `\`\`\`\n${placeholder}\n\`\`\``;
+          selStart = start + 4;
+          selEnd = start + 4 + placeholder.length;
         }
         break;
       case 'table':
