@@ -868,8 +868,30 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     showToast(`Filen "${fileName}" blev indlæst!`, 'upload');
   }
 
+  const fKeyMap = {
+    'F1': 'h1',
+    'F2': 'h2',
+    'F3': 'h3',
+    'F4': 'bold',
+    'F5': 'italic',
+    'F6': 'code',
+    'F7': 'quote',
+    'F8': 'ul',
+    'F9': 'ol',
+    'F10': 'task',
+    'F11': 'link',
+    'F12': 'codeblock'
+  };
+
   // Global Keyboard Shortcuts
   document.addEventListener('keydown', (e) => {
+    if (fKeyMap[e.key]) {
+      e.preventDefault();
+      const btn = document.querySelector(`[data-cmd="${fKeyMap[e.key]}"]`);
+      if (btn) btn.click();
+      return;
+    }
+
     // ESC key: close modal or dropdown
     if (e.key === 'Escape') {
       closeShortcutModal();
