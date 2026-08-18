@@ -656,40 +656,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   function applyFormat(command) {
     playKeyClickSound();
 
-    if (activeEditorTarget === 'visual') {
-      if (previewContainer) previewContainer.focus();
-      document.execCommand('styleWithCSS', false, false);
-      switch (command) {
-        case 'h1': document.execCommand('formatBlock', false, '<h1>'); break;
-        case 'h2': document.execCommand('formatBlock', false, '<h2>'); break;
-        case 'h3': document.execCommand('formatBlock', false, '<h3>'); break;
-        case 'bold': toggleInlineFormat('bold', 'strong, b'); return;
-        case 'italic': toggleInlineFormat('italic', 'em, i'); return;
-        case 'strikethrough': toggleInlineFormat('strikeThrough', 'del, s, strike'); return;
-        case 'code': document.execCommand('formatBlock', false, '<pre>'); break;
-        case 'quote': document.execCommand('formatBlock', false, '<blockquote>'); break;
-        case 'ul': document.execCommand('insertUnorderedList', false, null); break;
-        case 'ol': document.execCommand('insertOrderedList', false, null); break;
-        case 'task': document.execCommand('insertUnorderedList', false, null); break;
-        case 'link': {
-          const url = prompt('Indtast URL:', 'https://example.com');
-          if (url) document.execCommand('createLink', false, url);
-          break;
-        }
-        case 'codeblock': document.execCommand('formatBlock', false, '<pre>'); break;
-        case 'table': {
-          const tableHtml = '<table><thead><tr><th>Kolonne 1</th><th>Kolonne 2</th><th>Kolonne 3</th></tr></thead><tbody><tr><td>Værdi 1</td><td>Værdi 2</td><td>Værdi 3</td></tr><tr><td>Værdi 4</td><td>Værdi 5</td><td>Værdi 6</td></tr></tbody></table><p></p>';
-          document.execCommand('insertHTML', false, tableHtml);
-          break;
-        }
-        case 'hr': document.execCommand('insertHorizontalRule', false, null); break;
-        default: break;
-      }
-      handleVisualInput();
-      updateToolbarStates();
-      return;
-    }
-
     const start = editorTextarea.selectionStart;
     const end = editorTextarea.selectionEnd;
     const selectedText = editorTextarea.value.substring(start, end);
