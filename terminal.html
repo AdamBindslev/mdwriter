@@ -9,9 +9,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=JetBrains+Mono:wght@400;500;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <!-- Feather Icons -->
   <script src="https://unpkg.com/feather-icons"></script>
-  <!-- Marked parser & DOMPurify CDN -->
+  <!-- Marked parser & DOMPurify CDN & Mermaid.js -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <link rel="stylesheet" href="terminal.css">
 </head>
 <body class="terminal-body">
@@ -159,6 +160,7 @@
             <div class="term-key-group">
               <button class="term-key" data-cmd="link" title="Indsæt Link ([titel](url))"><span class="fn-tag">F11</span> LINK</button>
               <button class="term-key" data-cmd="codeblock" title="Tekstblok (``` tekst ```)"><span class="fn-tag">F12</span> BLOK</button>
+              <button class="term-key" data-cmd="diagram" title="Diagram (Mermaid)">DIAGRAM</button>
               <button class="term-key" data-cmd="table" title="Indsæt Tabel">TABEL</button>
               <button class="term-key" data-cmd="hr" title="Vandret Linje (---)">LINJE</button>
             </div>

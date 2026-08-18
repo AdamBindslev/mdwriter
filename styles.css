@@ -735,6 +735,17 @@ body {
   color: var(--text-main);
 }
 
+.markdown-body .mermaid {
+  display: flex;
+  justify-content: center;
+  margin: 1.25rem 0;
+  padding: 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+}
+
 .markdown-body table {
   width: 100%;
   border-collapse: collapse;

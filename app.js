@@ -231,6 +231,33 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     if (window.feather) feather.replace();
   }
 
+  function renderMermaidDiagrams(container) {
+    if (!window.mermaid) return;
+    const mermaidCodes = container.querySelectorAll('code.language-mermaid, pre.language-mermaid');
+    if (mermaidCodes.length === 0) return;
+
+    mermaidCodes.forEach((el) => {
+      const parent = el.tagName.toLowerCase() === 'code' ? el.parentElement : el;
+      const codeText = el.textContent;
+      const div = document.createElement('div');
+      div.className = 'mermaid';
+      div.textContent = codeText;
+      parent.replaceWith(div);
+    });
+
+    try {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: isDark ? 'dark' : 'default',
+        securityLevel: 'loose'
+      });
+      mermaid.run({
+        querySelector: '.mermaid'
+      }).catch(() => {});
+    } catch (err) {}
+  }
+
   // Update Rendered HTML Preview & Counters
   function renderPreview() {
     const markdownText = generateFullMarkdown();
@@ -241,6 +268,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       rawHtml = rawHtml.replace(/<\/p>/gi, '<span class="return-symbol p-symbol">↵</span></p>');
       const cleanHtml = DOMPurify.sanitize(rawHtml);
       previewContainer.innerHTML = cleanHtml;
+      renderMermaidDiagrams(previewContainer);
     } else {
       previewContainer.textContent = markdownText;
     }
@@ -500,6 +528,18 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
           replacement = `\`\`\`\n${placeholder}\n\`\`\``;
           selStart = start + 4;
           selEnd = start + 4 + placeholder.length;
+        }
+        break;
+      case 'diagram':
+        if (selectedText) {
+          replacement = `\`\`\`mermaid\nflowchart LR\n    ${selectedText}\n\`\`\``;
+          selStart = start + 24;
+          selEnd = start + 24 + selectedText.length;
+        } else {
+          const sample = `flowchart LR\n    A[Start] --> B[Proces] --> C[Slut]`;
+          replacement = `\`\`\`mermaid\n${sample}\n\`\`\``;
+          selStart = start + 11;
+          selEnd = start + 11 + sample.length;
         }
         break;
       case 'table':

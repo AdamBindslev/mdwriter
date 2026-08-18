@@ -498,6 +498,33 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   // ----------------------------------------------------
   // HTML RENDER PREVIEW
   // ----------------------------------------------------
+  function renderMermaidDiagrams(container) {
+    if (!window.mermaid) return;
+    const mermaidCodes = container.querySelectorAll('code.language-mermaid, pre.language-mermaid');
+    if (mermaidCodes.length === 0) return;
+
+    mermaidCodes.forEach((el) => {
+      const parent = el.tagName.toLowerCase() === 'code' ? el.parentElement : el;
+      const codeText = el.textContent;
+      const div = document.createElement('div');
+      div.className = 'mermaid';
+      div.textContent = codeText;
+      parent.replaceWith(div);
+    });
+
+    try {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: isDark ? 'dark' : 'default',
+        securityLevel: 'loose'
+      });
+      mermaid.run({
+        querySelector: '.mermaid'
+      }).catch(() => {});
+    } catch (err) {}
+  }
+
   function renderPreview() {
     if (!window.marked || !window.DOMPurify) return;
     const rawMarkdown = editorTextarea.value;
@@ -506,6 +533,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     rawHtml = rawHtml.replace(/<\/p>/gi, '<span class="return-symbol p-symbol">↵</span></p>');
     const cleanHtml = DOMPurify.sanitize(rawHtml);
     previewContainer.innerHTML = cleanHtml;
+    renderMermaidDiagrams(previewContainer);
   }
 
   // Tab switching
@@ -626,6 +654,21 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
           editorTextarea.focus();
           editorTextarea.selectionStart = start + 4;
           editorTextarea.selectionEnd = start + 4 + textToInsert.length;
+          saveDraft();
+          updateToolbarStates();
+          break;
+        }
+        case 'diagram': {
+          const start = editorTextarea.selectionStart;
+          const end = editorTextarea.selectionEnd;
+          const selected = editorTextarea.value.substring(start, end);
+          const sample = selected ? `flowchart LR\n    ${selected}` : `flowchart LR\n    A[Start] --> B[Proces] --> C[Slut]`;
+          const block = `\`\`\`mermaid\n${sample}\n\`\`\``;
+          editorTextarea.value = editorTextarea.value.substring(0, start) + block + editorTextarea.value.substring(end);
+          editorTextarea.focus();
+          const offset = selected ? 24 : 11;
+          editorTextarea.selectionStart = start + offset;
+          editorTextarea.selectionEnd = start + offset + sample.length;
           saveDraft();
           updateToolbarStates();
           break;
