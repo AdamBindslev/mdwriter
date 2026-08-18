@@ -814,6 +814,82 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     });
   }
 
+  // Quick Chips Actions for Metadata Input
+  function getFormattedDanishDate() {
+    const today = new Date();
+    const months = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'];
+    return `${today.getDate()}. ${months[today.getMonth()]} ${today.getFullYear()}`;
+  }
+
+  function appendCategoryTag(tagLabel) {
+    if (!docCategoriesInput) return;
+    if (!docCategoriesInput.value) {
+      docCategoriesInput.value = tagLabel;
+    } else {
+      const current = docCategoriesInput.value.trim();
+      docCategoriesInput.value = current ? `${current} | ${tagLabel}` : tagLabel;
+    }
+    docCategoriesInput.focus();
+    renderPreview();
+  }
+
+  if (chipDate) {
+    chipDate.addEventListener('click', () => {
+      playKeyClickSound();
+      appendCategoryTag(`Dato: ${getFormattedDanishDate()}`);
+      showToast('Dags dato tilføjet', 'calendar');
+    });
+  }
+
+  if (chipLocation) {
+    chipLocation.addEventListener('click', () => {
+      playKeyClickSound();
+      if (!navigator.geolocation) {
+        appendCategoryTag('Sted: ');
+        return;
+      }
+      showToast('Søger efter placering...', 'map-pin');
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const { latitude, longitude } = position.coords;
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+            if (res.ok) {
+              const data = await res.json();
+              const addr = data.address || {};
+              const city = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
+              const country = addr.country || '';
+              let locationStr = 'Sted: ';
+              if (city && country) {
+                locationStr += `${city}, ${country}`;
+              } else if (city || country) {
+                locationStr += (city || country);
+              }
+              appendCategoryTag(locationStr);
+              showToast('Placering tilføjet', 'map-pin');
+            } else {
+              appendCategoryTag('Sted: ');
+            }
+          } catch (e) {
+            appendCategoryTag('Sted: ');
+          }
+        },
+        () => {
+          appendCategoryTag('Sted: ');
+        },
+        { timeout: 7000 }
+      );
+    });
+  }
+
+  if (chipNoteNo) {
+    chipNoteNo.addEventListener('click', () => {
+      playKeyClickSound();
+      appendCategoryTag('Tags: ');
+      showToast('Tags skabelon tilføjet', 'tag');
+    });
+  }
+
   btnLoadSample.addEventListener('click', () => {
     playBellSound();
     docTitleInput.value = sampleData.title;

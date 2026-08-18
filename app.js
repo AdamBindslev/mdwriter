@@ -547,8 +547,15 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     renderPreview();
   }
 
+  function getFormattedDanishDate() {
+    const today = new Date();
+    const months = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'];
+    return `${today.getDate()}. ${months[today.getMonth()]} ${today.getFullYear()}`;
+  }
+
   chipDate.addEventListener('click', () => {
-    appendCategoryTag('Dato: ');
+    appendCategoryTag(`Dato: ${getFormattedDanishDate()}`);
+    showToast('Dags dato tilføjet', 'calendar');
   });
 
   chipLocation.addEventListener('click', () => {
