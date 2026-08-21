@@ -128,8 +128,14 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   // ----------------------------------------------------
   // REAL AUDIO SAMPLE PLAYER (.wav files) WITH FALLBACK
   // ----------------------------------------------------
+  const SOUND_KEY = 'md_writer_typewriter_sound';
   let soundEnabled = true;
   let audioCtx = null;
+
+  const savedSound = localStorage.getItem(SOUND_KEY);
+  if (savedSound !== null) {
+    soundEnabled = savedSound === 'true';
+  }
 
   const soundBuffers = {
     keys: [],       // Decoded AudioBuffers for key clicks
@@ -394,13 +400,26 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     }
   }
 
+  function updateSoundUI() {
+    if (btnSoundToggle) {
+      btnSoundToggle.classList.toggle('active', soundEnabled);
+      btnSoundToggle.setAttribute('title', soundEnabled ? 'Mekanisk lyd slået til' : 'Mekanisk lyd slået fra');
+    }
+    if (soundIcon) {
+      soundIcon.setAttribute('data-feather', soundEnabled ? 'volume-2' : 'volume-x');
+    }
+    if (window.feather) feather.replace();
+  }
+
   // Toggle Sound FX
   btnSoundToggle.addEventListener('click', () => {
     soundEnabled = !soundEnabled;
-    btnSoundToggle.classList.toggle('active', soundEnabled);
-    soundIcon.setAttribute('data-feather', soundEnabled ? 'volume-2' : 'volume-x');
-    if (window.feather) feather.replace();
+    try {
+      localStorage.setItem(SOUND_KEY, soundEnabled);
+    } catch (e) {}
+    updateSoundUI();
     showToast(soundEnabled ? 'Skrivemaskinelyd Aktiveret' : 'Mekanisk lyd slået fra');
+    if (soundEnabled) playKeyClickSound();
   });
 
   // ----------------------------------------------------
@@ -1174,6 +1193,25 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
 
   document.addEventListener('selectionchange', updateToolbarStates);
 
+  function handleTypingSound(e) {
+    if (!soundEnabled) return;
+    if (e.key === 'Enter') {
+      playBellSound();
+    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+      playBackspaceSound();
+    } else if (e.key === ' ' || e.code === 'Space') {
+      playSpaceSound();
+    } else if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      playKeyClickSound();
+    }
+  }
+
+  [editorTextarea, docTitleInput, docCategoriesInput].forEach(inputEl => {
+    if (inputEl) {
+      inputEl.addEventListener('keydown', handleTypingSound);
+    }
+  });
+
   if (editorTextarea) {
     editorTextarea.addEventListener('keyup', updateToolbarStates);
     editorTextarea.addEventListener('click', updateToolbarStates);
@@ -1181,6 +1219,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   }
 
   // Startup Init
+  updateSoundUI();
   loadDraft();
   renderPreview();
   preloadRealWavSounds();
