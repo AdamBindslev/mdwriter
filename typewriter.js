@@ -443,6 +443,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     tabPreview.classList.remove('active');
     editorView.classList.remove('hidden');
     previewView.classList.add('hidden');
+    autoResizeTextarea();
     playKeyClickSound();
   });
 
@@ -622,6 +623,12 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     } catch (err) {}
   }
 
+  function autoResizeTextarea() {
+    if (!editorTextarea) return;
+    editorTextarea.style.height = 'auto';
+    editorTextarea.style.height = Math.max(480, editorTextarea.scrollHeight) + 'px';
+  }
+
   function renderPreview() {
     const markdownText = generateFullMarkdown();
 
@@ -636,6 +643,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       previewContainer.textContent = markdownText;
     }
 
+    autoResizeTextarea();
     updateOdometer();
     saveDraft();
   }
@@ -982,14 +990,16 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     });
   }
 
-  btnLoadSample.addEventListener('click', () => {
-    playBellSound();
-    docTitleInput.value = sampleData.title;
-    docCategoriesInput.value = sampleData.categories;
-    editorTextarea.value = sampleData.body;
-    renderPreview();
-    showToast('Eksempel (Møns Klint) indlæst på skrivemaskinen!', 'file-text');
-  });
+  if (btnLoadSample) {
+    btnLoadSample.addEventListener('click', () => {
+      playBellSound();
+      docTitleInput.value = sampleData.title;
+      docCategoriesInput.value = sampleData.categories;
+      editorTextarea.value = sampleData.body;
+      renderPreview();
+      showToast('Eksempel (Møns Klint) indlæst på skrivemaskinen!', 'file-text');
+    });
+  }
 
   // ----------------------------------------------------
   // FULLSCREEN & DISTRACTION-FREE MODE LOGIC
@@ -1006,7 +1016,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         document.documentElement.webkitRequestFullscreen().catch(() => {});
       }
       document.body.classList.add('distraction-free-mode');
-      if (floatingExitFs) floatingExitFs.classList.remove('hidden');
+      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
       if (btnFullscreen) {
         btnFullscreen.classList.add('active');
         btnFullscreen.setAttribute('title', 'Forlad Fuldskærm (Alt+F eller ESC)');
@@ -1022,7 +1032,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         }
       }
       document.body.classList.remove('distraction-free-mode');
-      if (floatingExitFs) floatingExitFs.classList.add('hidden');
+      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
       if (btnFullscreen) {
         btnFullscreen.classList.remove('active');
         btnFullscreen.setAttribute('title', 'Fuldskærm / Distraktionsfri Skrivemodus (Alt+F eller ESC)');
@@ -1039,13 +1049,13 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
     if (!isFs) {
       document.body.classList.remove('distraction-free-mode');
-      if (floatingExitFs) floatingExitFs.classList.add('hidden');
+      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
       if (btnFullscreen) {
         btnFullscreen.classList.remove('active');
       }
     } else {
       document.body.classList.add('distraction-free-mode');
-      if (floatingExitFs) floatingExitFs.classList.remove('hidden');
+      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
       if (btnFullscreen) {
         btnFullscreen.classList.add('active');
       }

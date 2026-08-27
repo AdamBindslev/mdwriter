@@ -14,6 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <link rel="stylesheet" href="terminal.css">
+  <link rel="stylesheet" href="focus-timer.css">
 </head>
 <body class="terminal-body">
   <div class="crt-monitor-container" id="crtMonitor">
@@ -168,15 +169,13 @@
             <div class="term-key-divider">|</div>
 
             <div class="term-key-group term-right-keys">
-              <button class="term-key term-key-sample" id="btnLoadSample" title="Indlæs Møns Klint Feltjournal">
-                <i data-feather="file-text"></i> EKSEMPEL
-              </button>
               <button class="term-key term-key-copy" id="btnCopyMd" title="Kopier Markdown til udklipsholder">
                 <i data-feather="copy"></i> KOPIER
               </button>
               <button class="term-key term-key-clear" id="btnClear" title="Ryd Skærm">
                 <i data-feather="trash-2"></i> RYD
               </button>
+              <div class="focus-timer-mount"></div>
             </div>
           </div>
 
@@ -259,10 +258,7 @@
 
   </div>
 
-  <!-- Floating Exit Fullscreen Button (Shown in Fullscreen Mode) -->
-  <button id="floatingExitFs" class="floating-exit-fs hidden" title="Afslut Fuldskærm (ESC)">
-    <i data-feather="minimize-2"></i> Afslut Fuldskærm (ESC)
-  </button>
+
 
   <!-- Shortcuts Help Modal -->
   <div class="modal-backdrop hidden" id="shortcutModal">
@@ -297,6 +293,7 @@
     <span id="toastMsg">Meddelelse</span>
   </div>
 
+  <script src="focus-timer.js"></script>
   <script src="terminal.js"></script>
 </body>
 </html>

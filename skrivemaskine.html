@@ -14,6 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <link rel="stylesheet" href="typewriter.css">
+  <link rel="stylesheet" href="focus-timer.css">
 </head>
 <body class="typewriter-body">
   <div class="desk-container">
@@ -129,15 +130,13 @@
         <div class="key-divider"></div>
 
         <div class="keycap-group right-keys">
-          <button class="tw-key tw-key-action tw-key-sample" id="btnLoadSample" title="Indlæs Møns Klint Feltjournal">
-            <i data-feather="file-text"></i> <span>Eksempel</span>
-          </button>
           <button class="tw-key tw-key-action tw-key-copy" id="btnCopyMd" title="Kopier Markdown til udklipsholder">
             <i data-feather="copy"></i> <span>Kopier MD</span>
           </button>
           <button class="tw-key tw-key-action tw-key-clear" id="btnClear" title="Ryd Papir">
             <i data-feather="trash-2"></i> <span>Ryd</span>
           </button>
+          <div class="focus-timer-mount"></div>
         </div>
       </div>
 
@@ -227,11 +226,6 @@
   <!-- Toast Notification -->
   <div class="toast" id="toast"></div>
 
-  <!-- Floating Exit Fullscreen Button (Visible in Distraction-Free / Fullscreen Mode) -->
-  <button id="floatingExitFs" class="floating-exit-fs hidden" title="Forlad Fuldskærm (ESC)">
-    <i data-feather="minimize-2"></i> Forlad Fuldskærm <kbd>ESC</kbd>
-  </button>
-
   <!-- Keyboard Shortcuts Modal -->
   <div class="modal-backdrop hidden" id="shortcutModal">
     <div class="modal-card tw-modal-card">
@@ -290,6 +284,7 @@
     </div>
   </div>
 
+  <script src="focus-timer.js"></script>
   <script src="typewriter.js"></script>
 </body>
 </html>

@@ -1013,13 +1013,15 @@ html[data-flicker="true"] .overlay-flicker {
 /* --------------------------------------------------------------------------
    FULLSCREEN & DISTRACTION-FREE MODE
    -------------------------------------------------------------------------- */
-body.fullscreen-active {
+body.fullscreen-active,
+body.distraction-free-mode {
   padding: 0;
   margin: 0;
   overflow: hidden;
 }
 
-body.fullscreen-active .crt-monitor-container {
+body.fullscreen-active .crt-monitor-container,
+body.distraction-free-mode .crt-monitor-container {
   max-width: 100vw;
   height: 100vh;
   padding: 0;
@@ -1027,14 +1029,46 @@ body.fullscreen-active .crt-monitor-container {
   border-radius: 0;
 }
 
-body.fullscreen-active .term-header {
-  display: none;
+body.fullscreen-active .term-header,
+body.fullscreen-active .term-footer,
+body.distraction-free-mode .term-header,
+body.distraction-free-mode .term-footer {
+  display: none !important;
 }
 
-body.fullscreen-active .crt-bezel {
+body.fullscreen-active .crt-bezel,
+body.distraction-free-mode .crt-bezel {
   border-radius: 0;
   border: none;
   padding: 8px;
+  height: 100vh;
+}
+
+/* Auto-fade all UI noise inside Terminal monitor during typing, keeping timer readable */
+body.is-typing .term-status-line,
+body.is-typing .term-tabs,
+body.is-typing .term-meta-block,
+body.is-typing .term-hr-dashed {
+  opacity: 0.08 !important;
+  transition: opacity 0.6s ease;
+}
+
+body.is-typing .term-toolbar {
+  opacity: 0.20 !important;
+  transition: opacity 0.6s ease;
+}
+
+body.is-typing .focus-timer-widget {
+  opacity: 0.55 !important;
+  transition: opacity 0.6s ease;
+}
+
+body.is-typing .term-status-line:hover,
+body.is-typing .term-toolbar:hover,
+body.is-typing .term-tabs:hover,
+body.is-typing .term-meta-block:hover,
+body.is-typing .focus-timer-widget:hover {
+  opacity: 1 !important;
 }
 
 body.fullscreen-active .crt-screen {

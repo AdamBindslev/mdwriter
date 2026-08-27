@@ -14,6 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="focus-timer.css">
 </head>
 <body>
   <div class="app-container">
@@ -40,18 +41,19 @@
           </button>
         </div>
 
+        <div class="view-toggle-group mode-toggle-group">
+          <a href="skrivemaskine.html" class="btn-toggle-link" title="Skift til Skrivemaskine Udgave">
+            <i data-feather="type"></i> Skrivemaskine
+          </a>
+          <a href="terminal.html" class="btn-toggle-link" title="Skift til Terminal (CRT) Udgave">
+            <i data-feather="terminal"></i> Terminal
+          </a>
+        </div>
+
         <div class="action-divider"></div>
 
-        <a href="skrivemaskine.html" class="btn btn-secondary" title="Skift til Skrivemaskine Udgave">
-          <i data-feather="type"></i> Skrivemaskine
-        </a>
-
-        <a href="terminal.html" class="btn btn-secondary" title="Skift til Terminal (Matrix / Wargames CRT) Udgave">
-          <i data-feather="terminal"></i> Terminal
-        </a>
-
-        <button id="btnLoadSample" class="btn btn-secondary" title="Indlæs Møns Klint feltjournal som eksempel">
-          <i data-feather="file-text"></i> Indlæs Eksempel
+        <button id="btnFullscreen" class="btn btn-secondary btn-compact" title="Fuldskærm / Distraktionsfri Skrivemodus (Alt+F eller ESC)">
+          <i data-feather="maximize" id="fullscreenIcon"></i> Fuldskærm
         </button>
 
         <button id="btnThemeToggle" class="btn btn-icon" title="Skift Mørk/Lys Tema">
@@ -159,6 +161,7 @@
         <button type="button" id="btnClear" class="tb-btn tb-danger" title="Ryd indhold">
           <i data-feather="trash-2"></i> Ryd
         </button>
+        <div class="focus-timer-mount"></div>
       </div>
     </div>
 
@@ -274,6 +277,7 @@
     </div>
   </div>
 
+  <script src="focus-timer.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

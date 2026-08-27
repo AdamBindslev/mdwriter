@@ -776,15 +776,17 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   });
 
   // Load sample & clear
-  btnLoadSample.addEventListener('click', () => {
-    if (confirm('Vil du erstatte dit nuværende indhold med Møns Klint feltjournal eksemplet?')) {
-      docTitleInput.value = sampleData.title;
-      docCategoriesInput.value = sampleData.categories;
-      editorTextarea.value = sampleData.body;
-      saveDraft();
-      showToast('Eksempel indlæst');
-    }
-  });
+  if (btnLoadSample) {
+    btnLoadSample.addEventListener('click', () => {
+      if (confirm('Vil du erstatte dit nuværende indhold med Møns Klint feltjournal eksemplet?')) {
+        docTitleInput.value = sampleData.title;
+        docCategoriesInput.value = sampleData.categories;
+        editorTextarea.value = sampleData.body;
+        saveDraft();
+        showToast('Eksempel indlæst');
+      }
+    });
+  }
 
   btnClear.addEventListener('click', () => {
     if (confirm('Er du sikker på, at du vil rydde skærmen?')) {
@@ -859,15 +861,15 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   // ----------------------------------------------------
   // FULLSCREEN & SHORTCUTS MODAL
   // ----------------------------------------------------
-  btnFullscreen.addEventListener('click', toggleFullscreen);
-  floatingExitFs.addEventListener('click', toggleFullscreen);
+  if (btnFullscreen) btnFullscreen.addEventListener('click', toggleFullscreen);
+  if (floatingExitFs) floatingExitFs.addEventListener('click', toggleFullscreen);
 
   function toggleFullscreen() {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().then(() => {
         document.body.classList.add('fullscreen-active');
-        floatingExitFs.classList.remove('hidden');
-        fullscreenIcon.setAttribute('data-feather', 'minimize');
+        if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
+        if (fullscreenIcon) fullscreenIcon.setAttribute('data-feather', 'minimize');
         if (window.feather) feather.replace();
         showToast('Fuldskærmsmodus aktiveret (ESC for at afslutte)');
       }).catch(err => {
@@ -876,8 +878,8 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     } else {
       document.exitFullscreen().then(() => {
         document.body.classList.remove('fullscreen-active');
-        floatingExitFs.classList.add('hidden');
-        fullscreenIcon.setAttribute('data-feather', 'maximize');
+        if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
+        if (fullscreenIcon) fullscreenIcon.setAttribute('data-feather', 'maximize');
         if (window.feather) feather.replace();
       });
     }
@@ -886,9 +888,11 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   document.addEventListener('fullscreenchange', () => {
     if (!document.fullscreenElement) {
       document.body.classList.remove('fullscreen-active');
-      floatingExitFs.classList.add('hidden');
-      fullscreenIcon.setAttribute('data-feather', 'maximize');
+      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
+      if (fullscreenIcon) fullscreenIcon.setAttribute('data-feather', 'maximize');
       if (window.feather) feather.replace();
+    } else {
+      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
     }
   });
 
