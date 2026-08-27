@@ -445,17 +445,22 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     return `${yy}${mm}${dd}`;
   }
 
-  function updateFilenamePreview() {
-    const titleVal = docTitleInput.value.trim();
-    const dateStr = getYYMMDD();
-    let sanitizedTitle = titleVal
-      .toLowerCase()
-      .replace(/[^a-z0-9æøå\s-]/g, '')
-      .trim()
-      .replace(/\s+/g, '_');
+  function sanitizeFilename(title) {
+    if (!title || !title.trim()) return 'dokument';
+    let clean = title.trim();
+    clean = clean.replace(/[\/\\:*?"<>|]/g, '');
+    clean = clean.replace(/\s+/g, ' ');
+    return clean;
+  }
 
-    if (!sanitizedTitle) sanitizedTitle = 'dokument';
-    filenamePreview.textContent = `${dateStr}_${sanitizedTitle}.md`;
+  function getExportFilename() {
+    const dateStr = getYYMMDD();
+    const titleStr = sanitizeFilename(docTitleInput.value);
+    return `${dateStr} ${titleStr}.md`;
+  }
+
+  function updateFilenamePreview() {
+    filenamePreview.textContent = getExportFilename();
   }
 
   function updateStats() {
