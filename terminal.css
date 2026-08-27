@@ -1010,6 +1010,18 @@ body.distraction-free-mode .crt-monitor-container {
   border-radius: 0;
 }
 
+body.fullscreen-active .term-header,
+body.fullscreen-active .term-footer,
+body.distraction-free-mode .term-header,
+body.distraction-free-mode .term-footer {
+  display: none !important;
+}
+
+body.fullscreen-active .floating-exit-fs,
+body.distraction-free-mode .floating-exit-fs {
+  display: inline-flex !important;
+}
+
 body.fullscreen-active .crt-bezel,
 body.distraction-free-mode .crt-bezel {
   border-radius: 0;
