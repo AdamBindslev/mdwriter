@@ -6,6 +6,9 @@
 
 (function () {
   window.MDCore = window.MDCore || {};
+  window.MDCore.VERSION = '2.0.0';
+
+  console.log('%c🚀 MD Writer Core v2.0 aktiv', 'background: #2563eb; color: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
 
   const DRAFT_KEY = 'md_writer_draft';
 
