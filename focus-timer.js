@@ -1,5 +1,5 @@
 /**
- * FLOWSCRIBE - POMODORO FOCUS TIMER & DISTRACTION-FREE SYSTEM v6.0
+ * FLOWSCRIBE - POMODORO FOCUS TIMER & DISTRACTION-FREE SYSTEM
  * Naturally integrated into toolbars across Standard, Typewriter, and Terminal modes.
  * Supports 25/5, 50/10 & Custom Minutes, Auto-Fullscreen on Start,
  * Auto-Hide UI on typing, Web Audio Bell, and Strict Focus Warnings.
