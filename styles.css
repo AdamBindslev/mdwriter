@@ -1170,9 +1170,19 @@ kbd {
    Print & PDF Export Stylesheet (@media print)
    ========================================================================== */
 @media print {
+  @page {
+    size: A4;
+    margin: 20mm 15mm;
+  }
+
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   body {
     background: #ffffff !important;
-    color: #1e293b !important;
+    color: #0f172a !important;
     padding: 0 !important;
     margin: 0 !important;
   }
@@ -1188,8 +1198,26 @@ kbd {
   .modal-backdrop,
   .drag-drop-overlay,
   .view-toggle-group,
-  .quick-chips {
+  .quick-chips,
+  .focus-timer-widget,
+  .focus-timer-mount,
+  .focus-timer-overlay,
+  .return-symbol {
     display: none !important;
+    visibility: hidden !important;
+  }
+
+  .return-symbol,
+  .return-symbol.p-symbol,
+  .return-symbol.br-symbol {
+    display: none !important;
+    visibility: hidden !important;
+    font-size: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    line-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .app-container,
@@ -1229,8 +1257,19 @@ kbd {
   .markdown-body {
     color: #0f172a !important;
     font-size: 11pt !important;
-    line-height: 1.6 !important;
-    padding: 1.5cm 1cm !important;
+    line-height: 1.65 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .markdown-body h1,
+  .markdown-body h2,
+  .markdown-body h3,
+  .markdown-body h4,
+  .markdown-body h5,
+  .markdown-body h6 {
+    page-break-after: avoid;
+    break-after: avoid;
   }
 
   .markdown-body h1 {
@@ -1238,38 +1277,59 @@ kbd {
     border-bottom: 2pt solid #e2e8f0 !important;
     font-size: 22pt !important;
     margin-top: 0 !important;
+    padding-bottom: 6pt !important;
   }
 
   .markdown-body h2 {
     color: #1e293b !important;
     font-size: 16pt !important;
+    margin-top: 18pt !important;
+    border-bottom: 1pt solid #f1f5f9 !important;
+    padding-bottom: 4pt !important;
   }
 
   .markdown-body h3 {
     color: #334155 !important;
     font-size: 13pt !important;
+    margin-top: 14pt !important;
   }
 
   .markdown-body em.meta-tag, .markdown-body p > em:first-child {
-    background: #f1f5f9 !important;
-    color: #0284c7 !important;
+    background: #f8fafc !important;
+    color: #0369a1 !important;
     border-left: 3pt solid #0284c7 !important;
+    padding: 4pt 8pt !important;
+    display: inline-block !important;
+    margin-bottom: 12pt !important;
   }
 
   .markdown-body blockquote {
     background: #f8fafc !important;
     border-left: 4pt solid #3b82f6 !important;
     color: #475569 !important;
+    padding: 8pt 12pt !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   .markdown-body code {
     background: #f1f5f9 !important;
-    color: #d97706 !important;
+    color: #b45309 !important;
     border: 1px solid #e2e8f0 !important;
+    font-size: 9.5pt !important;
   }
 
   .markdown-body pre {
     background: #f8fafc !important;
     border: 1px solid #e2e8f0 !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .markdown-body table,
+  .markdown-body img,
+  .markdown-body .mermaid {
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 }

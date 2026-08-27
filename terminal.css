@@ -1224,3 +1224,168 @@ kbd {
     margin-left: 0;
   }
 }
+
+/* ==========================================================================
+   Terminal Print Styles (@media print)
+   ========================================================================== */
+@media print {
+  @page {
+    size: A4;
+    margin: 20mm 15mm;
+  }
+
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body, .term-body {
+    background: #ffffff !important;
+    color: #111827 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .term-header,
+  .overlay-scanlines,
+  .overlay-vignette,
+  .overlay-flicker,
+  .term-sys-banner,
+  .term-toolbar,
+  .term-tabs,
+  .term-fields,
+  .term-divider,
+  #editorView,
+  .term-footer,
+  .toast,
+  .modal-backdrop,
+  .focus-timer-widget,
+  .focus-timer-mount,
+  .focus-timer-overlay,
+  .return-symbol {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .return-symbol,
+  .return-symbol.p-symbol,
+  .return-symbol.br-symbol {
+    display: none !important;
+    visibility: hidden !important;
+    font-size: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    line-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .term-container,
+  .crt-bezel,
+  .crt-screen,
+  .term-workspace,
+  .term-content-area {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Force rendered HTML view to display when printing */
+  #previewView,
+  .term-pane#previewView,
+  .term-pane.hidden#previewView {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .term-rendered-body {
+    display: block !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    font-size: 11pt !important;
+    line-height: 1.65 !important;
+    color: #111827 !important;
+    background: #ffffff !important;
+    border: none !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
+
+  .term-rendered-body h1,
+  .term-rendered-body h2,
+  .term-rendered-body h3,
+  .term-rendered-body h4,
+  .term-rendered-body h5,
+  .term-rendered-body h6 {
+    color: #111827 !important;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .term-rendered-body h1 {
+    font-size: 22pt !important;
+    border-bottom: 2pt solid #e2e8f0 !important;
+    margin-top: 0 !important;
+    padding-bottom: 6pt !important;
+  }
+
+  .term-rendered-body h2 {
+    font-size: 16pt !important;
+    border-bottom: 1pt solid #f1f5f9 !important;
+    margin-top: 18pt !important;
+    padding-bottom: 4pt !important;
+  }
+
+  .term-rendered-body h3 {
+    font-size: 13pt !important;
+    margin-top: 14pt !important;
+  }
+
+  .term-rendered-body em.meta-tag, .term-rendered-body p > em:first-child {
+    background: #f8fafc !important;
+    color: #0369a1 !important;
+    border-left: 3pt solid #0284c7 !important;
+    padding: 4pt 8pt !important;
+    display: inline-block !important;
+    margin-bottom: 12pt !important;
+  }
+
+  .term-rendered-body blockquote {
+    background: #f8fafc !important;
+    border-left: 4pt solid #3b82f6 !important;
+    color: #475569 !important;
+    padding: 8pt 12pt !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .term-rendered-body code {
+    background: #f1f5f9 !important;
+    color: #b45309 !important;
+    border: 1px solid #e2e8f0 !important;
+    font-size: 9.5pt !important;
+  }
+
+  .term-rendered-body pre {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .term-rendered-body table,
+  .term-rendered-body img,
+  .term-rendered-body .mermaid {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
