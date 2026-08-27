@@ -133,13 +133,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const gainNode = audioCtx.createGain();
 
       if (isKeyClick) {
-        source.playbackRate.value = 0.92 + Math.random() * 0.16;
-        gainNode.gain.value = 0.85 + Math.random() * 0.3;
-        const toneFilter = audioCtx.createBiquadFilter();
-        toneFilter.type = 'lowpass';
-        toneFilter.frequency.setValueAtTime(3200 + Math.random() * 2500, audioCtx.currentTime);
-        source.connect(toneFilter);
-        toneFilter.connect(gainNode);
+        source.playbackRate.value = 0.94 + Math.random() * 0.12;
+        gainNode.gain.value = 0.9 + Math.random() * 0.2;
+        source.connect(gainNode);
       } else {
         if (pitchVar) {
           source.playbackRate.value = 0.96 + Math.random() * 0.08;
@@ -156,10 +152,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Synthesize / Play Realistic Vintage Typewriter Key Strike
   function playKeyClickSound() {
     if (!soundEnabled) return;
     initAudio();
 
+    // 1. Try real .wav sample if available
     if (soundBuffers.keys.length > 0) {
       let idx = Math.floor(Math.random() * soundBuffers.keys.length);
       if (soundBuffers.keys.length > 1 && idx === lastKeyIndex && Math.random() > 0.3) {
@@ -170,51 +168,86 @@ document.addEventListener('DOMContentLoaded', () => {
       if (playSample(selectedBuf, true, true)) return;
     }
 
+    // 2. High-Fidelity Procedural Web Audio Synthesizer
     if (!audioCtx) return;
     try {
       const now = audioCtx.currentTime;
-      const pitchVariation = 0.9 + Math.random() * 0.22;
-      const gainVariation = 0.8 + Math.random() * 0.3;
+      const pitchVar = 0.92 + Math.random() * 0.18;
+      const gainVar = 0.85 + Math.random() * 0.25;
 
-      const noiseLength = 0.04;
-      const bufferSize = audioCtx.sampleRate * noiseLength;
-      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-      const output = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+      // Layer 1: Metal Type-Bar Strike (High-speed noise burst through resonant bandpass)
+      const noiseLen = 0.032;
+      const bufSize = Math.floor(audioCtx.sampleRate * noiseLen);
+      const noiseBuf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+      const out = noiseBuf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) {
+        out[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.28));
       }
 
       const noise = audioCtx.createBufferSource();
-      noise.buffer = buffer;
+      noise.buffer = noiseBuf;
+
       const bandpass = audioCtx.createBiquadFilter();
       bandpass.type = 'bandpass';
-      bandpass.frequency.setValueAtTime((2400 + Math.random() * 600) * pitchVariation, now);
-      bandpass.Q.setValueAtTime(4.5, now);
+      bandpass.frequency.setValueAtTime((2600 + Math.random() * 500) * pitchVar, now);
+      bandpass.Q.setValueAtTime(4.2, now);
 
       const noiseGain = audioCtx.createGain();
-      noiseGain.gain.setValueAtTime(0.4 * gainVariation, now);
-      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.038);
+      noiseGain.gain.setValueAtTime(0.45 * gainVar, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + noiseLen);
 
       noise.connect(bandpass);
       bandpass.connect(noiseGain);
       noiseGain.connect(audioCtx.destination);
       noise.start(now);
 
-      const osc = audioCtx.createOscillator();
-      const oscGain = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(1400 * pitchVariation, now);
-      osc.frequency.exponentialRampToValueAtTime(350, now + 0.02);
-      oscGain.gain.setValueAtTime(0.3 * gainVariation, now);
-      oscGain.gain.linearRampToValueAtTime(0.0001, now + 0.02);
+      // Layer 2: Metallic Lever Snap (Triangle frequency sweep)
+      const oscSnap = audioCtx.createOscillator();
+      const snapGain = audioCtx.createGain();
+      oscSnap.type = 'triangle';
+      oscSnap.frequency.setValueAtTime(1500 * pitchVar, now);
+      oscSnap.frequency.exponentialRampToValueAtTime(320, now + 0.022);
 
-      osc.connect(oscGain);
-      oscGain.connect(audioCtx.destination);
-      osc.start(now);
-      osc.stop(now + 0.02);
+      snapGain.gain.setValueAtTime(0.35 * gainVar, now);
+      snapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.022);
+
+      oscSnap.connect(snapGain);
+      snapGain.connect(audioCtx.destination);
+      oscSnap.start(now);
+      oscSnap.stop(now + 0.022);
+
+      // Layer 3: Heavy Platen / Roller Body Resonance (Low sine thud)
+      const oscBody = audioCtx.createOscillator();
+      const bodyGain = audioCtx.createGain();
+      oscBody.type = 'sine';
+      oscBody.frequency.setValueAtTime(260 * pitchVar, now);
+      oscBody.frequency.exponentialRampToValueAtTime(65, now + 0.028);
+
+      bodyGain.gain.setValueAtTime(0.3 * gainVar, now);
+      bodyGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.028);
+
+      oscBody.connect(bodyGain);
+      bodyGain.connect(audioCtx.destination);
+      oscBody.start(now);
+      oscBody.stop(now + 0.028);
+
+      // Layer 4: Subtle Spring Ringing (Metallic ping overtone)
+      const oscRing = audioCtx.createOscillator();
+      const ringGain = audioCtx.createGain();
+      oscRing.type = 'sine';
+      oscRing.frequency.setValueAtTime((3800 + Math.random() * 400) * pitchVar, now);
+
+      ringGain.gain.setValueAtTime(0.08 * gainVar, now);
+      ringGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+
+      oscRing.connect(ringGain);
+      ringGain.connect(audioCtx.destination);
+      oscRing.start(now);
+      oscRing.stop(now + 0.04);
     } catch (e) {}
   }
 
+  // Synthesize / Play Spacebar (Heavy mechanical carriage bar impact + spring release)
   function playSpaceSound() {
     if (!soundEnabled) return;
     initAudio();
@@ -226,38 +259,66 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!audioCtx) return;
     try {
       const now = audioCtx.currentTime;
+      const pitchVar = 0.95 + Math.random() * 0.1;
+
+      // 1. Heavy wooden / metal platen impact
       const body = audioCtx.createOscillator();
       const bodyGain = audioCtx.createGain();
       body.type = 'sine';
-      body.frequency.setValueAtTime(180, now);
-      body.frequency.exponentialRampToValueAtTime(45, now + 0.06);
+      body.frequency.setValueAtTime(170 * pitchVar, now);
+      body.frequency.exponentialRampToValueAtTime(40, now + 0.065);
 
-      bodyGain.gain.setValueAtTime(0.5, now);
-      bodyGain.gain.linearRampToValueAtTime(0.0001, now + 0.06);
+      bodyGain.gain.setValueAtTime(0.55, now);
+      bodyGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.065);
 
       body.connect(bodyGain);
       bodyGain.connect(audioCtx.destination);
       body.start(now);
-      body.stop(now + 0.06);
+      body.stop(now + 0.065);
+
+      // 2. Soft mechanical escapement bar friction
+      const noiseLen = 0.035;
+      const bufSize = Math.floor(audioCtx.sampleRate * noiseLen);
+      const noiseBuf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+      const out = noiseBuf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) {
+        out[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.35));
+      }
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = noiseBuf;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1100, now);
+
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.setValueAtTime(0.28, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + noiseLen);
+
+      noise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(audioCtx.destination);
+      noise.start(now);
     } catch (e) {}
   }
 
-  function playRatchetClick(t) {
+  function playRatchetClick(t, pitchMult = 1.0) {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = 'square';
-    osc.frequency.setValueAtTime(800, t);
-    osc.frequency.exponentialRampToValueAtTime(200, t + 0.012);
+    osc.frequency.setValueAtTime(820 * pitchMult, t);
+    osc.frequency.exponentialRampToValueAtTime(220 * pitchMult, t + 0.014);
 
-    gain.gain.setValueAtTime(0.2, t);
-    gain.gain.linearRampToValueAtTime(0.0001, t + 0.012);
+    gain.gain.setValueAtTime(0.22, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.014);
 
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start(t);
-    osc.stop(t + 0.012);
+    osc.stop(t + 0.014);
   }
 
+  // Synthesize / Play Backspace (Escapement gear reverse click)
   function playBackspaceSound() {
     if (!soundEnabled) return;
     initAudio();
@@ -269,11 +330,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!audioCtx) return;
     try {
       const now = audioCtx.currentTime;
-      playRatchetClick(now);
-      playRatchetClick(now + 0.015);
+      playRatchetClick(now, 1.05);
+      playRatchetClick(now + 0.018, 0.95);
     } catch (e) {}
   }
 
+  // Synthesize / Play Vintage Typewriter Carriage Return Bell ("Ding!") + Slide
   function playBellSound() {
     if (!soundEnabled) return;
     initAudio();
@@ -285,21 +347,52 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!audioCtx) return;
     try {
       const now = audioCtx.currentTime;
+
+      // 1. High Metallic Bell Chime (Pure sine 2650Hz with natural resonant decay)
       const bell = audioCtx.createOscillator();
       const bellGain = audioCtx.createGain();
       bell.type = 'sine';
       bell.frequency.setValueAtTime(2650, now);
 
       bellGain.gain.setValueAtTime(0.55, now);
-      bellGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
+      bellGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
 
       bell.connect(bellGain);
       bellGain.connect(audioCtx.destination);
       bell.start(now);
-      bell.stop(now + 1.1);
+      bell.stop(now + 1.2);
 
+      // 2. Harmonic Overtone (5300Hz)
+      const overtone = audioCtx.createOscillator();
+      const overtoneGain = audioCtx.createGain();
+      overtone.type = 'sine';
+      overtone.frequency.setValueAtTime(5300, now);
+
+      overtoneGain.gain.setValueAtTime(0.22, now);
+      overtoneGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+
+      overtone.connect(overtoneGain);
+      overtoneGain.connect(audioCtx.destination);
+      overtone.start(now);
+      overtone.stop(now + 0.55);
+
+      // 3. Warm Under-tone Resonance (1325Hz)
+      const undertone = audioCtx.createOscillator();
+      const underGain = audioCtx.createGain();
+      undertone.type = 'sine';
+      undertone.frequency.setValueAtTime(1325, now);
+
+      underGain.gain.setValueAtTime(0.15, now);
+      underGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+
+      undertone.connect(underGain);
+      underGain.connect(audioCtx.destination);
+      undertone.start(now);
+      undertone.stop(now + 0.35);
+
+      // 4. Mechanical Carriage Return Ratchet Slide (4 rapid tooth-clicks)
       for (let i = 0; i < 4; i++) {
-        playRatchetClick(now + 0.08 + i * 0.025);
+        playRatchetClick(now + 0.08 + i * 0.026, 1.0 - i * 0.03);
       }
     } catch (e) {}
   }
