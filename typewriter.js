@@ -625,8 +625,9 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
 
   function autoResizeTextarea() {
     if (!editorTextarea) return;
-    editorTextarea.style.height = 'auto';
-    editorTextarea.style.height = Math.max(480, editorTextarea.scrollHeight) + 'px';
+    editorTextarea.style.height = '0px';
+    const scrollH = editorTextarea.scrollHeight;
+    editorTextarea.style.height = Math.max(500, scrollH + 40) + 'px';
   }
 
   function renderPreview() {
@@ -1235,6 +1236,13 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         renderPreview();
       }, 20);
     });
+
+    const paperWrapperEl = document.querySelector('.paper-wrapper');
+    if (paperWrapperEl) {
+      editorTextarea.addEventListener('wheel', (e) => {
+        paperWrapperEl.scrollTop += e.deltaY;
+      }, { passive: true });
+    }
   }
 
   window.addEventListener('resize', autoResizeTextarea);

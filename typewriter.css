@@ -253,6 +253,7 @@ body.typewriter-body {
 /* Typewriter Main Machine Wrapper */
 .tw-machine {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: #171513;
@@ -450,22 +451,25 @@ body.typewriter-body {
 /* Paper Wrapper & Paper Sheet */
 .paper-wrapper {
   flex: 1;
-  padding: 24px 24px 80px 24px;
+  min-height: 0;
+  padding: 24px 24px 140px 24px;
   overflow-y: auto;
+  overflow-x: hidden;
   background: #141210;
+  display: block;
 }
 
 .paper-sheet {
   width: 100%;
-  max-width: 820px;
-  margin: 0 auto;
+  max-width: 840px;
+  margin: 0 auto 60px auto;
   background-color: var(--bg-paper);
   border-radius: 2px;
   box-shadow: var(--paper-shadow);
-  padding: 40px 48px;
+  padding: 44px 52px 80px 52px;
   position: relative;
   min-height: 100%;
-  height: auto;
+  height: fit-content;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -565,6 +569,8 @@ body.typewriter-body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 480px;
+  height: auto;
 }
 
 .tw-view-container.hidden {
@@ -573,9 +579,9 @@ body.typewriter-body {
 
 /* Typewriter Textarea */
 .tw-textarea {
-  flex: 1;
   width: 100%;
   min-height: 480px;
+  height: auto;
   font-family: var(--font-typewriter);
   font-size: 1.05rem;
   line-height: 1.8;
@@ -586,6 +592,8 @@ body.typewriter-body {
   resize: none;
   tab-size: 4;
   overflow: hidden;
+  box-sizing: border-box;
+  display: block;
 }
 
 /* Rendered HTML Styling inside Paper Sheet */
