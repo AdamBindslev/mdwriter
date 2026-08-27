@@ -1,5 +1,5 @@
-// MD Writer — Terminal Edition (CRT Matrix / Wargames)
-// Modularized with MDCore while preserving CRT scanlines, flicker, matrix themes & sound
+// Flowscribe — Terminal Edition (CRT Matrix / Wargames)
+// Modularized with MDCore while preserving CRT visual effects & keyboard sounds
 
 document.addEventListener('DOMContentLoaded', () => {
   const { Storage, Stats, Markdown, Formatter, Export } = window.MDCore || {};

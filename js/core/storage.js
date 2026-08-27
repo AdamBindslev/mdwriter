@@ -1,5 +1,5 @@
 /**
- * MD Writer - Core Storage & State Module
+ * Flowscribe - Core Storage & State Module
  * Handles draft persistence across localStorage, sessionStorage and URL parameters,
  * as well as date formatting, filename sanitization and markdown structure assembly.
  */
@@ -8,7 +8,7 @@
   window.MDCore = window.MDCore || {};
   window.MDCore.VERSION = '2.2.0';
 
-  console.log('%c🚀 MD Writer Core v2.2 aktiv', 'background: #2563eb; color: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
+  console.log('%c🚀 Flowscribe Core v2.2 aktiv', 'background: #2563eb; color: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
 
   const DRAFT_KEY = 'md_writer_draft';
 

@@ -1,4 +1,4 @@
-// MD Writer — Typewriter Edition (Skrivemaskine Udgave)
+// Flowscribe — Typewriter Edition (Skrivemaskine Udgave)
 // Modularized with MDCore while preserving mechanical audio & typewriter feel
 
 document.addEventListener('DOMContentLoaded', () => {

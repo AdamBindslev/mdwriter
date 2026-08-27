@@ -1,6 +1,6 @@
 /**
- * MD Writer - Core Stats Module
- * Calculates word counts, characters, line counts, and estimated reading time.
+ * Flowscribe - Core Stats Module
+ * Calculates word counts, characters, line numbers and estimated reading time.
  */
 
 (function () {

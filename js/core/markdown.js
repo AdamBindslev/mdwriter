@@ -1,5 +1,5 @@
 /**
- * MD Writer - Core Markdown Engine Module
+ * Flowscribe - Core Markdown Engine Module
  * Configures Marked, DOMPurify, Mermaid diagrams, and Turndown HTML-to-Markdown converter.
  */
 

@@ -1,5 +1,5 @@
 /**
- * MD Writer - Core Export Module
+ * Flowscribe - Core Export Module
  * Handles exporting documents to .md, .html, .txt, clipboard copy, and print/PDF triggering.
  */
 

@@ -1,4 +1,5 @@
-// MD Writer — Modern Splitview Edition (Clean Modularized UI)
+// Flowscribe — Modern Splitview Edition (Clean Modularized UI)
+// Orchestrates MDCore (Storage, Stats, Markdown, Formatter, Export) with rich visual UI
 
 document.addEventListener('DOMContentLoaded', () => {
   const { Storage, Stats, Markdown, Formatter, Export } = window.MDCore || {};

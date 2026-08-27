@@ -1,5 +1,5 @@
 /**
- * MD Writer - Core Formatter Module
+ * Flowscribe - Core Formatter Module
  * Handles text insertion, Markdown formatting commands, active toolbar tracking,
  * metadata tag helpers and geolocation lookup.
  */
