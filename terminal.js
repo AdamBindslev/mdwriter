@@ -1,20 +1,21 @@
-// MD Writer — Terminal Edition (CRT Matrix / Wargames) Logic
+// MD Writer — Terminal Edition (CRT Matrix / Wargames)
+// Modularized with MDCore while preserving CRT scanlines, flicker, matrix themes & sound
 
 document.addEventListener('DOMContentLoaded', () => {
+  const { Storage, Stats, Markdown, Formatter, Export } = window.MDCore || {};
+
   // Initialize Feather Icons
   if (window.feather) {
     feather.replace();
   }
 
-  // Local Storage Keys
-  const DRAFT_KEY = 'md_writer_draft';
+  // Local Storage Keys for Terminal-Specific Settings
   const THEME_KEY = 'md_writer_crt_theme';
   const FX_KEY = 'md_writer_crt_fx';
   const SOUND_KEY = 'md_writer_terminal_sound';
 
   // DOM Element References
   const html = document.documentElement;
-  const crtMonitor = document.getElementById('crtMonitor');
   const docTitleInput = document.getElementById('docTitle');
   const docCategoriesInput = document.getElementById('docCategories');
   const editorTextarea = document.getElementById('editorTextarea');
@@ -67,86 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const statLines = document.getElementById('statLines');
   const statReadTime = document.getElementById('statReadTime');
 
-  // Marked Parser Config
-  if (window.marked) {
-    marked.setOptions({
-      gfm: true,
-      breaks: true,
-      headerIds: true,
-      mangle: false
-    });
-  }
-
-  // Setup Turndown for HTML-to-Markdown conversion
-  let turndownService = null;
-  if (window.TurndownService) {
-    turndownService = new window.TurndownService({
-      headingStyle: 'atx',
-      codeBlockStyle: 'fenced',
-      emDelimiter: '*',
-      strongDelimiter: '**',
-      bulletListMarker: '-'
-    });
-
-    turndownService.addRule('strikethrough', {
-      filter: ['del', 's', 'strike'],
-      replacement: function (content) {
-        return '~~' + content + '~~';
-      }
-    });
-
-    turndownService.addRule('tasklist', {
-      filter: function (node) {
-        return node.tagName === 'INPUT' && node.getAttribute('type') === 'checkbox';
-      },
-      replacement: function (content, node) {
-        return node.checked ? '[x] ' : '[ ] ';
-      }
-    });
-
-    turndownService.addRule('ignoreReturnSymbols', {
-      filter: function (node) {
-        return node.classList && node.classList.contains('return-symbol');
-      },
-      replacement: function () {
-        return '';
-      }
-    });
-  }
-
-  let isUpdatingFromVisual = false;
-  let isUpdatingFromMarkdown = false;
-
-  // Sample Data (Møns Klint Field Diary)
-  const sampleData = {
-    title: 'Feltdagbog: Vandring ved Møns Klint',
-    categories: 'Dato: 14. august 2026 | Sted: Møns Klint, Danmark | Tags: feltarbejde, dagbog',
-    body: `Tågen lå tæt over kridtskrænterne i morges, da jeg startede turen ned ad trapperne mod stranden. Det føles som et helt andet landskab, når Østersøen viser tænder og gråtonerne dominerer horisonten.
-
-## Observationer i felten
-- Vinden kom fra sydøst med ca. 12 m/s.
-- Kridtlaget var glat, og flere mindre skred var sket i løbet af natten.
-- Bølgerne skyllede helt op mod klintefoden.
-
-> "Der er noget grundlæggende beroligende ved at stå foran kridtformationer, der har været her i 70 millioner år. Man bliver mindet om sin egen flygtighed."
-
-Vi nåede helt ud til Liselund før regnen satte ind. Kameraet var pakket ind i voksdug, men jeg nåede at fange et par eksponeringer på Tri-X 400 før linsen duggede til.
-
-### Udstyr anvendt
-1. Mechanical 35mm Rangefinder
-2. Kodak Tri-X 400 (fremkaldt i D-76, 1:1)
-3. 35mm f/2.0 objektiv med gult filter
-
-I aften står den på tørring af støvler og notatskrivning ved petroleumslampen.`
-  };
-
   // ----------------------------------------------------
   // DIGITAL RETRO TERMINAL WEB AUDIO SYNTHESIZER
   // ----------------------------------------------------
   let soundEnabled = true;
   let audioCtx = null;
 
-  // Restore Sound Preference
   const savedSound = localStorage.getItem(SOUND_KEY);
   if (savedSound !== null) {
     soundEnabled = savedSound === 'true';
@@ -170,26 +97,25 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   });
 
   function updateSoundUI() {
-    if (soundEnabled) {
-      btnSoundToggle.classList.add('active');
-      soundIcon.setAttribute('data-feather', 'volume-2');
-      btnSoundToggle.setAttribute('title', 'Terminal lyd slået til');
-    } else {
-      btnSoundToggle.classList.remove('active');
-      soundIcon.setAttribute('data-feather', 'volume-x');
-      btnSoundToggle.setAttribute('title', 'Terminal lyd slået fra');
+    if (btnSoundToggle) {
+      btnSoundToggle.classList.toggle('active', soundEnabled);
+      btnSoundToggle.setAttribute('title', soundEnabled ? 'Terminal lyd slået til' : 'Terminal lyd slået fra');
+    }
+    if (soundIcon) {
+      soundIcon.setAttribute('data-feather', soundEnabled ? 'volume-2' : 'volume-x');
     }
     if (window.feather) feather.replace();
   }
 
   btnSoundToggle.addEventListener('click', () => {
     soundEnabled = !soundEnabled;
-    localStorage.setItem(SOUND_KEY, soundEnabled);
+    try {
+      localStorage.setItem(SOUND_KEY, soundEnabled);
+    } catch (e) {}
     updateSoundUI();
     if (soundEnabled) playTerminalTypingSound('char');
   });
 
-  // Precise Retro Terminal Sound Synthesizer
   function playTerminalTypingSound(type = 'char') {
     if (!soundEnabled) return;
     initAudio();
@@ -199,90 +125,63 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       const now = audioCtx.currentTime;
 
       if (type === 'char') {
-        // High frequency digital micro-click + soft resonant phosphor beep
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-
-        const freq = 1600 + Math.random() * 800; // 1600-2400Hz retro terminal click
+        const freq = 1600 + Math.random() * 800;
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, now);
         osc.frequency.exponentialRampToValueAtTime(300, now + 0.015);
-
         gain.gain.setValueAtTime(0.25, now);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
-
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-
         osc.start(now);
         osc.stop(now + 0.02);
-
       } else if (type === 'space') {
-        // Lower pitch thud
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(600 + Math.random() * 150, now);
         osc.frequency.exponentialRampToValueAtTime(150, now + 0.03);
-
         gain.gain.setValueAtTime(0.35, now);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
-
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-
         osc.start(now);
         osc.stop(now + 0.04);
-
       } else if (type === 'enter') {
-        // Line-feed dual tone chime / CRT carriage beep
         const osc1 = audioCtx.createOscillator();
         const osc2 = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-
         osc1.type = 'square';
         osc2.type = 'sine';
-
         osc1.frequency.setValueAtTime(1200, now);
         osc1.frequency.setValueAtTime(800, now + 0.03);
-
         osc2.frequency.setValueAtTime(2400, now);
         osc2.frequency.setValueAtTime(1600, now + 0.03);
-
         gain.gain.setValueAtTime(0.2, now);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
-
         osc1.connect(gain);
         osc2.connect(gain);
         gain.connect(audioCtx.destination);
-
         osc1.start(now);
         osc2.start(now);
         osc1.stop(now + 0.075);
         osc2.stop(now + 0.075);
-
       } else if (type === 'backspace') {
-        // Downward frequency sweep click
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(1800, now);
         osc.frequency.exponentialRampToValueAtTime(400, now + 0.025);
-
         gain.gain.setValueAtTime(0.2, now);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.028);
-
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-
         osc.start(now);
         osc.stop(now + 0.03);
       }
-    } catch (e) {
-      // Audio playback safety catch
-    }
+    } catch (e) {}
   }
 
   // ----------------------------------------------------
@@ -300,17 +199,14 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
 
   function setCRTTheme(theme) {
     html.setAttribute('data-crt-theme', theme);
-    localStorage.setItem(THEME_KEY, theme);
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch (e) {}
     themeBtns.forEach(b => {
-      if (b.getAttribute('data-theme') === theme) {
-        b.classList.add('active');
-      } else {
-        b.classList.remove('active');
-      }
+      b.classList.toggle('active', b.getAttribute('data-theme') === theme);
     });
   }
 
-  // Restore CRT FX settings
   const savedFX = JSON.parse(localStorage.getItem(FX_KEY) || '{}');
   const fxState = {
     scanlines: savedFX.scanlines !== undefined ? savedFX.scanlines : true,
@@ -332,7 +228,9 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     btnToggleGlow.classList.toggle('active', fxState.glow);
     btnToggleFlicker.classList.toggle('active', fxState.flicker);
 
-    localStorage.setItem(FX_KEY, JSON.stringify(fxState));
+    try {
+      localStorage.setItem(FX_KEY, JSON.stringify(fxState));
+    } catch (e) {}
   }
 
   btnToggleScanlines.addEventListener('click', () => {
@@ -352,183 +250,75 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     applyFXState();
   });
 
-  // ----------------------------------------------------
-  // DRAFT AUTO-SAVE & RESTORE (LOCALSTORAGE SYNC)
-  // ----------------------------------------------------
-  function saveDraft() {
-    const draft = {
-      title: docTitleInput.value,
-      categories: docCategoriesInput.value,
-      body: editorTextarea.value,
-      updatedAt: new Date().toISOString()
-    };
-    try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    } catch (e) {}
-    updateFilenamePreview();
-    updateStats();
-    updateLineNumbers();
-  }
-
-  function restoreDraft() {
-    try {
-      const saved = localStorage.getItem(DRAFT_KEY) || sessionStorage.getItem(DRAFT_KEY);
-      if (saved) {
-        const draft = JSON.parse(saved);
-        docTitleInput.value = draft.title || '';
-        docCategoriesInput.value = draft.categories || '';
-        editorTextarea.value = draft.body || '';
-        return true;
-      }
-    } catch (e) {}
-    return false;
-  }
-
-  // Load initial content
-  if (!restoreDraft()) {
-    docTitleInput.value = sampleData.title;
-    docCategoriesInput.value = sampleData.categories;
-    editorTextarea.value = sampleData.body;
-    saveDraft();
-  } else {
-    updateFilenamePreview();
-    updateStats();
-    updateLineNumbers();
-  }
-
-  // Input listeners
-  docTitleInput.addEventListener('input', () => {
-    saveDraft();
-    playTerminalTypingSound('char');
-  });
-  docCategoriesInput.addEventListener('input', () => {
-    saveDraft();
-    playTerminalTypingSound('char');
-  });
-
-  editorTextarea.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      playTerminalTypingSound('enter');
-    } else if (e.key === 'Backspace') {
-      playTerminalTypingSound('backspace');
-    } else if (e.key === ' ') {
-      playTerminalTypingSound('space');
-    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      playTerminalTypingSound('char');
-    }
-
-    // Tab key support
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      const start = editorTextarea.selectionStart;
-      const end = editorTextarea.selectionEnd;
-      editorTextarea.value = editorTextarea.value.substring(0, start) + '  ' + editorTextarea.value.substring(end);
-      editorTextarea.selectionStart = editorTextarea.selectionEnd = start + 2;
-      saveDraft();
-    }
-  });
-
-  editorTextarea.addEventListener('input', () => {
-    saveDraft();
-    renderPreview();
-  });
-
-  // ----------------------------------------------------
-  // HELPERS: FILENAME PREVIEW & STATS
-  // ----------------------------------------------------
-  function getYYMMDD() {
-    const today = new Date();
-    const yy = String(today.getFullYear()).slice(-2);
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    return `${yy}${mm}${dd}`;
-  }
-
-  function sanitizeFilename(title) {
-    if (!title || !title.trim()) return 'dokument';
-    let clean = title.trim();
-    clean = clean.replace(/[\/\\:*?"<>|]/g, '');
-    clean = clean.replace(/\s+/g, ' ');
-    return clean;
-  }
-
-  function getExportFilename() {
-    const dateStr = getYYMMDD();
-    const titleStr = sanitizeFilename(docTitleInput.value);
-    return `${dateStr} ${titleStr}.md`;
-  }
-
-  function updateFilenamePreview() {
-    filenamePreview.textContent = getExportFilename();
-  }
-
-  function updateStats() {
-    const text = editorTextarea.value;
-    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-    const chars = text.length;
-    const lines = text.split('\n').length;
-    const readTime = Math.ceil(words / 200);
-
-    statWords.textContent = `${words} ORD`;
-    statChars.textContent = `${chars} TEGN`;
-    statLines.textContent = `${lines} LINJER`;
-    statReadTime.textContent = readTime <= 1 ? '< 1 MIN LÆSETID' : `${readTime} MIN LÆSETID`;
-  }
-
   // Real-time Digital Clock
   function updateClock() {
     const now = new Date();
     const hrs = String(now.getHours()).padStart(2, '0');
     const mins = String(now.getMinutes()).padStart(2, '0');
     const secs = String(now.getSeconds()).padStart(2, '0');
-    clockDisplay.textContent = `${hrs}:${mins}:${secs}`;
+    if (clockDisplay) clockDisplay.textContent = `${hrs}:${mins}:${secs}`;
   }
   setInterval(updateClock, 1000);
   updateClock();
 
-  // ----------------------------------------------------
-  // HTML RENDER PREVIEW
-  // ----------------------------------------------------
-  function renderMermaidDiagrams(container) {
-    if (!window.mermaid) return;
-    const mermaidCodes = container.querySelectorAll('code.language-mermaid, pre.language-mermaid');
-    if (mermaidCodes.length === 0) return;
+  // Line Numbers Sync
+  function updateLineNumbers() {
+    if (!lineNumbers || !editorTextarea) return;
+    const lines = editorTextarea.value.split('\n').length;
+    let numbersHtml = '';
+    for (let i = 1; i <= Math.max(lines, 20); i++) {
+      numbersHtml += `${i}\n`;
+    }
+    lineNumbers.textContent = numbersHtml;
+  }
 
-    mermaidCodes.forEach((el) => {
-      const parent = el.tagName.toLowerCase() === 'code' ? el.parentElement : el;
-      const codeText = el.textContent;
-      const div = document.createElement('div');
-      div.className = 'mermaid';
-      div.textContent = codeText;
-      parent.replaceWith(div);
-    });
+  // Toast
+  function showToast(msg) {
+    const toastMsg = document.getElementById('toastMsg');
+    if (toastMsg) toastMsg.textContent = msg;
+    if (toast) {
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 2800);
+    }
+  }
 
-    try {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: isDark ? 'dark' : 'default',
-        securityLevel: 'loose'
-      });
-      mermaid.run({
-        querySelector: '.mermaid'
-      }).catch(() => {});
-    } catch (err) {}
+  // Filename Preview & Render Pipeline
+  function updateFilenamePreview() {
+    if (filenamePreview && Storage) {
+      filenamePreview.textContent = Storage.getExportFilename(docTitleInput.value, 'md');
+    }
   }
 
   function renderPreview() {
-    if (!window.marked || !window.DOMPurify) return;
-    const rawMarkdown = editorTextarea.value;
-    let rawHtml = marked.parse(rawMarkdown);
-    rawHtml = rawHtml.replace(/<br\s*\/?>/gi, '<span class="return-symbol br-symbol">↵</span><br>');
-    rawHtml = rawHtml.replace(/<\/p>/gi, '<span class="return-symbol p-symbol">↵</span></p>');
-    const cleanHtml = DOMPurify.sanitize(rawHtml);
-    previewContainer.innerHTML = cleanHtml;
-    renderMermaidDiagrams(previewContainer);
+    const fullMarkdown = Storage ? Storage.generateFullMarkdown(docTitleInput.value, docCategoriesInput.value, editorTextarea.value) : editorTextarea.value;
+
+    if (Markdown && previewContainer) {
+      Markdown.renderPreview(fullMarkdown, previewContainer, true);
+    }
+
+    if (Stats) {
+      const stats = Stats.calculateStats(fullMarkdown);
+      if (statWords) statWords.textContent = `${stats.words} ORD`;
+      if (statChars) statChars.textContent = `${stats.chars} TEGN`;
+      if (statLines) statLines.textContent = `${stats.lines} LINJER`;
+      if (statReadTime) statReadTime.textContent = stats.readTimeMins <= 1 ? '< 1 MIN LÆSETID' : `${stats.readTimeMins} MIN LÆSETID`;
+    }
+
+    updateFilenamePreview();
+    updateLineNumbers();
+
+    if (Storage) {
+      Storage.saveDraft({
+        title: docTitleInput ? docTitleInput.value : '',
+        categories: docCategoriesInput ? docCategoriesInput.value : '',
+        body: editorTextarea ? editorTextarea.value : ''
+      });
+    }
   }
 
-  // Tab switching
+  // Tab View Switcher (Editor vs Preview)
   tabEditor.addEventListener('click', () => {
     tabEditor.classList.add('active');
     tabPreview.classList.remove('active');
@@ -545,314 +335,194 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   });
 
   function updateToolbarStates() {
-    const activeCmds = new Set();
-
-    if (editorTextarea) {
-      const text = editorTextarea.value;
-      const start = editorTextarea.selectionStart;
-      const end = editorTextarea.selectionEnd;
-
-      const lineStart = text.lastIndexOf('\n', start - 1) + 1;
-      let lineEnd = text.indexOf('\n', start);
-      if (lineEnd === -1) lineEnd = text.length;
-      const lineText = text.substring(lineStart, lineEnd);
-
-      if (/^#\s+/.test(lineText)) activeCmds.add('h1');
-      else if (/^##\s+/.test(lineText)) activeCmds.add('h2');
-      else if (/^###\s+/.test(lineText)) activeCmds.add('h3');
-      else if (/^>\s+/.test(lineText)) activeCmds.add('quote');
-      else if (/^-\s+/.test(lineText) || /^\*\s+/.test(lineText)) activeCmds.add('ul');
-      else if (/^\d+\.\s+/.test(lineText)) activeCmds.add('ol');
-
-      const selText = text.substring(start, end);
-      const prefix = text.substring(Math.max(0, start - 3), start);
-      const suffix = text.substring(end, Math.min(text.length, end + 3));
-
-      if ((prefix.endsWith('**') && suffix.startsWith('**')) || (selText.startsWith('**') && selText.endsWith('**') && selText.length >= 4)) {
-        activeCmds.add('bold');
-      }
-      if ((prefix.endsWith('*') && !prefix.endsWith('**') && suffix.startsWith('*') && !suffix.startsWith('**')) || (selText.startsWith('*') && selText.endsWith('*') && selText.length >= 2)) {
-        activeCmds.add('italic');
-      }
-      if ((prefix.endsWith('`') && suffix.startsWith('`')) || (selText.startsWith('`') && selText.endsWith('`') && selText.length >= 2)) {
-        activeCmds.add('code');
-      }
+    if (Formatter && editorTextarea) {
+      Formatter.updateToolbarStates(editorTextarea, '.term-key[data-cmd]');
     }
-
-    document.querySelectorAll('.term-key[data-cmd]').forEach(btn => {
-      const cmd = btn.getAttribute('data-cmd');
-      if (activeCmds.has(cmd)) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
-    });
   }
 
-  // ----------------------------------------------------
-  // TOOLBAR COMMANDS
-  // ----------------------------------------------------
-  function insertFormatting(prefix, suffix = '') {
-    const start = editorTextarea.selectionStart;
-    const end = editorTextarea.selectionEnd;
-    const selected = editorTextarea.value.substring(start, end);
-    const replacement = `${prefix}${selected || 'tekst'}${suffix}`;
-
-    editorTextarea.value = editorTextarea.value.substring(0, start) + replacement + editorTextarea.value.substring(end);
-    editorTextarea.focus();
-    editorTextarea.selectionStart = start + prefix.length;
-    editorTextarea.selectionEnd = start + prefix.length + (selected.length || 5);
-    saveDraft();
-    updateToolbarStates();
-  }
-
+  // Toolbar Formatting Keys
   document.querySelectorAll('.term-key[data-cmd]').forEach(btn => {
-    btn.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-    });
+    btn.addEventListener('mousedown', (e) => e.preventDefault());
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       const cmd = btn.getAttribute('data-cmd');
-      switch (cmd) {
-        case 'h1': insertFormatting('# '); break;
-        case 'h2': insertFormatting('## '); break;
-        case 'h3': insertFormatting('### '); break;
-        case 'bold': insertFormatting('**', '**'); break;
-        case 'italic': insertFormatting('*', '*'); break;
-        case 'code': insertFormatting('`', '`'); break;
-        case 'quote': insertFormatting('> '); break;
-        case 'ul': insertFormatting('- '); break;
-        case 'ol': insertFormatting('1. '); break;
-        case 'task': insertFormatting('- [ ] '); break;
-        case 'link': {
-          const start = editorTextarea.selectionStart;
-          const end = editorTextarea.selectionEnd;
-          const selected = editorTextarea.value.substring(start, end);
-          if (selected) {
-            insertFormatting('[', '](https://example.com)');
-          } else {
-            insertFormatting('[Link tekst](https://example.com)');
-          }
-          break;
-        }
-        case 'codeblock': {
-          const start = editorTextarea.selectionStart;
-          const end = editorTextarea.selectionEnd;
-          const selected = editorTextarea.value.substring(start, end);
-          const placeholder = 'Tekstblok';
-          const textToInsert = selected || placeholder;
-          const block = `\`\`\`\n${textToInsert}\n\`\`\``;
-          editorTextarea.value = editorTextarea.value.substring(0, start) + block + editorTextarea.value.substring(end);
-          editorTextarea.focus();
-          editorTextarea.selectionStart = start + 4;
-          editorTextarea.selectionEnd = start + 4 + textToInsert.length;
-          saveDraft();
-          updateToolbarStates();
-          break;
-        }
-        case 'diagram': {
-          const start = editorTextarea.selectionStart;
-          const end = editorTextarea.selectionEnd;
-          const selected = editorTextarea.value.substring(start, end);
-          const sample = selected ? `flowchart LR\n    ${selected}` : `flowchart LR\n    A[Start] --> B[Proces] --> C[Slut]`;
-          const block = `\`\`\`mermaid\n${sample}\n\`\`\``;
-          editorTextarea.value = editorTextarea.value.substring(0, start) + block + editorTextarea.value.substring(end);
-          editorTextarea.focus();
-          const offset = selected ? 24 : 11;
-          editorTextarea.selectionStart = start + offset;
-          editorTextarea.selectionEnd = start + offset + sample.length;
-          saveDraft();
-          updateToolbarStates();
-          break;
-        }
-        case 'table': {
-          const start = editorTextarea.selectionStart;
-          const end = editorTextarea.selectionEnd;
-          const tbl = `| Kolonne 1 | Kolonne 2 | Kolonne 3 |\n| --- | --- | --- |\n| Værdi 1 | Værdi 2 | Værdi 3 |\n| Værdi 4 | Værdi 5 | Værdi 6 |`;
-          editorTextarea.value = editorTextarea.value.substring(0, start) + tbl + editorTextarea.value.substring(end);
-          editorTextarea.focus();
-          editorTextarea.selectionStart = start + 2;
-          editorTextarea.selectionEnd = start + 11;
-          saveDraft();
-          updateToolbarStates();
-          break;
-        }
-        case 'hr': {
-          const start = editorTextarea.selectionStart;
-          const end = editorTextarea.selectionEnd;
-          const hrStr = `\n---\n`;
-          editorTextarea.value = editorTextarea.value.substring(0, start) + hrStr + editorTextarea.value.substring(end);
-          editorTextarea.focus();
-          editorTextarea.selectionStart = start + hrStr.length;
-          editorTextarea.selectionEnd = start + hrStr.length;
-          saveDraft();
-          updateToolbarStates();
-          break;
-        }
-      }
       playTerminalTypingSound('char');
+      if (Formatter) {
+        Formatter.applyFormat(cmd, editorTextarea, () => {
+          renderPreview();
+          updateToolbarStates();
+        });
+      }
     });
   });
 
-  // ----------------------------------------------------
-  // QUICK CHIPS
-  // ----------------------------------------------------
-  function getFormattedDanishDate() {
-    const today = new Date();
-    const months = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'];
-    return `${today.getDate()}. ${months[today.getMonth()]} ${today.getFullYear()}`;
+  // Typing Audio Trigger & Tab Indentation Support
+  editorTextarea.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      playTerminalTypingSound('enter');
+    } else if (e.key === 'Backspace') {
+      playTerminalTypingSound('backspace');
+    } else if (e.key === ' ') {
+      playTerminalTypingSound('space');
+    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      playTerminalTypingSound('char');
+    }
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const start = editorTextarea.selectionStart;
+      const end = editorTextarea.selectionEnd;
+      editorTextarea.value = editorTextarea.value.substring(0, start) + '  ' + editorTextarea.value.substring(end);
+      editorTextarea.selectionStart = editorTextarea.selectionEnd = start + 2;
+      renderPreview();
+    }
+  });
+
+  [docTitleInput, docCategoriesInput].forEach(inputEl => {
+    if (inputEl) {
+      inputEl.addEventListener('input', () => {
+        renderPreview();
+        playTerminalTypingSound('char');
+      });
+    }
+  });
+
+  editorTextarea.addEventListener('input', renderPreview);
+  editorTextarea.addEventListener('keyup', updateToolbarStates);
+  editorTextarea.addEventListener('click', updateToolbarStates);
+  document.addEventListener('selectionchange', updateToolbarStates);
+
+  // Quick Chips
+  if (chipDate) {
+    chipDate.addEventListener('click', () => {
+      if (Formatter && Storage) {
+        Formatter.appendCategoryTag(docCategoriesInput, `Dato: ${Storage.getFormattedDanishDate()}`, renderPreview);
+        showToast('Dags dato tilføjet');
+      }
+    });
   }
 
-  chipDate.addEventListener('click', () => {
-    const dateStr = `Dato: ${getFormattedDanishDate()}`;
-    if (!docCategoriesInput.value.includes('Dato:')) {
-      docCategoriesInput.value = docCategoriesInput.value ? `${docCategoriesInput.value} | ${dateStr}` : dateStr;
-      saveDraft();
-      showToast('Dags dato tilføjet');
-    }
-  });
-
-  chipLocation.addEventListener('click', () => {
-    const appendLoc = (locStr) => {
-      if (!docCategoriesInput.value.includes('Sted:')) {
-        docCategoriesInput.value = docCategoriesInput.value ? `${docCategoriesInput.value} | ${locStr}` : locStr;
-        saveDraft();
-        showToast('Sted tilføjet');
-      }
-    };
-
-    if (!navigator.geolocation) {
-      appendLoc('Sted: ');
-      return;
-    }
-
-    showToast('Søger efter placering...');
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
-          if (res.ok) {
-            const data = await res.json();
-            const addr = data.address || {};
-            const city = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
-            const country = addr.country || '';
-            let locationStr = 'Sted: ';
-            if (city && country) {
-              locationStr += `${city}, ${country}`;
-            } else if (city || country) {
-              locationStr += (city || country);
-            }
-            appendLoc(locationStr);
-          } else {
-            appendLoc('Sted: ');
+  if (chipLocation) {
+    chipLocation.addEventListener('click', () => {
+      if (Formatter) {
+        showToast('Søger efter placering...');
+        Formatter.fetchLocation(
+          (locStr) => {
+            Formatter.appendCategoryTag(docCategoriesInput, locStr, renderPreview);
+            showToast('Sted tilføjet');
+          },
+          () => {
+            Formatter.appendCategoryTag(docCategoriesInput, 'Sted: ', renderPreview);
           }
+        );
+      }
+    });
+  }
+
+  if (chipNoteNo) {
+    chipNoteNo.addEventListener('click', () => {
+      if (Formatter) {
+        Formatter.appendCategoryTag(docCategoriesInput, 'Tags: ', renderPreview);
+        showToast('Tags skabelon tilføjet');
+      }
+    });
+  }
+
+  // Export Menu & Actions
+  if (btnExportMenu && exportDropdown) {
+    btnExportMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+      exportDropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', () => {
+      exportDropdown.classList.remove('open');
+    });
+  }
+
+  if (btnExportMd) {
+    btnExportMd.addEventListener('click', () => {
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      if (Export) {
+        const filename = Export.exportMarkdown(docTitleInput.value, docCategoriesInput.value, editorTextarea.value);
+        showToast(`Downloadet ${filename}`);
+      }
+    });
+  }
+
+  if (btnPrintPdf) {
+    btnPrintPdf.addEventListener('click', () => {
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      if (Export) Export.triggerPdfPrint(renderPreview);
+    });
+  }
+
+  if (btnCopyMd) {
+    btnCopyMd.addEventListener('click', async () => {
+      if (Export) {
+        try {
+          await Export.copyMarkdown(docTitleInput.value, docCategoriesInput.value, editorTextarea.value);
+          showToast('Markdown kopieret til udklipsholder');
         } catch (e) {
-          appendLoc('Sted: ');
+          showToast('Fejl ved kopiering');
         }
-      },
-      () => {
-        appendLoc('Sted: ');
-      },
-      { timeout: 7000 }
-    );
-  });
+      }
+    });
+  }
 
-  chipNoteNo.addEventListener('click', () => {
-    const tagStr = 'Tags: ';
-    if (!docCategoriesInput.value.includes('Tags:')) {
-      docCategoriesInput.value = docCategoriesInput.value ? `${docCategoriesInput.value} | ${tagStr}` : tagStr;
-      saveDraft();
-      showToast('Tags skabelon tilføjet');
-    }
-  });
+  if (btnCopyMdDropdown) {
+    btnCopyMdDropdown.addEventListener('click', () => {
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      if (btnCopyMd) btnCopyMd.click();
+    });
+  }
 
-  // Load sample & clear
+  // Clear & Sample Load
+  if (btnClear) {
+    btnClear.addEventListener('click', () => {
+      if (confirm('Er du sikker på, at du vil rydde skærmen?')) {
+        docTitleInput.value = '';
+        docCategoriesInput.value = '';
+        editorTextarea.value = '';
+        if (Storage) Storage.clearDraft();
+        renderPreview();
+        showToast('Skærm ryddet');
+      }
+    });
+  }
+
   if (btnLoadSample) {
     btnLoadSample.addEventListener('click', () => {
       if (confirm('Vil du erstatte dit nuværende indhold med Møns Klint feltjournal eksemplet?')) {
-        docTitleInput.value = sampleData.title;
-        docCategoriesInput.value = sampleData.categories;
-        editorTextarea.value = sampleData.body;
-        saveDraft();
-        showToast('Eksempel indlæst');
+        if (Storage && Storage.sampleData) {
+          docTitleInput.value = Storage.sampleData.title;
+          docCategoriesInput.value = Storage.sampleData.categories;
+          editorTextarea.value = Storage.sampleData.body;
+          renderPreview();
+          showToast('Eksempel indlæst');
+        }
       }
     });
   }
 
-  btnClear.addEventListener('click', () => {
-    if (confirm('Er du sikker på, at du vil rydde skærmen?')) {
-      docTitleInput.value = '';
-      docCategoriesInput.value = '';
-      editorTextarea.value = '';
-      saveDraft();
-      showToast('Skærm ryddet');
-    }
-  });
-
-  btnCopyMd.addEventListener('click', copyMarkdownToClipboard);
-  btnCopyMdDropdown.addEventListener('click', copyMarkdownToClipboard);
-
-  function copyMarkdownToClipboard() {
-    const title = docTitleInput.value.trim();
-    const categories = docCategoriesInput.value.trim();
-    const body = editorTextarea.value;
-
-    let combined = '';
-    if (title) combined += `# ${title}\n\n`;
-    if (categories) combined += `*${categories}*\n\n---\n\n`;
-    combined += body;
-
-    navigator.clipboard.writeText(combined).then(() => {
-      showToast('Markdown kopieret til udklipsholder');
-    }).catch(() => {
-      showToast('Fejl ved kopiering');
+  // Mode Switch Navigation Links (Pass active draft to other editions)
+  document.querySelectorAll('.term-mode-link, a[href="index.html"], a[href="skrivemaskine.html"]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const href = link.getAttribute('href');
+      if (Storage) {
+        Storage.navigateWithDraft(href, {
+          title: docTitleInput ? docTitleInput.value : '',
+          categories: docCategoriesInput ? docCategoriesInput.value : '',
+          body: editorTextarea ? editorTextarea.value : ''
+        });
+      } else {
+        window.location.href = href;
+      }
     });
-  }
-
-  // ----------------------------------------------------
-  // EXPORT MENU (MD DOWNLOAD & PDF PRINT)
-  // ----------------------------------------------------
-  btnExportMenu.addEventListener('click', (e) => {
-    e.stopPropagation();
-    exportDropdown.classList.toggle('open');
   });
 
-  document.addEventListener('click', () => {
-    exportDropdown.classList.remove('open');
-  });
-
-  btnExportMd.addEventListener('click', downloadMdFile);
-  btnPrintPdf.addEventListener('click', printPdf);
-
-  function downloadMdFile() {
-    const title = docTitleInput.value.trim();
-    const categories = docCategoriesInput.value.trim();
-    const body = editorTextarea.value;
-
-    let content = '';
-    if (title) content += `# ${title}\n\n`;
-    if (categories) content += `*${categories}*\n\n---\n\n`;
-    content += body;
-
-    const filename = filenamePreview.textContent;
-    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast(`Downloadet ${filename}`);
-  }
-
-  function printPdf() {
-    window.print();
-  }
-
-  // ----------------------------------------------------
-  // FULLSCREEN & SHORTCUTS MODAL
-  // ----------------------------------------------------
+  // Fullscreen & Distraction-Free Mode
   if (btnFullscreen) btnFullscreen.addEventListener('click', toggleFullscreen);
   if (floatingExitFs) floatingExitFs.addEventListener('click', toggleFullscreen);
 
@@ -866,7 +536,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     );
 
     if (!isFullscreen) {
-      // Enter Fullscreen & Distraction-Free mode
       const docEl = document.documentElement;
       if (docEl.requestFullscreen) {
         docEl.requestFullscreen().catch(() => {});
@@ -883,7 +552,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       if (window.feather) setTimeout(() => feather.replace(), 50);
       showToast('Fuldskærmsmodus aktiveret (ESC for at afslutte)');
     } else {
-      // Exit Fullscreen & Distraction-Free mode
       if (document.fullscreenElement || document.webkitFullscreenElement) {
         if (document.exitFullscreen) {
           document.exitFullscreen().catch(() => {});
@@ -903,53 +571,26 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     }
   }
 
-  function handleFullscreenChange() {
+  document.addEventListener('fullscreenchange', () => {
     const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
     if (!isFs) {
       document.body.classList.remove('fullscreen-active', 'distraction-free-mode');
-      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
-      if (btnFullscreen) {
-        btnFullscreen.classList.remove('active');
-        btnFullscreen.setAttribute('title', 'Fuldskærm / Distraktionsfri Skrivemodus (Alt+F eller ESC)');
-      }
+      if (btnFullscreen) btnFullscreen.classList.remove('active');
       if (fullscreenIcon) fullscreenIcon.setAttribute('data-feather', 'maximize');
     } else {
       document.body.classList.add('fullscreen-active', 'distraction-free-mode');
-      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
-      if (btnFullscreen) {
-        btnFullscreen.classList.add('active');
-        btnFullscreen.setAttribute('title', 'Forlad Fuldskærm (Alt+F eller ESC)');
-      }
+      if (btnFullscreen) btnFullscreen.classList.add('active');
       if (fullscreenIcon) fullscreenIcon.setAttribute('data-feather', 'minimize');
     }
-    if (window.feather) {
-      setTimeout(() => feather.replace(), 50);
-    }
-  }
+    if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
+    if (window.feather) setTimeout(() => feather.replace(), 50);
+  });
 
-  document.addEventListener('fullscreenchange', handleFullscreenChange);
-  document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-
-  const fKeyMap = {
-    'F1': 'h1',
-    'F2': 'h2',
-    'F3': 'h3',
-    'F4': 'bold',
-    'F5': 'italic',
-    'F6': 'code',
-    'F7': 'quote',
-    'F8': 'ul',
-    'F9': 'ol',
-    'F10': 'task',
-    'F11': 'link',
-    'F12': 'codeblock'
-  };
-
-  // Global Keyboard Shortcuts
+  // Global Shortcuts
   document.addEventListener('keydown', (e) => {
-    if (fKeyMap[e.key]) {
+    if (Formatter && Formatter.fKeyMap[e.key]) {
       e.preventDefault();
-      const btn = document.querySelector(`.term-key[data-cmd="${fKeyMap[e.key]}"]`);
+      const btn = document.querySelector(`.term-key[data-cmd="${Formatter.fKeyMap[e.key]}"]`);
       if (btn) btn.click();
       return;
     }
@@ -959,11 +600,11 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     }
     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
       e.preventDefault();
-      downloadMdFile();
+      if (btnExportMd) btnExportMd.click();
     }
     if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
       e.preventDefault();
-      printPdf();
+      if (btnPrintPdf) btnPrintPdf.click();
     }
     if (e.key === 'Escape') {
       if (shortcutModal && !shortcutModal.classList.contains('hidden')) {
@@ -979,28 +620,22 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     }
   });
 
-  btnShortcuts.addEventListener('click', () => {
-    shortcutModal.classList.remove('hidden');
-  });
-
-  btnCloseShortcutModal.addEventListener('click', () => {
-    shortcutModal.classList.add('hidden');
-  });
-
-  document.addEventListener('selectionchange', updateToolbarStates);
-
-  if (editorTextarea) {
-    editorTextarea.addEventListener('keyup', updateToolbarStates);
-    editorTextarea.addEventListener('click', updateToolbarStates);
-    editorTextarea.addEventListener('input', renderPreview);
+  if (btnShortcuts) {
+    btnShortcuts.addEventListener('click', () => shortcutModal.classList.remove('hidden'));
+  }
+  if (btnCloseShortcutModal) {
+    btnCloseShortcutModal.addEventListener('click', () => shortcutModal.classList.add('hidden'));
   }
 
-  function showToast(msg) {
-    const toastMsg = document.getElementById('toastMsg');
-    toastMsg.textContent = msg;
-    toast.classList.remove('hidden');
-    setTimeout(() => {
-      toast.classList.add('hidden');
-    }, 2800);
+  // Initial Startup Execution
+  if (Storage) {
+    const savedDraft = Storage.loadDraft();
+    if (savedDraft) {
+      if (docTitleInput && savedDraft.title !== undefined) docTitleInput.value = savedDraft.title;
+      if (docCategoriesInput && savedDraft.categories !== undefined) docCategoriesInput.value = savedDraft.categories;
+      if (editorTextarea && savedDraft.body !== undefined) editorTextarea.value = savedDraft.body;
+    }
   }
+
+  renderPreview();
 });

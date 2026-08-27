@@ -1,6 +1,9 @@
-// MD Writer — Typewriter Edition (Skrivemaskine Udgave) Logic
+// MD Writer — Typewriter Edition (Skrivemaskine Udgave)
+// Modularized with MDCore while preserving mechanical audio & typewriter feel
 
 document.addEventListener('DOMContentLoaded', () => {
+  const { Storage, Stats, Markdown, Formatter, Export } = window.MDCore || {};
+
   // Initialize Feather Icons
   if (window.feather) {
     feather.replace();
@@ -23,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnSoundToggle = document.getElementById('btnSoundToggle');
   const soundIcon = document.getElementById('soundIcon');
   const btnFullscreen = document.getElementById('btnFullscreen');
-  const fullscreenIcon = document.getElementById('fullscreenIcon');
   const floatingExitFs = document.getElementById('floatingExitFs');
   const ribbonBtns = document.querySelectorAll('.ribbon-btn');
 
@@ -52,79 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const statLines = document.getElementById('statLines');
   const statReadTime = document.getElementById('statReadTime');
 
-  // Configure Marked Parser options safely
-  if (window.marked) {
-    marked.setOptions({
-      gfm: true,
-      breaks: true,
-      headerIds: true,
-      mangle: false
-    });
-  }
-
-  // Setup Turndown for HTML-to-Markdown conversion
-  let turndownService = null;
-  if (window.TurndownService) {
-    turndownService = new window.TurndownService({
-      headingStyle: 'atx',
-      codeBlockStyle: 'fenced',
-      emDelimiter: '*',
-      strongDelimiter: '**',
-      bulletListMarker: '-'
-    });
-
-    turndownService.addRule('strikethrough', {
-      filter: ['del', 's', 'strike'],
-      replacement: function (content) {
-        return '~~' + content + '~~';
-      }
-    });
-
-    turndownService.addRule('tasklist', {
-      filter: function (node) {
-        return node.tagName === 'INPUT' && node.getAttribute('type') === 'checkbox';
-      },
-      replacement: function (content, node) {
-        return node.checked ? '[x] ' : '[ ] ';
-      }
-    });
-
-    turndownService.addRule('ignoreReturnSymbols', {
-      filter: function (node) {
-        return node.classList && node.classList.contains('return-symbol');
-      },
-      replacement: function () {
-        return '';
-      }
-    });
-  }
-
-  let isUpdatingFromVisual = false;
-  let isUpdatingFromMarkdown = false;
-
-  // Sample Data (Møns Klint Field Diary)
-  const sampleData = {
-    title: 'Feltdagbog: Vandring ved Møns Klint',
-    categories: 'Dato: 14. august 2026 | Sted: Møns Klint, Danmark | Tags: feltarbejde, dagbog',
-    body: `Tågen lå tæt over kridtskrænterne i morges, da jeg startede turen ned ad trapperne mod stranden. Det føles som et helt andet landskab, når Østersøen viser tænder og gråtonerne dominerer horisonten.
-
-## Observationer i felten
-- Vinden kom fra sydøst med ca. 12 m/s.
-- Kridtlaget var glat, og flere mindre skred var sket i løbet af natten.
-- Bølgerne skyllede helt op mod klintefoden.
-
-> "Der er noget grundlæggende beroligende ved at stå foran kridtformationer, der har været her i 70 millioner år. Man bliver mindet om sin egen flygtighed."
-
-Vi nåede helt ud til Liselund før regnen satte ind. Kameraet var pakket ind i voksdug, men jeg nåede at fange et par eksponeringer på Tri-X 400 før linsen duggede til.
-
-### Udstyr anvendt
-1. Mechanical 35mm Rangefinder
-2. Kodak Tri-X 400 (fremkaldt i D-76, 1:1)
-3. 35mm f/2.0 objektiv med gult filter
-
-I aften står den på tørring af støvler og notatskrivning ved petroleumslampen.`
-  };
-
   // ----------------------------------------------------
   // REAL AUDIO SAMPLE PLAYER (.wav files) WITH FALLBACK
   // ----------------------------------------------------
@@ -138,10 +67,10 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   }
 
   const soundBuffers = {
-    keys: [],       // Decoded AudioBuffers for key clicks
-    space: null,    // AudioBuffer for spacebar
-    enter: null,    // AudioBuffer for enter/return/bell
-    backspace: null // AudioBuffer for backspace
+    keys: [],
+    space: null,
+    enter: null,
+    backspace: null
   };
 
   function initAudio() {
@@ -156,18 +85,15 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     }
   }
 
-  // Global user gesture listeners to unlock AudioContext on first click or keypress
   ['click', 'keydown', 'mousedown', 'touchstart'].forEach(evt => {
     window.addEventListener(evt, () => {
       initAudio();
     }, { once: false, passive: true });
   });
 
-  // Preload real .wav audio files from sounds/ folder
   async function loadWavSample(url) {
     try {
       initAudio();
-      // Bypass browser HTTP cache to ensure newly updated .wav files play immediately
       const cacheBustUrl = `${url}?v=${Date.now()}`;
       const res = await fetch(cacheBustUrl, { cache: 'no-cache' });
       if (!res.ok) return null;
@@ -186,7 +112,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     const k2 = await loadWavSample('sounds/key2.wav');
     if (k2) soundBuffers.keys.push(k2);
 
-    // Fallback to single key.wav if key1/key2 not present
     if (soundBuffers.keys.length === 0) {
       const kSingle = await loadWavSample('sounds/key.wav');
       if (kSingle) soundBuffers.keys.push(kSingle);
@@ -205,20 +130,14 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const source = audioCtx.createBufferSource();
       source.buffer = buffer;
-      
       const gainNode = audioCtx.createGain();
 
       if (isKeyClick) {
-        // Organic pitch variation (+/- 8%)
         source.playbackRate.value = 0.92 + Math.random() * 0.16;
-        // Organic gain variation
         gainNode.gain.value = 0.85 + Math.random() * 0.3;
-
-        // Subtle tone tinting via lowpass filter for extra acoustic realism
         const toneFilter = audioCtx.createBiquadFilter();
         toneFilter.type = 'lowpass';
         toneFilter.frequency.setValueAtTime(3200 + Math.random() * 2500, audioCtx.currentTime);
-
         source.connect(toneFilter);
         toneFilter.connect(gainNode);
       } else {
@@ -237,12 +156,10 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     }
   }
 
-  // Synthesize/Play Mechanical Character Key Strike ("Clack-Snap")
   function playKeyClickSound() {
     if (!soundEnabled) return;
     initAudio();
 
-    // 1. Play real .wav sample if loaded (alternating between key1 and key2 with organic pitch & tone variation)
     if (soundBuffers.keys.length > 0) {
       let idx = Math.floor(Math.random() * soundBuffers.keys.length);
       if (soundBuffers.keys.length > 1 && idx === lastKeyIndex && Math.random() > 0.3) {
@@ -253,7 +170,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       if (playSample(selectedBuf, true, true)) return;
     }
 
-    // 2. Fallback to Web Audio synthesis
     if (!audioCtx) return;
     try {
       const now = audioCtx.currentTime;
@@ -270,7 +186,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
 
       const noise = audioCtx.createBufferSource();
       noise.buffer = buffer;
-
       const bandpass = audioCtx.createBiquadFilter();
       bandpass.type = 'bandpass';
       bandpass.frequency.setValueAtTime((2400 + Math.random() * 600) * pitchVariation, now);
@@ -290,7 +205,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(1400 * pitchVariation, now);
       osc.frequency.exponentialRampToValueAtTime(350, now + 0.02);
-
       oscGain.gain.setValueAtTime(0.3 * gainVariation, now);
       oscGain.gain.linearRampToValueAtTime(0.0001, now + 0.02);
 
@@ -298,12 +212,9 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       oscGain.connect(audioCtx.destination);
       osc.start(now);
       osc.stop(now + 0.02);
-    } catch (e) {
-      console.error('Audio error:', e);
-    }
+    } catch (e) {}
   }
 
-  // Synthesize/Play Spacebar
   function playSpaceSound() {
     if (!soundEnabled) return;
     initAudio();
@@ -328,25 +239,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       bodyGain.connect(audioCtx.destination);
       body.start(now);
       body.stop(now + 0.06);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  // Synthesize/Play Backspace / Delete
-  function playBackspaceSound() {
-    if (!soundEnabled) return;
-    initAudio();
-
-    if (soundBuffers.backspace) {
-      if (playSample(soundBuffers.backspace, false)) return;
-    }
-
-    if (!audioCtx) return;
-    try {
-      const now = audioCtx.currentTime;
-      playRatchetClick(now);
-      playRatchetClick(now + 0.015);
     } catch (e) {}
   }
 
@@ -366,7 +258,22 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     osc.stop(t + 0.012);
   }
 
-  // Synthesize/Play Carriage Return Bell ("Ding!")
+  function playBackspaceSound() {
+    if (!soundEnabled) return;
+    initAudio();
+
+    if (soundBuffers.backspace) {
+      if (playSample(soundBuffers.backspace, false)) return;
+    }
+
+    if (!audioCtx) return;
+    try {
+      const now = audioCtx.currentTime;
+      playRatchetClick(now);
+      playRatchetClick(now + 0.015);
+    } catch (e) {}
+  }
+
   function playBellSound() {
     if (!soundEnabled) return;
     initAudio();
@@ -378,7 +285,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     if (!audioCtx) return;
     try {
       const now = audioCtx.currentTime;
-
       const bell = audioCtx.createOscillator();
       const bellGain = audioCtx.createGain();
       bell.type = 'sine';
@@ -395,9 +301,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       for (let i = 0; i < 4; i++) {
         playRatchetClick(now + 0.08 + i * 0.025);
       }
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
   }
 
   function updateSoundUI() {
@@ -411,7 +315,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     if (window.feather) feather.replace();
   }
 
-  // Toggle Sound FX
   btnSoundToggle.addEventListener('click', () => {
     soundEnabled = !soundEnabled;
     try {
@@ -422,9 +325,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     if (soundEnabled) playKeyClickSound();
   });
 
-  // ----------------------------------------------------
-  // Ribbon Color Selector
-  // ----------------------------------------------------
+  // Ribbon Color Switcher
   ribbonBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       ribbonBtns.forEach(b => b.classList.remove('active'));
@@ -435,9 +336,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     });
   });
 
-  // ----------------------------------------------------
   // Tab View Switch (Paper vs Rendered)
-  // ----------------------------------------------------
   tabPaper.addEventListener('click', () => {
     tabPaper.classList.add('active');
     tabPreview.classList.remove('active');
@@ -456,173 +355,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     playKeyClickSound();
   });
 
-  // ----------------------------------------------------
-  // Helpers & Filename Calculation
-  // ----------------------------------------------------
-  function getYYMMDD() {
-    const today = new Date();
-    const yy = String(today.getFullYear()).slice(-2);
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    return `${yy}${mm}${dd}`;
-  }
-
-  function sanitizeFilename(title) {
-    if (!title || !title.trim()) return 'dokument';
-    let clean = title.trim();
-    clean = clean.replace(/[\/\\:*?"<>|]/g, '');
-    clean = clean.replace(/\s+/g, ' ');
-    return clean;
-  }
-
-  function getExportFilename() {
-    const dateStr = getYYMMDD();
-    const titleStr = sanitizeFilename(docTitleInput.value);
-    return `${dateStr} ${titleStr}.md`;
-  }
-
-  function generateFullMarkdown() {
-    const title = docTitleInput.value.trim();
-    const categories = docCategoriesInput.value.trim();
-    const body = editorTextarea.value;
-
-    let fullMarkdown = '';
-
-    if (title) {
-      fullMarkdown += `# ${title}\n\n`;
-    }
-
-    if (categories) {
-      fullMarkdown += `*${categories}*\n\n`;
-    }
-
-    fullMarkdown += body;
-
-    return fullMarkdown;
-  }
-
-  // Update Odometer Counter & Stats
-  function updateOdometer() {
-    const text = generateFullMarkdown();
-    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-    const chars = text.length;
-    const lines = text ? text.split('\n').length : 0;
-    const readTimeMins = Math.ceil(words / 200);
-
-    // Format Odometer 5 digits [ 0 0 0 4 2 ]
-    const padded = String(words).padStart(5, '0').slice(-5);
-    const digits = padded.split('');
-
-    odometerWords.innerHTML = digits.map(d => `<span class="digit">${d}</span>`).join('');
-    statChars.textContent = `${chars} tegn`;
-    statLines.textContent = `${lines} linjer`;
-    statReadTime.textContent = readTimeMins <= 1 ? '< 1 min læsetid' : `ca. ${readTimeMins} min læsetid`;
-
-    filenamePreview.textContent = getExportFilename();
-  }
-
-  // Draft Storage & Sync Management
-  const DRAFT_KEY = 'md_writer_draft';
-
-  function saveDraft() {
-    const draft = {
-      title: docTitleInput ? docTitleInput.value : '',
-      categories: docCategoriesInput ? docCategoriesInput.value : '',
-      body: editorTextarea ? editorTextarea.value : '',
-      updatedAt: Date.now()
-    };
-    try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    } catch (e) {}
-  }
-
-  function loadDraft() {
-    let draft = null;
-
-    // 1. Check URL query parameters (?draft=...)
-    try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const draftParam = urlParams.get('draft');
-      if (draftParam) {
-        draft = JSON.parse(decodeURIComponent(draftParam));
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
-    } catch (e) {}
-
-    // 2. Check sessionStorage
-    if (!draft) {
-      try {
-        const savedSession = sessionStorage.getItem(DRAFT_KEY);
-        if (savedSession) draft = JSON.parse(savedSession);
-      } catch (e) {}
-    }
-
-    // 3. Check localStorage
-    if (!draft) {
-      try {
-        const savedLocal = localStorage.getItem(DRAFT_KEY);
-        if (savedLocal) draft = JSON.parse(savedLocal);
-      } catch (e) {}
-    }
-
-    if (draft) {
-      if (docTitleInput && draft.title !== undefined) docTitleInput.value = draft.title;
-      if (docCategoriesInput && draft.categories !== undefined) docCategoriesInput.value = draft.categories;
-      if (editorTextarea && draft.body !== undefined) editorTextarea.value = draft.body;
-
-      try {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-        sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-      } catch (e) {}
-
-      return true;
-    }
-    return false;
-  }
-
-  function navigateWithDraft(targetUrl) {
-    const draft = {
-      title: docTitleInput ? docTitleInput.value : '',
-      categories: docCategoriesInput ? docCategoriesInput.value : '',
-      body: editorTextarea ? editorTextarea.value : '',
-      updatedAt: Date.now()
-    };
-    try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    } catch (e) {}
-    const encoded = encodeURIComponent(JSON.stringify(draft));
-    window.location.href = `${targetUrl}?draft=${encoded}`;
-  }
-
-  function renderMermaidDiagrams(container) {
-    if (!window.mermaid) return;
-    const mermaidCodes = container.querySelectorAll('code.language-mermaid, pre.language-mermaid');
-    if (mermaidCodes.length === 0) return;
-
-    mermaidCodes.forEach((el) => {
-      const parent = el.tagName.toLowerCase() === 'code' ? el.parentElement : el;
-      const codeText = el.textContent;
-      const div = document.createElement('div');
-      div.className = 'mermaid';
-      div.textContent = codeText;
-      parent.replaceWith(div);
-    });
-
-    try {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: isDark ? 'dark' : 'default',
-        securityLevel: 'loose'
-      });
-      mermaid.run({
-        querySelector: '.mermaid'
-      }).catch(() => {});
-    } catch (err) {}
-  }
-
   function autoResizeTextarea() {
     if (!editorTextarea) return;
     editorTextarea.style.height = '0px';
@@ -630,27 +362,46 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     editorTextarea.style.height = Math.max(500, scrollH + 40) + 'px';
   }
 
-  function renderPreview() {
-    const markdownText = generateFullMarkdown();
+  function updateOdometer() {
+    const fullMarkdown = Storage ? Storage.generateFullMarkdown(docTitleInput.value, docCategoriesInput.value, editorTextarea.value) : editorTextarea.value;
+    const stats = Stats ? Stats.calculateStats(fullMarkdown) : { words: 0, chars: 0, lines: 0, readTimeMins: 1 };
+    const formatted = Stats ? Stats.formatStats(stats) : {};
 
-    if (window.marked && window.DOMPurify) {
-      let rawHtml = marked.parse(markdownText);
-      rawHtml = rawHtml.replace(/<br\s*\/?>/gi, '<span class="return-symbol br-symbol">↵</span><br>');
-      rawHtml = rawHtml.replace(/<\/p>/gi, '<span class="return-symbol p-symbol">↵</span></p>');
-      const cleanHtml = DOMPurify.sanitize(rawHtml);
-      previewContainer.innerHTML = cleanHtml;
-      renderMermaidDiagrams(previewContainer);
-    } else {
-      previewContainer.textContent = markdownText;
+    const padded = String(stats.words).padStart(5, '0').slice(-5);
+    const digits = padded.split('');
+    if (odometerWords) {
+      odometerWords.innerHTML = digits.map(d => `<span class="digit">${d}</span>`).join('');
+    }
+    if (statChars) statChars.textContent = formatted.charsText || `${stats.chars} tegn`;
+    if (statLines) statLines.textContent = formatted.linesText || `${stats.lines} linjer`;
+    if (statReadTime) statReadTime.textContent = formatted.readTimeText || `ca. ${stats.readTimeMins} min læsetid`;
+
+    if (filenamePreview && Storage) {
+      filenamePreview.textContent = Storage.getExportFilename(docTitleInput.value, 'md');
+    }
+  }
+
+  function renderPreview() {
+    const fullMarkdown = Storage ? Storage.generateFullMarkdown(docTitleInput.value, docCategoriesInput.value, editorTextarea.value) : editorTextarea.value;
+
+    if (Markdown && previewContainer) {
+      Markdown.renderPreview(fullMarkdown, previewContainer, false);
     }
 
     autoResizeTextarea();
     updateOdometer();
-    saveDraft();
+
+    if (Storage) {
+      Storage.saveDraft({
+        title: docTitleInput ? docTitleInput.value : '',
+        categories: docCategoriesInput ? docCategoriesInput.value : '',
+        body: editorTextarea ? editorTextarea.value : ''
+      });
+    }
   }
 
-  // Toast Notification
   function showToast(message, icon = 'check-circle') {
+    if (!toast) return;
     toast.innerHTML = `<i data-feather="${icon}"></i> <span>${message}</span>`;
     if (window.feather) feather.replace();
     toast.classList.add('show');
@@ -659,358 +410,240 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     }, 2800);
   }
 
-  // Dynamic Toolbar Active State Highlight Tracker
   function updateToolbarStates() {
-    const activeCmds = new Set();
-
-    if (editorTextarea) {
-      const text = editorTextarea.value;
-      const start = editorTextarea.selectionStart;
-      const end = editorTextarea.selectionEnd;
-
-      const lineStart = text.lastIndexOf('\n', start - 1) + 1;
-      let lineEnd = text.indexOf('\n', start);
-      if (lineEnd === -1) lineEnd = text.length;
-      const lineText = text.substring(lineStart, lineEnd);
-
-      if (/^#\s+/.test(lineText)) activeCmds.add('h1');
-      else if (/^##\s+/.test(lineText)) activeCmds.add('h2');
-      else if (/^###\s+/.test(lineText)) activeCmds.add('h3');
-      else if (/^>\s+/.test(lineText)) activeCmds.add('quote');
-      else if (/^-\s+/.test(lineText) || /^\*\s+/.test(lineText)) activeCmds.add('ul');
-      else if (/^\d+\.\s+/.test(lineText)) activeCmds.add('ol');
-
-      const selText = text.substring(start, end);
-      const prefix = text.substring(Math.max(0, start - 3), start);
-      const suffix = text.substring(end, Math.min(text.length, end + 3));
-
-      if ((prefix.endsWith('**') && suffix.startsWith('**')) || (selText.startsWith('**') && selText.endsWith('**') && selText.length >= 4)) {
-        activeCmds.add('bold');
-      }
-      if ((prefix.endsWith('*') && !prefix.endsWith('**') && suffix.startsWith('*') && !suffix.startsWith('**')) || (selText.startsWith('*') && selText.endsWith('*') && selText.length >= 2)) {
-        activeCmds.add('italic');
-      }
-      if ((prefix.endsWith('~~') && suffix.startsWith('~~')) || (selText.startsWith('~~') && selText.endsWith('~~') && selText.length >= 4)) {
-        activeCmds.add('strikethrough');
-      }
-      if ((prefix.endsWith('`') && suffix.startsWith('`')) || (selText.startsWith('`') && selText.endsWith('`') && selText.length >= 2)) {
-        activeCmds.add('code');
-      }
+    if (Formatter && editorTextarea) {
+      Formatter.updateToolbarStates(editorTextarea, '.tw-key[data-cmd]');
     }
-
-    document.querySelectorAll('.tw-key[data-cmd]').forEach(btn => {
-      const cmd = btn.getAttribute('data-cmd');
-      if (activeCmds.has(cmd)) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
-    });
-  }
-
-  // Toolbar Formatting Keycaps
-  function applyFormat(command) {
-    playKeyClickSound();
-
-    const start = editorTextarea.selectionStart;
-    const end = editorTextarea.selectionEnd;
-    const selectedText = editorTextarea.value.substring(start, end);
-    let replacement = '';
-    let selStart = start;
-    let selEnd = end;
-
-    switch (command) {
-      case 'h1':
-        replacement = selectedText ? `# ${selectedText}` : `# Overskrift 1`;
-        selStart = start + 2;
-        selEnd = start + 2 + (selectedText || 'Overskrift 1').length;
-        break;
-      case 'h2':
-        replacement = selectedText ? `## ${selectedText}` : `## Overskrift 2`;
-        selStart = start + 3;
-        selEnd = start + 3 + (selectedText || 'Overskrift 2').length;
-        break;
-      case 'h3':
-        replacement = selectedText ? `### ${selectedText}` : `### Overskrift 3`;
-        selStart = start + 4;
-        selEnd = start + 4 + (selectedText || 'Overskrift 3').length;
-        break;
-      case 'bold':
-        replacement = selectedText ? `**${selectedText}**` : `**fed tekst**`;
-        selStart = start + 2;
-        selEnd = start + 2 + (selectedText || 'fed tekst').length;
-        break;
-      case 'italic':
-        replacement = selectedText ? `*${selectedText}*` : `*kursiv tekst*`;
-        selStart = start + 1;
-        selEnd = start + 1 + (selectedText || 'kursiv tekst').length;
-        break;
-      case 'strikethrough':
-        replacement = selectedText ? `~~${selectedText}~~` : `~~gennemstreget~~`;
-        selStart = start + 2;
-        selEnd = start + 2 + (selectedText || 'gennemstreget').length;
-        break;
-      case 'code':
-        replacement = selectedText ? `\`${selectedText}\`` : `\`kode\``;
-        selStart = start + 1;
-        selEnd = start + 1 + (selectedText || 'kode').length;
-        break;
-      case 'quote':
-        replacement = selectedText ? `> ${selectedText}` : `> Citattekst`;
-        selStart = start + 2;
-        selEnd = start + 2 + (selectedText || 'Citattekst').length;
-        break;
-      case 'ul':
-        if (selectedText) {
-          replacement = selectedText.split('\n').map(l => `- ${l}`).join('\n');
-          selStart = start;
-          selEnd = start + replacement.length;
-        } else {
-          const placeholder = 'Punkt 1';
-          replacement = `- ${placeholder}`;
-          selStart = start + 2;
-          selEnd = start + 2 + placeholder.length;
-        }
-        break;
-      case 'ol':
-        if (selectedText) {
-          replacement = selectedText.split('\n').map((l, i) => `${i + 1}. ${l}`).join('\n');
-          selStart = start;
-          selEnd = start + replacement.length;
-        } else {
-          const placeholder = 'Første punkt';
-          replacement = `1. ${placeholder}`;
-          selStart = start + 3;
-          selEnd = start + 3 + placeholder.length;
-        }
-        break;
-      case 'task':
-        if (selectedText) {
-          replacement = selectedText.split('\n').map(l => `- [ ] ${l}`).join('\n');
-          selStart = start;
-          selEnd = start + replacement.length;
-        } else {
-          const placeholder = 'Opgave 1';
-          replacement = `- [ ] ${placeholder}`;
-          selStart = start + 6;
-          selEnd = start + 6 + placeholder.length;
-        }
-        break;
-      case 'link':
-        if (selectedText) {
-          replacement = `[${selectedText}](https://example.com)`;
-          selStart = start + 1 + selectedText.length + 2;
-          selEnd = selStart + 'https://example.com'.length;
-        } else {
-          const placeholder = 'Link tekst';
-          replacement = `[${placeholder}](https://example.com)`;
-          selStart = start + 1;
-          selEnd = start + 1 + placeholder.length;
-        }
-        break;
-      case 'codeblock':
-        if (selectedText) {
-          replacement = `\`\`\`\n${selectedText}\n\`\`\``;
-          selStart = start + 4;
-          selEnd = start + 4 + selectedText.length;
-        } else {
-          const placeholder = 'Tekstblok';
-          replacement = `\`\`\`\n${placeholder}\n\`\`\``;
-          selStart = start + 4;
-          selEnd = start + 4 + placeholder.length;
-        }
-        break;
-      case 'diagram':
-        if (selectedText) {
-          replacement = `\`\`\`mermaid\nflowchart LR\n    ${selectedText}\n\`\`\``;
-          selStart = start + 24;
-          selEnd = start + 24 + selectedText.length;
-        } else {
-          const sample = `flowchart LR\n    A[Start] --> B[Proces] --> C[Slut]`;
-          replacement = `\`\`\`mermaid\n${sample}\n\`\`\``;
-          selStart = start + 11;
-          selEnd = start + 11 + sample.length;
-        }
-        break;
-      case 'table':
-        replacement = `| Kolonne 1 | Kolonne 2 | Kolonne 3 |\n| --- | --- | --- |\n| Værdi 1 | Værdi 2 | Værdi 3 |\n| Værdi 4 | Værdi 5 | Værdi 6 |`;
-        selStart = start + 2;
-        selEnd = start + 11;
-        break;
-      case 'hr':
-        replacement = `\n---\n`;
-        selStart = start + replacement.length;
-        selEnd = selStart;
-        break;
-    }
-
-    editorTextarea.setRangeText(replacement, start, end, 'end');
-    editorTextarea.setSelectionRange(selStart, selEnd);
-    editorTextarea.focus();
-    renderPreview();
-    updateToolbarStates();
   }
 
   document.querySelectorAll('.tw-key[data-cmd]').forEach(btn => {
-    btn.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-    });
+    btn.addEventListener('mousedown', (e) => e.preventDefault());
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       const cmd = btn.getAttribute('data-cmd');
-      applyFormat(cmd);
+      playKeyClickSound();
+      if (Formatter) {
+        Formatter.applyFormat(cmd, editorTextarea, () => {
+          renderPreview();
+          updateToolbarStates();
+        });
+      }
     });
   });
 
-  // Actions
-  btnExportMd.addEventListener('click', () => {
-    playKeyClickSound();
-    const markdownContent = generateFullMarkdown();
-    const filename = getExportFilename();
-
-    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    showToast(`Skrivemaskine notat gemt som: ${filename}`, 'download');
-  });
-
-  btnCopyMd.addEventListener('click', () => {
-    playKeyClickSound();
-    const markdownContent = generateFullMarkdown();
-    navigator.clipboard.writeText(markdownContent).then(() => {
-      showToast('Skrivemaskinetekst kopieret til udklipsholder!', 'copy');
-    });
-  });
-
-  btnClear.addEventListener('click', () => {
-    playKeyClickSound();
-    if (confirm('Vil du rydde papirarket?')) {
-      docTitleInput.value = '';
-      docCategoriesInput.value = '';
-      editorTextarea.value = '';
-      try {
-        localStorage.removeItem(DRAFT_KEY);
-        sessionStorage.removeItem(DRAFT_KEY);
-      } catch (e) {}
-      renderPreview();
-      showToast('Papir ryddet', 'trash-2');
-    }
-  });
-
-  // Save draft when clicking to switch to standard app
-  const btnSwitchMode = document.querySelector('a[href="index.html"]');
-  if (btnSwitchMode) {
-    btnSwitchMode.addEventListener('click', (e) => {
-      e.preventDefault();
-      navigateWithDraft('index.html');
+  // Export Actions
+  if (btnExportMd) {
+    btnExportMd.addEventListener('click', () => {
+      playKeyClickSound();
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      if (Export) {
+        const filename = Export.exportMarkdown(docTitleInput.value, docCategoriesInput.value, editorTextarea.value);
+        showToast(`Skrivemaskine notat gemt som: ${filename}`, 'download');
+      }
     });
   }
 
-  // Quick Chips Actions for Metadata Input
-  function getFormattedDanishDate() {
-    const today = new Date();
-    const months = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'];
-    return `${today.getDate()}. ${months[today.getMonth()]} ${today.getFullYear()}`;
+  if (btnCopyMd) {
+    btnCopyMd.addEventListener('click', async () => {
+      playKeyClickSound();
+      if (Export) {
+        try {
+          await Export.copyMarkdown(docTitleInput.value, docCategoriesInput.value, editorTextarea.value);
+          showToast('Skrivemaskinetekst kopieret til udklipsholder!', 'copy');
+        } catch (e) {}
+      }
+    });
   }
 
-  function appendCategoryTag(tagLabel) {
-    if (!docCategoriesInput) return;
-    if (!docCategoriesInput.value) {
-      docCategoriesInput.value = tagLabel;
-    } else {
-      const current = docCategoriesInput.value.trim();
-      docCategoriesInput.value = current ? `${current} | ${tagLabel}` : tagLabel;
-    }
-    docCategoriesInput.focus();
-    renderPreview();
+  if (btnCopyMdDropdown) {
+    btnCopyMdDropdown.addEventListener('click', () => {
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      if (btnCopyMd) btnCopyMd.click();
+    });
   }
 
+  if (btnPrintPdf) {
+    btnPrintPdf.addEventListener('click', () => {
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      if (Export) Export.triggerPdfPrint(renderPreview);
+    });
+  }
+
+  if (btnExportMenu && exportDropdown) {
+    btnExportMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+      exportDropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!exportDropdown.contains(e.target)) {
+        exportDropdown.classList.remove('open');
+      }
+    });
+  }
+
+  // Clear Action
+  if (btnClear) {
+    btnClear.addEventListener('click', () => {
+      playKeyClickSound();
+      if (confirm('Vil du rydde papirarket?')) {
+        docTitleInput.value = '';
+        docCategoriesInput.value = '';
+        editorTextarea.value = '';
+        if (Storage) Storage.clearDraft();
+        renderPreview();
+        showToast('Papir ryddet', 'trash-2');
+      }
+    });
+  }
+
+  // Quick Chips
   if (chipDate) {
     chipDate.addEventListener('click', () => {
       playKeyClickSound();
-      appendCategoryTag(`Dato: ${getFormattedDanishDate()}`);
-      showToast('Dags dato tilføjet', 'calendar');
+      if (Formatter && Storage) {
+        Formatter.appendCategoryTag(docCategoriesInput, `Dato: ${Storage.getFormattedDanishDate()}`, renderPreview);
+        showToast('Dags dato tilføjet', 'calendar');
+      }
     });
   }
 
   if (chipLocation) {
     chipLocation.addEventListener('click', () => {
       playKeyClickSound();
-      if (!navigator.geolocation) {
-        appendCategoryTag('Sted: ');
-        return;
-      }
-      showToast('Søger efter placering...', 'map-pin');
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            const { latitude, longitude } = position.coords;
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
-            if (res.ok) {
-              const data = await res.json();
-              const addr = data.address || {};
-              const city = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
-              const country = addr.country || '';
-              let locationStr = 'Sted: ';
-              if (city && country) {
-                locationStr += `${city}, ${country}`;
-              } else if (city || country) {
-                locationStr += (city || country);
-              }
-              appendCategoryTag(locationStr);
-              showToast('Placering tilføjet', 'map-pin');
-            } else {
-              appendCategoryTag('Sted: ');
-            }
-          } catch (e) {
-            appendCategoryTag('Sted: ');
+      if (Formatter) {
+        showToast('Søger efter placering...', 'map-pin');
+        Formatter.fetchLocation(
+          (locStr) => {
+            Formatter.appendCategoryTag(docCategoriesInput, locStr, renderPreview);
+            showToast('Placering tilføjet', 'map-pin');
+          },
+          () => {
+            Formatter.appendCategoryTag(docCategoriesInput, 'Sted: ', renderPreview);
           }
-        },
-        () => {
-          appendCategoryTag('Sted: ');
-        },
-        { timeout: 7000 }
-      );
+        );
+      }
     });
   }
 
   if (chipNoteNo) {
     chipNoteNo.addEventListener('click', () => {
       playKeyClickSound();
-      appendCategoryTag('Tags: ');
-      showToast('Tags skabelon tilføjet', 'tag');
+      if (Formatter) {
+        Formatter.appendCategoryTag(docCategoriesInput, 'Tags: ', renderPreview);
+        showToast('Tags skabelon tilføjet', 'tag');
+      }
     });
   }
 
   if (btnLoadSample) {
     btnLoadSample.addEventListener('click', () => {
       playBellSound();
-      docTitleInput.value = sampleData.title;
-      docCategoriesInput.value = sampleData.categories;
-      editorTextarea.value = sampleData.body;
-      renderPreview();
-      showToast('Eksempel (Møns Klint) indlæst på skrivemaskinen!', 'file-text');
+      if (Storage && Storage.sampleData) {
+        docTitleInput.value = Storage.sampleData.title;
+        docCategoriesInput.value = Storage.sampleData.categories;
+        editorTextarea.value = Storage.sampleData.body;
+        renderPreview();
+        showToast('Eksempel (Møns Klint) indlæst på skrivemaskinen!', 'file-text');
+      }
     });
   }
 
-  // ----------------------------------------------------
-  // FULLSCREEN & DISTRACTION-FREE MODE LOGIC
-  // ----------------------------------------------------
+  // Mode Switch Navigation Links (Pass active draft to other editions)
+  document.querySelectorAll('.mode-toggle-group a, .view-toggle-group a, a[href="index.html"], a[href="terminal.html"]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const href = link.getAttribute('href');
+      if (Storage) {
+        Storage.navigateWithDraft(href, {
+          title: docTitleInput ? docTitleInput.value : '',
+          categories: docCategoriesInput ? docCategoriesInput.value : '',
+          body: editorTextarea ? editorTextarea.value : ''
+        });
+      } else {
+        window.location.href = href;
+      }
+    });
+  });
+
+  // Typing Audio Trigger
+  function handleTypingSound(e) {
+    if (!soundEnabled) return;
+    if (e.key === 'Enter') {
+      playBellSound();
+    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+      playBackspaceSound();
+    } else if (e.key === ' ' || e.code === 'Space') {
+      playSpaceSound();
+    } else if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      playKeyClickSound();
+    }
+  }
+
+  [editorTextarea, docTitleInput, docCategoriesInput].forEach(inputEl => {
+    if (inputEl) {
+      inputEl.addEventListener('keydown', handleTypingSound);
+    }
+  });
+
+  if (editorTextarea) {
+    editorTextarea.addEventListener('keyup', updateToolbarStates);
+    editorTextarea.addEventListener('click', updateToolbarStates);
+    editorTextarea.addEventListener('input', () => {
+      autoResizeTextarea();
+      renderPreview();
+    });
+    editorTextarea.addEventListener('paste', () => {
+      setTimeout(() => {
+        autoResizeTextarea();
+        renderPreview();
+      }, 20);
+    });
+
+    const paperWrapperEl = document.querySelector('.paper-wrapper');
+    if (paperWrapperEl) {
+      editorTextarea.addEventListener('wheel', (e) => {
+        paperWrapperEl.scrollTop += e.deltaY;
+      }, { passive: true });
+    }
+  }
+
+  window.addEventListener('resize', autoResizeTextarea);
+  document.addEventListener('selectionchange', updateToolbarStates);
+
+  // Drag & Drop Import
+  window.addEventListener('dragover', (e) => e.preventDefault());
+  window.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      if (file.name.endsWith('.md') || file.name.endsWith('.txt')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = event.target.result;
+          if (Storage) {
+            const parsed = Storage.parseAndLoadMdFile(file.name, content);
+            docTitleInput.value = parsed.title;
+            docCategoriesInput.value = parsed.categories;
+            editorTextarea.value = parsed.body;
+            renderPreview();
+            autoResizeTextarea();
+            showToast(`"${file.name}" indlæst på skrivemaskinen!`, 'file-text');
+          }
+        };
+        reader.readAsText(file);
+      } else {
+        showToast('Venligst upload en .md eller .txt fil', 'alert-circle');
+      }
+    }
+  });
+
+  // Fullscreen & Distraction-Free Mode
   function toggleFullscreen() {
     playKeyClickSound();
     const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.body.classList.contains('distraction-free-mode'));
-    
+
     if (!isFullscreen) {
-      // Enter Fullscreen & Distraction-Free mode
       if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen().catch(() => {});
       } else if (document.documentElement.webkitRequestFullscreen) {
@@ -1024,7 +657,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       }
       showToast('Fuldskærm & Distraktionsfri Skrivemodus Aktiveret', 'maximize');
     } else {
-      // Exit Fullscreen & Distraction-Free mode
       if (document.fullscreenElement || document.webkitFullscreenElement) {
         if (document.exitFullscreen) {
           document.exitFullscreen().catch(() => {});
@@ -1046,119 +678,43 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     }
   }
 
-  function handleFullscreenChange() {
+  if (btnFullscreen) btnFullscreen.addEventListener('click', toggleFullscreen);
+  if (floatingExitFs) floatingExitFs.addEventListener('click', toggleFullscreen);
+
+  document.addEventListener('fullscreenchange', () => {
     const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
     if (!isFs) {
       document.body.classList.remove('distraction-free-mode');
-      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
-      if (btnFullscreen) {
-        btnFullscreen.classList.remove('active');
-      }
+      if (btnFullscreen) btnFullscreen.classList.remove('active');
     } else {
       document.body.classList.add('distraction-free-mode');
-      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
-      if (btnFullscreen) {
-        btnFullscreen.classList.add('active');
-      }
+      if (btnFullscreen) btnFullscreen.classList.add('active');
     }
-    if (window.feather) {
-      setTimeout(() => feather.replace(), 50);
-    }
-  }
-
-  document.addEventListener('fullscreenchange', handleFullscreenChange);
-  document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-
-  if (btnFullscreen) {
-    btnFullscreen.addEventListener('click', toggleFullscreen);
-  }
-  if (floatingExitFs) {
-    floatingExitFs.addEventListener('click', toggleFullscreen);
-  }
-
-  // Export Dropdown Toggle Logic
-  if (btnExportMenu && exportDropdown) {
-    btnExportMenu.addEventListener('click', (e) => {
-      e.stopPropagation();
-      exportDropdown.classList.toggle('open');
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!exportDropdown.contains(e.target)) {
-        exportDropdown.classList.remove('open');
-      }
-    });
-  }
-
-  // Print / PDF Export Action
-  function triggerPdfPrint() {
-    if (exportDropdown) exportDropdown.classList.remove('open');
-    renderPreview();
-    window.print();
-  }
-
-  if (btnPrintPdf) {
-    btnPrintPdf.addEventListener('click', triggerPdfPrint);
-  }
-
-  window.addEventListener('beforeprint', renderPreview);
-
-  if (btnCopyMdDropdown) {
-    btnCopyMdDropdown.addEventListener('click', () => {
-      if (exportDropdown) exportDropdown.classList.remove('open');
-      btnCopyMd.click();
-    });
-  }
+    if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
+  });
 
   // Keyboard Shortcuts Modal Toggle
   function openShortcutModal() {
-    if (shortcutModal) {
-      shortcutModal.classList.remove('hidden');
-    }
+    if (shortcutModal) shortcutModal.classList.remove('hidden');
   }
 
   function closeShortcutModal() {
-    if (shortcutModal) {
-      shortcutModal.classList.add('hidden');
-    }
+    if (shortcutModal) shortcutModal.classList.add('hidden');
   }
 
-  if (btnShortcuts) {
-    btnShortcuts.addEventListener('click', openShortcutModal);
-  }
-
-  if (btnCloseShortcutModal) {
-    btnCloseShortcutModal.addEventListener('click', closeShortcutModal);
-  }
-
+  if (btnShortcuts) btnShortcuts.addEventListener('click', openShortcutModal);
+  if (btnCloseShortcutModal) btnCloseShortcutModal.addEventListener('click', closeShortcutModal);
   if (shortcutModal) {
     shortcutModal.addEventListener('click', (e) => {
-      if (e.target === shortcutModal) {
-        closeShortcutModal();
-      }
+      if (e.target === shortcutModal) closeShortcutModal();
     });
   }
 
-  const fKeyMap = {
-    'F1': 'h1',
-    'F2': 'h2',
-    'F3': 'h3',
-    'F4': 'bold',
-    'F5': 'italic',
-    'F6': 'code',
-    'F7': 'quote',
-    'F8': 'ul',
-    'F9': 'ol',
-    'F10': 'task',
-    'F11': 'link',
-    'F12': 'codeblock'
-  };
-
-  // Keyboard shortcuts
+  // Global Shortcuts
   document.addEventListener('keydown', (e) => {
-    if (fKeyMap[e.key]) {
+    if (Formatter && Formatter.fKeyMap[e.key]) {
       e.preventDefault();
-      const btn = document.querySelector(`[data-cmd="${fKeyMap[e.key]}"]`);
+      const btn = document.querySelector(`[data-cmd="${Formatter.fKeyMap[e.key]}"]`);
       if (btn) btn.click();
       return;
     }
@@ -1202,105 +758,17 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     }
   });
 
-  document.addEventListener('selectionchange', updateToolbarStates);
-
-  function handleTypingSound(e) {
-    if (!soundEnabled) return;
-    if (e.key === 'Enter') {
-      playBellSound();
-    } else if (e.key === 'Backspace' || e.key === 'Delete') {
-      playBackspaceSound();
-    } else if (e.key === ' ' || e.code === 'Space') {
-      playSpaceSound();
-    } else if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      playKeyClickSound();
-    }
-  }
-
-  [editorTextarea, docTitleInput, docCategoriesInput].forEach(inputEl => {
-    if (inputEl) {
-      inputEl.addEventListener('keydown', handleTypingSound);
-    }
-  });
-
-  if (editorTextarea) {
-    editorTextarea.addEventListener('keyup', updateToolbarStates);
-    editorTextarea.addEventListener('click', updateToolbarStates);
-    editorTextarea.addEventListener('input', () => {
-      autoResizeTextarea();
-      renderPreview();
-    });
-    editorTextarea.addEventListener('paste', () => {
-      setTimeout(() => {
-        autoResizeTextarea();
-        renderPreview();
-      }, 20);
-    });
-
-    const paperWrapperEl = document.querySelector('.paper-wrapper');
-    if (paperWrapperEl) {
-      editorTextarea.addEventListener('wheel', (e) => {
-        paperWrapperEl.scrollTop += e.deltaY;
-      }, { passive: true });
-    }
-  }
-
-  window.addEventListener('resize', autoResizeTextarea);
-
-  // Drag & Drop File Loader
-  window.addEventListener('dragover', (e) => {
-    e.preventDefault();
-  });
-
-  window.addEventListener('drop', (e) => {
-    e.preventDefault();
-    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0];
-      if (file.name.endsWith('.md') || file.name.endsWith('.txt')) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const content = event.target.result;
-          parseAndLoadMdFile(file.name, content);
-        };
-        reader.readAsText(file);
-      } else {
-        showToast('Venligst upload en .md eller .txt fil', 'alert-circle');
-      }
-    }
-  });
-
-  function parseAndLoadMdFile(fileName, content) {
-    const lines = content.split('\n');
-    let title = '';
-    let categories = '';
-    let lineIdx = 0;
-
-    if (lines.length > 0 && lines[0].startsWith('# ')) {
-      title = lines[0].substring(2).trim();
-      lineIdx++;
-      if (lineIdx < lines.length && lines[lineIdx].trim() === '') lineIdx++;
-    }
-
-    if (lineIdx < lines.length && lines[lineIdx].startsWith('*') && lines[lineIdx].endsWith('*') && !lines[lineIdx].startsWith('**')) {
-      categories = lines[lineIdx].substring(1, lines[lineIdx].length - 1).trim();
-      lineIdx++;
-      if (lineIdx < lines.length && lines[lineIdx].trim() === '') lineIdx++;
-    }
-
-    const bodyText = lines.slice(lineIdx).join('\n');
-
-    if (docTitleInput) docTitleInput.value = title;
-    if (docCategoriesInput) docCategoriesInput.value = categories;
-    if (editorTextarea) editorTextarea.value = bodyText;
-
-    renderPreview();
-    autoResizeTextarea();
-    showToast(`"${fileName}" indlæst på skrivemaskinen!`, 'file-text');
-  }
-
-  // Startup Init
+  // Initial Load Pipeline
   updateSoundUI();
-  loadDraft();
+  if (Storage) {
+    const savedDraft = Storage.loadDraft();
+    if (savedDraft) {
+      if (docTitleInput && savedDraft.title !== undefined) docTitleInput.value = savedDraft.title;
+      if (docCategoriesInput && savedDraft.categories !== undefined) docCategoriesInput.value = savedDraft.categories;
+      if (editorTextarea && savedDraft.body !== undefined) editorTextarea.value = savedDraft.body;
+    }
+  }
+
   renderPreview();
   autoResizeTextarea();
   preloadRealWavSounds();
