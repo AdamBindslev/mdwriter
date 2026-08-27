@@ -722,25 +722,6 @@ html[data-flicker="true"] .overlay-flicker {
   position: relative;
 }
 
-.line-numbers {
-  flex-shrink: 0;
-  width: 48px;
-  min-width: 48px;
-  box-sizing: border-box;
-  padding: 12px 10px 12px 6px;
-  font-family: var(--font-mono);
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: var(--ph-text-dim);
-  border-right: 1px solid var(--ph-border);
-  text-align: right;
-  user-select: none;
-  background-color: rgba(0,0,0,0.25);
-  overflow: hidden;
-  white-space: pre;
-  display: block;
-}
-
 .term-textarea {
   flex: 1;
   width: 100%;

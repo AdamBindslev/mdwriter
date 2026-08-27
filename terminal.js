@@ -434,12 +434,8 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     renderPreview();
   });
 
-  editorTextarea.addEventListener('scroll', () => {
-    lineNumbers.scrollTop = editorTextarea.scrollTop;
-  });
-
   // ----------------------------------------------------
-  // HELPERS: FILENAME PREVIEW & STATS & LINE NUMBERS
+  // HELPERS: FILENAME PREVIEW & STATS
   // ----------------------------------------------------
   function getYYMMDD() {
     const today = new Date();
@@ -460,15 +456,6 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
 
     if (!sanitizedTitle) sanitizedTitle = 'dokument';
     filenamePreview.textContent = `${dateStr}_${sanitizedTitle}.md`;
-  }
-
-  function updateLineNumbers() {
-    const lines = editorTextarea.value.split('\n').length;
-    let numbersArr = [];
-    for (let i = 1; i <= Math.max(lines, 1); i++) {
-      numbersArr.push(i);
-    }
-    lineNumbers.textContent = numbersArr.join('\n');
   }
 
   function updateStats() {
