@@ -523,35 +523,24 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Fullscreen & Distraction-Free Mode
-  if (btnFullscreen) btnFullscreen.addEventListener('click', toggleFullscreen);
-  if (floatingExitFs) floatingExitFs.addEventListener('click', toggleFullscreen);
-
-  function toggleFullscreen() {
+  function toggleFullscreen(e) {
+    if (e && e.preventDefault) e.preventDefault();
     playTerminalTypingSound('char');
-    const isFullscreen = !!(
-      document.fullscreenElement ||
-      document.webkitFullscreenElement ||
-      document.body.classList.contains('fullscreen-active') ||
-      document.body.classList.contains('distraction-free-mode')
-    );
+    const isFullscreen = document.body.classList.contains('fullscreen-active') ||
+                         document.body.classList.contains('distraction-free-mode') ||
+                         !!(document.fullscreenElement || document.webkitFullscreenElement);
 
     if (!isFullscreen) {
-      const docEl = document.documentElement;
-      if (docEl.requestFullscreen) {
-        docEl.requestFullscreen().catch(() => {});
-      } else if (docEl.webkitRequestFullscreen) {
-        docEl.webkitRequestFullscreen().catch(() => {});
-      }
       document.body.classList.add('fullscreen-active', 'distraction-free-mode');
-      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
-      if (btnFullscreen) {
-        btnFullscreen.classList.add('active');
-        btnFullscreen.setAttribute('title', 'Forlad Fuldskærm (Alt+F eller ESC)');
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen().catch(() => {});
       }
-      if (fullscreenIcon) fullscreenIcon.setAttribute('data-feather', 'minimize');
-      if (window.feather) setTimeout(() => feather.replace(), 50);
+      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
       showToast('Fuldskærmsmodus aktiveret (ESC for at afslutte)');
     } else {
+      document.body.classList.remove('fullscreen-active', 'distraction-free-mode');
       if (document.fullscreenElement || document.webkitFullscreenElement) {
         if (document.exitFullscreen) {
           document.exitFullscreen().catch(() => {});
@@ -559,31 +548,20 @@ document.addEventListener('DOMContentLoaded', () => {
           document.webkitExitFullscreen().catch(() => {});
         }
       }
-      document.body.classList.remove('fullscreen-active', 'distraction-free-mode');
       if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
-      if (btnFullscreen) {
-        btnFullscreen.classList.remove('active');
-        btnFullscreen.setAttribute('title', 'Fuldskærm / Distraktionsfri Skrivemodus (Alt+F eller ESC)');
-      }
-      if (fullscreenIcon) fullscreenIcon.setAttribute('data-feather', 'maximize');
-      if (window.feather) setTimeout(() => feather.replace(), 50);
       showToast('Forladt fuldskærm');
     }
   }
 
+  if (btnFullscreen) btnFullscreen.addEventListener('click', toggleFullscreen);
+  if (floatingExitFs) floatingExitFs.addEventListener('click', toggleFullscreen);
+
   document.addEventListener('fullscreenchange', () => {
     const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-    if (!isFs) {
+    if (!isFs && (document.body.classList.contains('fullscreen-active') || document.body.classList.contains('distraction-free-mode'))) {
       document.body.classList.remove('fullscreen-active', 'distraction-free-mode');
-      if (btnFullscreen) btnFullscreen.classList.remove('active');
-      if (fullscreenIcon) fullscreenIcon.setAttribute('data-feather', 'maximize');
-    } else {
-      document.body.classList.add('fullscreen-active', 'distraction-free-mode');
-      if (btnFullscreen) btnFullscreen.classList.add('active');
-      if (fullscreenIcon) fullscreenIcon.setAttribute('data-feather', 'minimize');
+      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
     }
-    if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
-    if (window.feather) setTimeout(() => feather.replace(), 50);
   });
 
   // Global Shortcuts
