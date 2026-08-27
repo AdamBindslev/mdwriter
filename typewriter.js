@@ -1225,12 +1225,75 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   if (editorTextarea) {
     editorTextarea.addEventListener('keyup', updateToolbarStates);
     editorTextarea.addEventListener('click', updateToolbarStates);
-    editorTextarea.addEventListener('input', renderPreview);
+    editorTextarea.addEventListener('input', () => {
+      autoResizeTextarea();
+      renderPreview();
+    });
+    editorTextarea.addEventListener('paste', () => {
+      setTimeout(() => {
+        autoResizeTextarea();
+        renderPreview();
+      }, 20);
+    });
+  }
+
+  window.addEventListener('resize', autoResizeTextarea);
+
+  // Drag & Drop File Loader
+  window.addEventListener('dragover', (e) => {
+    e.preventDefault();
+  });
+
+  window.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      if (file.name.endsWith('.md') || file.name.endsWith('.txt')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = event.target.result;
+          parseAndLoadMdFile(file.name, content);
+        };
+        reader.readAsText(file);
+      } else {
+        showToast('Venligst upload en .md eller .txt fil', 'alert-circle');
+      }
+    }
+  });
+
+  function parseAndLoadMdFile(fileName, content) {
+    const lines = content.split('\n');
+    let title = '';
+    let categories = '';
+    let lineIdx = 0;
+
+    if (lines.length > 0 && lines[0].startsWith('# ')) {
+      title = lines[0].substring(2).trim();
+      lineIdx++;
+      if (lineIdx < lines.length && lines[lineIdx].trim() === '') lineIdx++;
+    }
+
+    if (lineIdx < lines.length && lines[lineIdx].startsWith('*') && lines[lineIdx].endsWith('*') && !lines[lineIdx].startsWith('**')) {
+      categories = lines[lineIdx].substring(1, lines[lineIdx].length - 1).trim();
+      lineIdx++;
+      if (lineIdx < lines.length && lines[lineIdx].trim() === '') lineIdx++;
+    }
+
+    const bodyText = lines.slice(lineIdx).join('\n');
+
+    if (docTitleInput) docTitleInput.value = title;
+    if (docCategoriesInput) docCategoriesInput.value = categories;
+    if (editorTextarea) editorTextarea.value = bodyText;
+
+    renderPreview();
+    autoResizeTextarea();
+    showToast(`"${fileName}" indlæst på skrivemaskinen!`, 'file-text');
   }
 
   // Startup Init
   updateSoundUI();
   loadDraft();
   renderPreview();
+  autoResizeTextarea();
   preloadRealWavSounds();
 });
