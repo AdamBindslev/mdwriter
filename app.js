@@ -71,15 +71,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Auto-Save Indicator Tracker
-  function updateSaveIndicator() {
+  function updateSaveIndicator(saveResult) {
     if (!saveIndicator) return;
     const hasContent = (docTitleInput && docTitleInput.value.trim()) ||
                        (docCategoriesInput && docCategoriesInput.value.trim()) ||
                        (editorTextarea && editorTextarea.value.trim());
-    if (hasContent) {
-      saveIndicator.innerHTML = '<i data-feather="check"></i> Gemt automatisk';
-    } else {
+
+    if (!hasContent) {
       saveIndicator.innerHTML = '<i data-feather="file-text"></i> Tomt dokument';
+      saveIndicator.classList.remove('save-error', 'save-warning');
+    } else if (saveResult && !saveResult.ok) {
+      saveIndicator.innerHTML = '<i data-feather="alert-triangle"></i> Kun i hukommelsen (eksportér nu)';
+      saveIndicator.classList.add('save-error');
+      saveIndicator.classList.remove('save-warning');
+    } else if (saveResult && !saveResult.local && saveResult.session) {
+      saveIndicator.innerHTML = '<i data-feather="alert-circle"></i> Gemt i session';
+      saveIndicator.classList.add('save-warning');
+      saveIndicator.classList.remove('save-error');
+    } else {
+      saveIndicator.innerHTML = '<i data-feather="check"></i> Gemt automatisk';
+      saveIndicator.classList.remove('save-error', 'save-warning');
     }
     if (window.feather) feather.replace();
   }
@@ -105,15 +116,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateFilenameBadge();
 
+    let saveResult = null;
     if (Storage) {
-      Storage.saveDraft({
+      saveResult = Storage.saveDraft({
         title: docTitleInput ? docTitleInput.value : '',
         categories: docCategoriesInput ? docCategoriesInput.value : '',
         body: editorTextarea ? editorTextarea.value : ''
       });
     }
 
-    updateSaveIndicator();
+    updateSaveIndicator(saveResult);
   }
 
   // Toolbar Formatting Actions
@@ -355,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-      if (file.name.endsWith('.md') || file.name.endsWith('.txt')) {
+      if (file && /\.(md|markdown|txt)$/i.test(file.name)) {
         const reader = new FileReader();
         reader.onload = (event) => {
           const content = event.target.result;

@@ -553,14 +553,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  if (btnFullscreen) btnFullscreen.addEventListener('click', toggleFullscreen);
-  if (floatingExitFs) floatingExitFs.addEventListener('click', toggleFullscreen);
-
-  document.addEventListener('fullscreenchange', () => {
-    const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-    if (!isFs && (document.body.classList.contains('fullscreen-active') || document.body.classList.contains('distraction-free-mode'))) {
-      document.body.classList.remove('fullscreen-active', 'distraction-free-mode');
-      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
+  // Drag & Drop Import
+  window.addEventListener('dragover', (e) => e.preventDefault());
+  window.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      if (file && /\.(md|markdown|txt)$/i.test(file.name)) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = event.target.result;
+          if (Storage) {
+            const parsed = Storage.parseAndLoadMdFile(file.name, content);
+            docTitleInput.value = parsed.title;
+            docCategoriesInput.value = parsed.categories;
+            editorTextarea.value = parsed.body;
+            renderPreview();
+            showToast(`"${file.name}" INDLÆST`);
+          }
+        };
+        reader.readAsText(file);
+      } else {
+        showToast('FEJL: KUN .MD ELLER .TXT FILER');
+      }
     }
   });
 

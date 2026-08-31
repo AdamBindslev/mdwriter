@@ -94,12 +94,12 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadWavSample(url) {
     try {
       initAudio();
-      const cacheBustUrl = `${url}?v=${Date.now()}`;
-      const res = await fetch(cacheBustUrl, { cache: 'no-cache' });
+      const res = await fetch(url, { cache: 'no-cache' });
       if (!res.ok) return null;
       const arrayBuf = await res.arrayBuffer();
       return await audioCtx.decodeAudioData(arrayBuf);
     } catch (e) {
+      // Local file:// fetch restriction or decode failure gracefully falls back to synthesized audio
       return null;
     }
   }
@@ -710,7 +710,7 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-      if (file.name.endsWith('.md') || file.name.endsWith('.txt')) {
+      if (file && /\.(md|markdown|txt)$/i.test(file.name)) {
         const reader = new FileReader();
         reader.onload = (event) => {
           const content = event.target.result;

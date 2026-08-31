@@ -30,7 +30,11 @@
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
+    const val = textarea.value;
+    const selectedText = val.substring(start, end);
+    const isAtLineStart = start === 0 || val[start - 1] === '\n';
+    const preBreak = isAtLineStart ? '' : '\n';
+
     let replacement = '';
     let selStart = start;
     let selEnd = end;
@@ -38,38 +42,38 @@
     switch (command) {
       case 'h1':
         if (selectedText) {
-          replacement = `# ${selectedText}`;
-          selStart = start + 2;
-          selEnd = start + 2 + selectedText.length;
+          replacement = `${preBreak}# ${selectedText}`;
+          selStart = start + preBreak.length + 2;
+          selEnd = selStart + selectedText.length;
         } else {
           const placeholder = 'Overskrift 1';
-          replacement = `# ${placeholder}`;
-          selStart = start + 2;
-          selEnd = start + 2 + placeholder.length;
+          replacement = `${preBreak}# ${placeholder}`;
+          selStart = start + preBreak.length + 2;
+          selEnd = selStart + placeholder.length;
         }
         break;
       case 'h2':
         if (selectedText) {
-          replacement = `## ${selectedText}`;
-          selStart = start + 3;
-          selEnd = start + 3 + selectedText.length;
+          replacement = `${preBreak}## ${selectedText}`;
+          selStart = start + preBreak.length + 3;
+          selEnd = selStart + selectedText.length;
         } else {
           const placeholder = 'Overskrift 2';
-          replacement = `## ${placeholder}`;
-          selStart = start + 3;
-          selEnd = start + 3 + placeholder.length;
+          replacement = `${preBreak}## ${placeholder}`;
+          selStart = start + preBreak.length + 3;
+          selEnd = selStart + placeholder.length;
         }
         break;
       case 'h3':
         if (selectedText) {
-          replacement = `### ${selectedText}`;
-          selStart = start + 4;
-          selEnd = start + 4 + selectedText.length;
+          replacement = `${preBreak}### ${selectedText}`;
+          selStart = start + preBreak.length + 4;
+          selEnd = selStart + selectedText.length;
         } else {
           const placeholder = 'Overskrift 3';
-          replacement = `### ${placeholder}`;
-          selStart = start + 4;
-          selEnd = start + 4 + placeholder.length;
+          replacement = `${preBreak}### ${placeholder}`;
+          selStart = start + preBreak.length + 4;
+          selEnd = selStart + placeholder.length;
         }
         break;
       case 'bold':
@@ -122,53 +126,54 @@
         break;
       case 'quote':
         if (selectedText) {
-          replacement = `> ${selectedText}`;
-          selStart = start + 2;
-          selEnd = start + 2 + selectedText.length;
+          const lines = selectedText.split('\n');
+          replacement = preBreak + lines.map(line => `> ${line}`).join('\n');
+          selStart = start + preBreak.length;
+          selEnd = start + replacement.length;
         } else {
           const placeholder = 'Citat';
-          replacement = `> ${placeholder}`;
-          selStart = start + 2;
-          selEnd = start + 2 + placeholder.length;
+          replacement = `${preBreak}> ${placeholder}`;
+          selStart = start + preBreak.length + 2;
+          selEnd = selStart + placeholder.length;
         }
         break;
       case 'ul':
         if (selectedText) {
           const lines = selectedText.split('\n');
-          replacement = lines.map(line => `- ${line}`).join('\n');
-          selStart = start;
+          replacement = preBreak + lines.map(line => `- ${line}`).join('\n');
+          selStart = start + preBreak.length;
           selEnd = start + replacement.length;
         } else {
           const placeholder = 'Punkt';
-          replacement = `- ${placeholder}`;
-          selStart = start + 2;
-          selEnd = start + 2 + placeholder.length;
+          replacement = `${preBreak}- ${placeholder}`;
+          selStart = start + preBreak.length + 2;
+          selEnd = selStart + placeholder.length;
         }
         break;
       case 'ol':
         if (selectedText) {
           const lines = selectedText.split('\n');
-          replacement = lines.map((line, idx) => `${idx + 1}. ${line}`).join('\n');
-          selStart = start;
+          replacement = preBreak + lines.map((line, idx) => `${idx + 1}. ${line}`).join('\n');
+          selStart = start + preBreak.length;
           selEnd = start + replacement.length;
         } else {
           const placeholder = 'Nummereret punkt';
-          replacement = `1. ${placeholder}`;
-          selStart = start + 3;
-          selEnd = start + 3 + placeholder.length;
+          replacement = `${preBreak}1. ${placeholder}`;
+          selStart = start + preBreak.length + 3;
+          selEnd = selStart + placeholder.length;
         }
         break;
       case 'task':
         if (selectedText) {
           const lines = selectedText.split('\n');
-          replacement = lines.map(line => `- [ ] ${line}`).join('\n');
-          selStart = start;
+          replacement = preBreak + lines.map(line => `- [ ] ${line}`).join('\n');
+          selStart = start + preBreak.length;
           selEnd = start + replacement.length;
         } else {
           const placeholder = 'Opgave';
-          replacement = `- [ ] ${placeholder}`;
-          selStart = start + 6;
-          selEnd = start + 6 + placeholder.length;
+          replacement = `${preBreak}- [ ] ${placeholder}`;
+          selStart = start + preBreak.length + 6;
+          selEnd = selStart + placeholder.length;
         }
         break;
       case 'link':
@@ -197,35 +202,35 @@
         break;
       case 'codeblock':
         if (selectedText) {
-          replacement = `\`\`\`\n${selectedText}\n\`\`\``;
-          selStart = start + 4;
-          selEnd = start + 4 + selectedText.length;
+          replacement = `${preBreak}\`\`\`\n${selectedText}\n\`\`\``;
+          selStart = start + preBreak.length + 4;
+          selEnd = selStart + selectedText.length;
         } else {
           const placeholder = 'Tekstblok';
-          replacement = `\`\`\`\n${placeholder}\n\`\`\``;
-          selStart = start + 4;
-          selEnd = start + 4 + placeholder.length;
+          replacement = `${preBreak}\`\`\`\n${placeholder}\n\`\`\``;
+          selStart = start + preBreak.length + 4;
+          selEnd = selStart + placeholder.length;
         }
         break;
       case 'diagram':
         if (selectedText) {
-          replacement = `\`\`\`mermaid\nflowchart LR\n    ${selectedText}\n\`\`\``;
-          selStart = start + 24;
-          selEnd = start + 24 + selectedText.length;
+          replacement = `${preBreak}\`\`\`mermaid\nflowchart LR\n    ${selectedText}\n\`\`\``;
+          selStart = start + preBreak.length + 24;
+          selEnd = selStart + selectedText.length;
         } else {
           const sample = `flowchart LR\n    A[Start] --> B[Proces] --> C[Slut]`;
-          replacement = `\`\`\`mermaid\n${sample}\n\`\`\``;
-          selStart = start + 11;
-          selEnd = start + 11 + sample.length;
+          replacement = `${preBreak}\`\`\`mermaid\n${sample}\n\`\`\``;
+          selStart = start + preBreak.length + 11;
+          selEnd = selStart + sample.length;
         }
         break;
       case 'table':
-        replacement = `| Kolonne 1 | Kolonne 2 | Kolonne 3 |\n| --- | --- | --- |\n| Værdi 1 | Værdi 2 | Værdi 3 |\n| Værdi 4 | Værdi 5 | Værdi 6 |`;
-        selStart = start + 2;
-        selEnd = start + 11;
+        replacement = `${preBreak}| Kolonne 1 | Kolonne 2 | Kolonne 3 |\n| --- | --- | --- |\n| Værdi 1 | Værdi 2 | Værdi 3 |\n| Værdi 4 | Værdi 5 | Værdi 6 |`;
+        selStart = start + preBreak.length + 2;
+        selEnd = start + preBreak.length + 11;
         break;
       case 'hr':
-        replacement = `\n---\n`;
+        replacement = `${preBreak}---\n`;
         selStart = start + replacement.length;
         selEnd = selStart;
         break;
@@ -262,9 +267,9 @@
     else if (/^##\s+/.test(lineText)) activeCmds.add('h2');
     else if (/^###\s+/.test(lineText)) activeCmds.add('h3');
     else if (/^>\s+/.test(lineText)) activeCmds.add('quote');
+    else if (/^-\s+\[[ x]\]\s+/.test(lineText)) activeCmds.add('task');
     else if (/^-\s+/.test(lineText) || /^\*\s+/.test(lineText)) activeCmds.add('ul');
     else if (/^\d+\.\s+/.test(lineText)) activeCmds.add('ol');
-    else if (/^-\s+\[[ x]\]\s+/.test(lineText)) activeCmds.add('task');
 
     const selText = text.substring(start, end);
     const prefix = text.substring(Math.max(0, start - 3), start);

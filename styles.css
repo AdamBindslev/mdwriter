@@ -395,12 +395,30 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
+  transition: color 0.2s ease;
 }
 
 .auto-save-indicator i {
   width: 13px;
   height: 13px;
   color: var(--accent-emerald);
+}
+
+.auto-save-indicator.save-error {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.auto-save-indicator.save-error i {
+  color: #ef4444;
+}
+
+.auto-save-indicator.save-warning {
+  color: #f59e0b;
+}
+
+.auto-save-indicator.save-warning i {
+  color: #f59e0b;
 }
 
 /* Toolbar Styling */

@@ -55,14 +55,31 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     return `${date.getDate()}. ${months[date.getMonth()]} ${date.getFullYear()}`;
   }
 
+  // Windows reserved device names
+  const WINDOWS_RESERVED = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$/i;
+
   /**
-   * Sanitize title for file system naming
+   * Sanitize title for file system naming across Windows, macOS, Linux and FAT32/exFAT
    */
   function sanitizeFilename(title) {
-    if (!title || !title.trim()) return 'dokument';
+    if (!title || typeof title !== 'string') return 'dokument';
     let clean = title.trim();
-    clean = clean.replace(/[\/\\:*?"<>|]/g, '');
+    // Remove forbidden filesystem and control characters
+    clean = clean.replace(/[\/\\:*?"<>|\x00-\x1f\x7f]/g, '');
+    // Collapse multiple spaces
     clean = clean.replace(/\s+/g, ' ');
+    // Remove trailing dots and spaces (problematic on Windows/FAT)
+    clean = clean.replace(/[\s.]+$/, '');
+    // Truncate length
+    if (clean.length > 100) {
+      clean = clean.slice(0, 100).trim().replace(/[\s.]+$/, '');
+    }
+    // Fallback if empty
+    if (!clean) return 'dokument';
+    // Protect against Windows reserved filenames
+    if (WINDOWS_RESERVED.test(clean)) {
+      clean = `doc_${clean}`;
+    }
     return clean;
   }
 
@@ -95,22 +112,43 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   }
 
   /**
-   * Save draft object to storage
+   * Save draft object to storage with separate try/catch and detailed status reporting
    */
   function saveDraft({ title = '', categories = '', body = '' }) {
     const draft = {
-      title,
-      categories,
-      body,
+      title: title || '',
+      categories: categories || '',
+      body: body || '',
       updatedAt: Date.now()
     };
+    let localOk = false;
+    let sessionOk = false;
+    let error = null;
+    const jsonStr = JSON.stringify(draft);
+
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      localStorage.setItem(DRAFT_KEY, jsonStr);
+      localOk = true;
     } catch (e) {
-      console.warn('Draft save failed:', e);
+      error = e;
+      console.warn('localStorage draft save failed:', e);
     }
-    return draft;
+
+    try {
+      sessionStorage.setItem(DRAFT_KEY, jsonStr);
+      sessionOk = true;
+    } catch (e) {
+      if (!error) error = e;
+      console.warn('sessionStorage draft save failed:', e);
+    }
+
+    return {
+      ok: localOk || sessionOk,
+      local: localOk,
+      session: sessionOk,
+      draft,
+      error
+    };
   }
 
   /**
@@ -119,7 +157,7 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   function loadDraft() {
     let draft = null;
 
-    // 1. Check URL query parameters (?draft=...)
+    // 1. Check URL query parameters (?draft=...) if present
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const draftParam = urlParams.get('draft');
@@ -127,7 +165,9 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
         draft = JSON.parse(decodeURIComponent(draftParam));
         window.history.replaceState({}, document.title, window.location.pathname);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Could not parse URL draft param:', e);
+    }
 
     // 2. Check sessionStorage
     if (!draft) {
@@ -148,6 +188,8 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
     if (draft) {
       try {
         localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      } catch (e) {}
+      try {
         sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
       } catch (e) {}
     }
@@ -161,20 +203,39 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
   function clearDraft() {
     try {
       localStorage.removeItem(DRAFT_KEY);
+    } catch (e) {}
+    try {
       sessionStorage.removeItem(DRAFT_KEY);
     } catch (e) {}
   }
 
   /**
-   * Seamless navigation to other theme/edition while passing draft state
+   * Seamless navigation to other theme/edition while passing draft state reliably
    */
   function navigateWithDraft(targetUrl, draftData) {
+    let saveResult = null;
     if (draftData) {
-      saveDraft(draftData);
+      saveResult = saveDraft(draftData);
     }
-    const current = loadDraft() || draftData || { title: '', categories: '', body: '' };
-    const encoded = encodeURIComponent(JSON.stringify(current));
-    window.location.href = `${targetUrl}?draft=${encoded}`;
+
+    // If storage is working, navigate directly without bloating the URL
+    if (saveResult && saveResult.ok) {
+      window.location.href = targetUrl;
+      return;
+    }
+
+    // Fallback: If storage completely failed, only pass via URL if size is reasonable
+    const current = draftData || loadDraft() || { title: '', categories: '', body: '' };
+    try {
+      const jsonStr = JSON.stringify(current);
+      if (jsonStr.length < 2000) {
+        const encoded = encodeURIComponent(jsonStr);
+        window.location.href = `${targetUrl}?draft=${encoded}`;
+        return;
+      }
+    } catch (e) {}
+
+    window.location.href = targetUrl;
   }
 
   /**
