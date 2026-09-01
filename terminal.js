@@ -692,6 +692,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  function isTouchOrIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+           ('ontouchstart' in window && window.innerWidth <= 1366);
+  }
+
   // Fullscreen & Distraction-Free Mode
   function toggleFullscreen(e, forceExit = false) {
     if (e && e.preventDefault) e.preventDefault();
@@ -702,10 +708,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!isFullscreen) {
       document.body.classList.add('fullscreen-active', 'distraction-free-mode');
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      } else if (document.documentElement.webkitRequestFullscreen) {
-        document.documentElement.webkitRequestFullscreen().catch(() => {});
+      if (!isTouchOrIOS()) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen().catch(() => {});
+        }
       }
       if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
       showToast('Fuldskærmsmodus aktiveret (ESC for at afslutte)');
@@ -761,9 +769,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function handleFsChange() {
     const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-    if (!isFs && !document.body.classList.contains('distraction-free-mode')) {
-      document.body.classList.remove('fullscreen-active', 'distraction-free-mode');
-      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
+    if (!isFs) {
+      const isInputActive = document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
+      if (isInputActive || isTouchOrIOS()) return;
+
+      if (!document.body.classList.contains('distraction-free-mode')) {
+        document.body.classList.remove('fullscreen-active', 'distraction-free-mode');
+        if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
+      }
     } else if (isFs) {
       document.body.classList.add('fullscreen-active', 'distraction-free-mode');
       if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();

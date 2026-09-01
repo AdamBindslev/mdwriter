@@ -1037,6 +1037,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function isTouchOrIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+           ('ontouchstart' in window && window.innerWidth <= 1366);
+  }
+
   // Fullscreen & Distraction-Free Mode
   function toggleFullscreen(forceExit = false) {
     playKeyClickSound();
@@ -1048,10 +1054,12 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
     if (!isFullscreen) {
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      } else if (document.documentElement.webkitRequestFullscreen) {
-        document.documentElement.webkitRequestFullscreen().catch(() => {});
+      if (!isTouchOrIOS()) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen().catch(() => {});
+        }
       }
       document.body.classList.add('distraction-free-mode', 'fullscreen-active');
       if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
@@ -1094,9 +1102,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function handleFullscreenChange() {
     const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-    if (!isFs && !document.body.classList.contains('distraction-free-mode')) {
-      document.body.classList.remove('distraction-free-mode', 'fullscreen-active');
-      if (btnFullscreen) btnFullscreen.classList.remove('active');
+    if (!isFs) {
+      const isInputActive = document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
+      if (isInputActive || isTouchOrIOS()) return;
+
+      if (!document.body.classList.contains('distraction-free-mode')) {
+        document.body.classList.remove('distraction-free-mode', 'fullscreen-active');
+        if (btnFullscreen) btnFullscreen.classList.remove('active');
+      }
     } else if (isFs) {
       document.body.classList.add('distraction-free-mode', 'fullscreen-active');
       if (btnFullscreen) btnFullscreen.classList.add('active');

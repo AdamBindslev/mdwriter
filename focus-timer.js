@@ -57,14 +57,25 @@
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   }
 
+  // --- DEVICE HELPER ---
+  function isTouchOrIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+           ('ontouchstart' in window && window.innerWidth <= 1366);
+  }
+
   // --- FULLSCREEN HELPERS ---
   function enterFullscreen() {
     const docEl = document.documentElement;
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-      if (docEl.requestFullscreen) {
-        docEl.requestFullscreen().catch(() => {});
-      } else if (docEl.webkitRequestFullscreen) {
-        docEl.webkitRequestFullscreen().catch(() => {});
+    // On iOS/iPadOS, WebKit crashes/drops native element fullscreen whenever an on-screen keyboard appears.
+    // Use pure CSS distraction-free mode on touch/iOS devices.
+    if (!isTouchOrIOS()) {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (docEl.requestFullscreen) {
+          docEl.requestFullscreen().catch(() => {});
+        } else if (docEl.webkitRequestFullscreen) {
+          docEl.webkitRequestFullscreen().catch(() => {});
+        }
       }
     }
     document.body.classList.add('distraction-free-mode', 'fullscreen-active');
@@ -499,6 +510,12 @@
       const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
       
       if (!isFs) {
+        // Ignore native fullscreen exits triggered by virtual keyboard on iPad/touch devices
+        const isInputActive = document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
+        if (isInputActive || isTouchOrIOS()) {
+          return;
+        }
+
         if (timerState === 'running') {
           showStrictWarning();
         } else {
