@@ -322,6 +322,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener('selectionchange', updateToolbarActiveStates);
   if (editorTextarea) {
+    editorTextarea.addEventListener('keydown', (e) => {
+      if (Formatter && Formatter.handleSmartKeys) {
+        if (Formatter.handleSmartKeys(editorTextarea, e, () => {
+          renderPreview();
+          updateToolbarActiveStates();
+          scrollEditorToCenter(true);
+        })) {
+          return;
+        }
+      }
+    });
     editorTextarea.addEventListener('keyup', (e) => {
       updateToolbarActiveStates();
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'].includes(e.key)) {

@@ -534,14 +534,14 @@ document.addEventListener('DOMContentLoaded', () => {
       playTerminalTypingSound('char');
     }
 
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      const start = editorTextarea.selectionStart;
-      const end = editorTextarea.selectionEnd;
-      editorTextarea.value = editorTextarea.value.substring(0, start) + '  ' + editorTextarea.value.substring(end);
-      editorTextarea.selectionStart = editorTextarea.selectionEnd = start + 2;
-      renderPreview();
-      scrollTerminalToCenter(true);
+    if (Formatter && Formatter.handleSmartKeys) {
+      if (Formatter.handleSmartKeys(editorTextarea, e, () => {
+        renderPreview();
+        updateToolbarStates();
+        scrollTerminalToCenter(true);
+      })) {
+        return;
+      }
     }
   });
 

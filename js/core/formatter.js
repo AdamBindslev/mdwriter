@@ -354,11 +354,159 @@
     );
   }
 
+  /**
+   * Smart Lists and Indentation Keydown Handler
+   * Handles Enter (list continuation & empty list exit) and Tab / Shift+Tab (indent/outdent).
+   * Returns true if the event was handled and default was prevented.
+   */
+  function handleSmartKeys(textarea, e, onUpdate) {
+    if (!textarea) return false;
+
+    // Handle Enter Key for Smart Lists
+    if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const val = textarea.value;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+
+      // Find current line boundaries
+      const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+      let lineEnd = val.indexOf('\n', start);
+      if (lineEnd === -1) lineEnd = val.length;
+
+      const beforeCursor = val.substring(lineStart, start);
+      const afterCursor = val.substring(start, lineEnd);
+
+      // Check for List / Quote patterns
+      // 1. Task list item: "- [ ] ", "- [x] ", "* [ ] ", "+ [ ] "
+      const taskEmptyMatch = beforeCursor.match(/^(\s*[-*+]\s+\[[ xX]\])\s*$/);
+      const taskItemMatch = beforeCursor.match(/^(\s*)([-*+])\s+\[[ xX]\]\s*(.*)$/);
+
+      // 2. Ordered list item: "1. ", "2) "
+      const olEmptyMatch = beforeCursor.match(/^(\s*\d+[\.\)])\s*$/);
+      const olItemMatch = beforeCursor.match(/^(\s*)(\d+)([\.\)])\s*(.*)$/);
+
+      // 3. Unordered list item: "- ", "* ", "+ "
+      const ulEmptyMatch = beforeCursor.match(/^(\s*[-*+])\s*$/);
+      const ulItemMatch = beforeCursor.match(/^(\s*)([-*+])\s*(.*)$/);
+
+      // 4. Blockquote: "> "
+      const quoteEmptyMatch = beforeCursor.match(/^(\s*>+)\s*$/);
+      const quoteItemMatch = beforeCursor.match(/^(\s*)(>+)\s*(.*)$/);
+
+      // Case A: Cursor is on an EMPTY list item -> Pressing Enter exits the list (clears list marker)
+      const isEmptyListItem = (taskEmptyMatch || olEmptyMatch || ulEmptyMatch || quoteEmptyMatch) && afterCursor.trim() === '';
+      if (isEmptyListItem) {
+        e.preventDefault();
+        textarea.setRangeText('', lineStart, lineEnd, 'end');
+        textarea.setSelectionRange(lineStart, lineStart);
+        if (typeof onUpdate === 'function') onUpdate();
+        return true;
+      }
+
+      // Case B: Cursor is on a NON-EMPTY list item -> Pressing Enter continues the list
+      let nextPrefix = null;
+      if (taskItemMatch) {
+        const indent = taskItemMatch[1];
+        const bullet = taskItemMatch[2];
+        nextPrefix = `${indent}${bullet} [ ] `;
+      } else if (olItemMatch) {
+        const indent = olItemMatch[1];
+        const num = parseInt(olItemMatch[2], 10);
+        const delim = olItemMatch[3];
+        nextPrefix = `${indent}${num + 1}${delim} `;
+      } else if (ulItemMatch) {
+        const indent = ulItemMatch[1];
+        const bullet = ulItemMatch[2];
+        nextPrefix = `${indent}${bullet} `;
+      } else if (quoteItemMatch) {
+        const indent = quoteItemMatch[1];
+        const quotes = quoteItemMatch[2];
+        nextPrefix = `${indent}${quotes} `;
+      }
+
+      if (nextPrefix !== null) {
+        e.preventDefault();
+        const insertion = '\n' + nextPrefix;
+        textarea.setRangeText(insertion, start, end, 'end');
+        const newPos = start + insertion.length;
+        textarea.setSelectionRange(newPos, newPos);
+        if (typeof onUpdate === 'function') onUpdate();
+        return true;
+      }
+    }
+
+    // Handle Tab and Shift+Tab (Indentation)
+    if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      const val = textarea.value;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+
+      const isMultiLine = start !== end && val.substring(start, end).includes('\n');
+
+      if (e.shiftKey) {
+        // Outdent (Shift+Tab)
+        const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+        let lineEnd = val.indexOf('\n', end);
+        if (lineEnd === -1) lineEnd = val.length;
+
+        const lines = val.substring(lineStart, lineEnd).split('\n');
+        let removedCharsFirstLine = 0;
+        let totalRemoved = 0;
+
+        const newLines = lines.map((line, idx) => {
+          let spacesToRemove = 0;
+          if (line.startsWith('  ')) spacesToRemove = 2;
+          else if (line.startsWith(' ')) spacesToRemove = 1;
+          else if (line.startsWith('\t')) spacesToRemove = 1;
+
+          if (idx === 0) removedCharsFirstLine = spacesToRemove;
+          totalRemoved += spacesToRemove;
+          return line.slice(spacesToRemove);
+        });
+
+        const replacement = newLines.join('\n');
+        textarea.setRangeText(replacement, lineStart, lineEnd, 'end');
+        textarea.setSelectionRange(
+          Math.max(lineStart, start - removedCharsFirstLine),
+          Math.max(lineStart, end - totalRemoved)
+        );
+        if (typeof onUpdate === 'function') onUpdate();
+        return true;
+      } else {
+        // Indent (Tab)
+        if (isMultiLine) {
+          const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+          let lineEnd = val.indexOf('\n', end);
+          if (lineEnd === -1) lineEnd = val.length;
+
+          const lines = val.substring(lineStart, lineEnd).split('\n');
+          const newLines = lines.map(line => '  ' + line);
+          const replacement = newLines.join('\n');
+
+          textarea.setRangeText(replacement, lineStart, lineEnd, 'end');
+          textarea.setSelectionRange(start + 2, end + (lines.length * 2));
+          if (typeof onUpdate === 'function') onUpdate();
+          return true;
+        } else {
+          // Single line / selection: insert 2 spaces
+          textarea.setRangeText('  ', start, end, 'end');
+          textarea.setSelectionRange(start + 2, start + 2);
+          if (typeof onUpdate === 'function') onUpdate();
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
   window.MDCore.Formatter = {
     fKeyMap,
     applyFormat,
     updateToolbarStates,
     appendCategoryTag,
-    fetchLocation
+    fetchLocation,
+    handleSmartKeys
   };
 })();

@@ -948,6 +948,16 @@ document.addEventListener('DOMContentLoaded', () => {
   if (editorTextarea) {
     editorTextarea.addEventListener('keydown', (e) => {
       handleTypingSound(e);
+      if (Formatter && Formatter.handleSmartKeys) {
+        if (Formatter.handleSmartKeys(editorTextarea, e, () => {
+          renderPreview();
+          updateToolbarStates();
+          scrollTypewriterToCenter(true);
+        })) {
+          updateTypeguide(true);
+          return;
+        }
+      }
       // Trigger typewriter hammer recoil animation on actual typing keys
       if ((!e.ctrlKey && !e.metaKey && !e.altKey && e.key.length === 1) || e.key === 'Backspace' || e.key === 'Enter') {
         updateTypeguide(true);
