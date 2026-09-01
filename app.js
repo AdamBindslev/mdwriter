@@ -682,7 +682,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnFullscreen) btnFullscreen.addEventListener('click', toggleFullscreen);
   if (floatingExitFs) floatingExitFs.addEventListener('click', toggleFullscreen);
 
-  function toggleFullscreen() {
+  function toggleFullscreen(forceExit = false) {
     const isFullscreen = !!(
       document.fullscreenElement ||
       document.webkitFullscreenElement ||
@@ -704,6 +704,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       showToast('Fuldskærm & Distraktionsfri Skrivemodus Aktiveret', 'maximize');
     } else {
+      if (!forceExit && window.isFocusTimerRunning && window.isFocusTimerRunning()) {
+        if (typeof window.showFocusStrictWarning === 'function') {
+          window.showFocusStrictWarning();
+        }
+        return;
+      }
+
       if (document.fullscreenElement || document.webkitFullscreenElement) {
         if (document.exitFullscreen) {
           document.exitFullscreen().catch(() => {});

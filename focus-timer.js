@@ -79,6 +79,40 @@
       }
     }
     document.body.classList.remove('distraction-free-mode', 'fullscreen-active');
+
+    const btnFs = document.getElementById('btnFullscreen');
+    if (btnFs) {
+      btnFs.classList.remove('active');
+      btnFs.setAttribute('title', 'Fuldskærm / Distraktionsfri Skrivemodus (Alt+F eller ESC)');
+    }
+    if (typeof window.updateFocusTimerPlacement === 'function') {
+      window.updateFocusTimerPlacement();
+    }
+  }
+
+  function showStrictWarning(customMessage) {
+    const strictModal = document.getElementById('focusStrictModal');
+    const descText = document.getElementById('focusStrictDescText');
+    const minsLeft = Math.max(1, Math.ceil(remainingSeconds / 60));
+
+    if (descText) {
+      if (customMessage) {
+        descText.textContent = customMessage;
+      } else {
+        descText.textContent = `Du forlod distraktionsfri fuldskærm før tid (ca. ${minsLeft} min tilbage af din fokus-session). For maksimalt fokus anbefales det at fortsætte i fuldskærm.`;
+      }
+    }
+
+    if (strictModal) {
+      strictModal.classList.add('active');
+    }
+  }
+
+  function hideStrictWarning() {
+    const strictModal = document.getElementById('focusStrictModal');
+    if (strictModal) {
+      strictModal.classList.remove('active');
+    }
   }
 
   // --- DOM INJECTION & MOUNTING ---
@@ -339,6 +373,11 @@
       // Reset
       const resetBtn = e.target.closest('#btnFocusReset') || e.target.closest('#btnDropdownReset');
       if (resetBtn) {
+        if (timerState === 'running') {
+          showStrictWarning('Du er i gang med en aktiv fokussession. Er du sikker på, at du vil afbryde og nulstille timeren?');
+          if (dropdown) dropdown.classList.remove('active');
+          return;
+        }
         resetTimer();
         if (dropdown) dropdown.classList.remove('active');
         return;
@@ -347,6 +386,11 @@
       // Preset Item Clicks
       const item = e.target.closest('.focus-timer-dropdown-item[data-work]');
       if (item) {
+        if (timerState === 'running') {
+          showStrictWarning('Du har en aktiv fokussession i gang. Afbryd timeren først, hvis du vil skifte interval.');
+          if (dropdown) dropdown.classList.remove('active');
+          return;
+        }
         const wMins = parseInt(item.getAttribute('data-work'), 10);
         const bMins = parseInt(item.getAttribute('data-break'), 10);
         setPreset(wMins, bMins);
@@ -361,6 +405,10 @@
       // Custom Time Click
       if (e.target.closest('#btnDropdownCustom')) {
         if (dropdown) dropdown.classList.remove('active');
+        if (timerState === 'running') {
+          showStrictWarning('Du er i gang med en aktiv fokussession. Afbryd timeren først for at angive en ny tid.');
+          return;
+        }
         const customModal = document.getElementById('focusCustomModal');
         if (customModal) customModal.classList.add('active');
         return;
@@ -401,16 +449,21 @@
 
       // Strict Focus Warning Actions
       if (e.target.closest('#btnResumeStrictFullscreen')) {
-        const strictModal = document.getElementById('focusStrictModal');
-        if (strictModal) strictModal.classList.remove('active');
+        hideStrictWarning();
         enterFullscreen();
+        if (typeof window.showToast === 'function') {
+          window.showToast('Fokussession genoptaget i fuldskærm', 'maximize');
+        }
         return;
       }
 
       if (e.target.closest('#btnAbortStrictTimer')) {
-        const strictModal = document.getElementById('focusStrictModal');
-        if (strictModal) strictModal.classList.remove('active');
+        hideStrictWarning();
         resetTimer();
+        exitFullscreen();
+        if (typeof window.showToast === 'function') {
+          window.showToast('Fokussession afbrudt', 'alert-triangle');
+        }
         return;
       }
     });
@@ -440,24 +493,16 @@
     document.addEventListener('mousemove', onMouseMove);
   }
 
-  // --- FULLSCREEN STRICT FOCUS MONITORING ---
+  // --- FULLSCREEN & VISIBILITY STRICT FOCUS MONITORING ---
   function bindFullscreenMonitoring() {
     function handleFullscreenChange() {
       const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
       
       if (!isFs) {
-        document.body.classList.remove('distraction-free-mode', 'fullscreen-active');
-
         if (timerState === 'running') {
-          const strictModal = document.getElementById('focusStrictModal');
-          const descText = document.getElementById('focusStrictDescText');
-          const minsLeft = Math.ceil(remainingSeconds / 60);
-
-          if (descText) {
-            descText.textContent = `Du forlod distraktionsfri fuldskærm før tid (ca. ${minsLeft} min tilbage af din fokus-session). Vil du genoptage fuldskærm eller afbryde timeren?`;
-          }
-
-          if (strictModal) strictModal.classList.add('active');
+          showStrictWarning();
+        } else {
+          document.body.classList.remove('distraction-free-mode', 'fullscreen-active');
         }
       } else {
         document.body.classList.add('distraction-free-mode', 'fullscreen-active');
@@ -466,7 +511,47 @@
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+    // Tab / App visibility change monitoring (especially for iPad / tablet / backgrounding)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && timerState === 'running') {
+        const isFs = !!(
+          document.fullscreenElement ||
+          document.webkitFullscreenElement ||
+          document.body.classList.contains('distraction-free-mode') ||
+          document.body.classList.contains('fullscreen-active')
+        );
+        if (!isFs) {
+          showStrictWarning('Du forlod appen under en aktiv fokussession. Vil du genoptage fuldskærm eller afbryde timeren?');
+        }
+      }
+    });
+
+    // Confirmation when attempting to close tab or leave page while session is running
+    window.addEventListener('beforeunload', (e) => {
+      if (timerState === 'running') {
+        e.preventDefault();
+        e.returnValue = 'Du har en aktiv fokussession i gang. Er du sikker på, at du vil forlade siden?';
+        return e.returnValue;
+      }
+    });
   }
+
+  // --- EXPOSE GLOBAL API ---
+  window.FocusTimer = {
+    isRunning: () => timerState === 'running',
+    getState: () => timerState,
+    getRemainingSeconds: () => remainingSeconds,
+    showStrictWarning: showStrictWarning,
+    hideStrictWarning: hideStrictWarning,
+    startTimer: startTimer,
+    pauseTimer: pauseTimer,
+    resetTimer: resetTimer,
+    enterFullscreen: enterFullscreen,
+    exitFullscreen: exitFullscreen
+  };
+  window.isFocusTimerRunning = () => timerState === 'running';
+  window.showFocusStrictWarning = (msg) => showStrictWarning(msg);
 
   // DOM Content Loaded Initializer
   if (document.readyState === 'loading') {

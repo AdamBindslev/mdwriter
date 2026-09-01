@@ -1028,7 +1028,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Fullscreen & Distraction-Free Mode
-  function toggleFullscreen() {
+  function toggleFullscreen(forceExit = false) {
     playKeyClickSound();
     const isFullscreen = !!(
       document.fullscreenElement ||
@@ -1051,6 +1051,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       showToast('Fuldskærm & Distraktionsfri Skrivemodus Aktiveret', 'maximize');
     } else {
+      if (!forceExit && window.isFocusTimerRunning && window.isFocusTimerRunning()) {
+        if (typeof window.showFocusStrictWarning === 'function') {
+          window.showFocusStrictWarning();
+        }
+        return;
+      }
+
       if (document.fullscreenElement || document.webkitFullscreenElement) {
         if (document.exitFullscreen) {
           document.exitFullscreen().catch(() => {});

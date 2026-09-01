@@ -693,7 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Fullscreen & Distraction-Free Mode
-  function toggleFullscreen(e) {
+  function toggleFullscreen(e, forceExit = false) {
     if (e && e.preventDefault) e.preventDefault();
     playTerminalTypingSound('char');
     const isFullscreen = document.body.classList.contains('fullscreen-active') ||
@@ -710,6 +710,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
       showToast('Fuldskærmsmodus aktiveret (ESC for at afslutte)');
     } else {
+      if (!forceExit && window.isFocusTimerRunning && window.isFocusTimerRunning()) {
+        if (typeof window.showFocusStrictWarning === 'function') {
+          window.showFocusStrictWarning();
+        }
+        return;
+      }
+
       document.body.classList.remove('fullscreen-active', 'distraction-free-mode');
       if (document.fullscreenElement || document.webkitFullscreenElement) {
         if (document.exitFullscreen) {
