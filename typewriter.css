@@ -1142,8 +1142,15 @@ body.is-typing .tw-meta-inputs:hover {
   }
 
   .tw-sub,
+  .tw-badge,
+  .tw-v-divider,
   #btnShortcuts,
   #btnFullscreen {
+    display: none !important;
+  }
+
+  .tw-header-actions .tw-btn:not(.dropdown-toggle) span,
+  .tw-nav-group .tw-btn span {
     display: none !important;
   }
 
@@ -1153,7 +1160,7 @@ body.is-typing .tw-meta-inputs:hover {
   }
 
   .tw-header-actions {
-    gap: 4px;
+    gap: 3px;
   }
 
   .tw-header-sub {

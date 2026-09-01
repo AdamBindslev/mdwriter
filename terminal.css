@@ -1384,12 +1384,19 @@ kbd {
     font-size: 0.85rem;
   }
 
+  .term-badge,
   .term-sub,
   .term-sys-banner,
   .term-hr-code,
   .selector-label,
+  .term-v-divider,
   #btnShortcuts,
   #btnFullscreen {
+    display: none !important;
+  }
+
+  .term-header-actions .term-btn:not(.dropdown-toggle) span,
+  .term-nav-group .term-btn span {
     display: none !important;
   }
 
@@ -1399,7 +1406,7 @@ kbd {
   }
 
   .term-header-actions {
-    gap: 4px;
+    gap: 3px;
   }
 
   .term-header-sub {

@@ -6,9 +6,9 @@
 
 (function () {
   window.MDCore = window.MDCore || {};
-  window.MDCore.VERSION = '2.4.1';
+  window.MDCore.VERSION = '2.4.2';
 
-  console.log('%c🚀 Flowscribe Core v2.4.1 aktiv', 'background: #2563eb; color: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
+  console.log('%c🚀 Flowscribe Core v2.4.2 aktiv', 'background: #2563eb; color: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
 
   const DRAFT_KEY = 'md_writer_draft';
 

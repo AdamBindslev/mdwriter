@@ -1072,8 +1072,13 @@ body.is-typing .pane-header:hover {
   }
 
   .brand-text .subtitle,
+  .action-divider,
   #btnShortcuts,
   #btnFullscreen {
+    display: none !important;
+  }
+
+  .header-main-actions .btn-toggle-link span {
     display: none !important;
   }
 
