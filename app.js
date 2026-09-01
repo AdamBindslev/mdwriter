@@ -131,6 +131,45 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  // Synchronized Scrolling Helpers
+  let isScrollingEditor = false;
+  let isScrollingPreview = false;
+  let syncScrollTimeout = null;
+
+  function syncEditorToPreview(smooth = false) {
+    if (!editorTextarea || !previewContainer || isScrollingPreview) return;
+    const editorMax = editorTextarea.scrollHeight - editorTextarea.clientHeight;
+    const previewMax = previewContainer.scrollHeight - previewContainer.clientHeight;
+    if (editorMax <= 0 || previewMax <= 0) return;
+
+    isScrollingEditor = true;
+    const percentage = Math.max(0, Math.min(1, editorTextarea.scrollTop / editorMax));
+    const target = Math.round(percentage * previewMax);
+
+    if (smooth) {
+      previewContainer.scrollTo({ top: target, behavior: 'smooth' });
+    } else {
+      previewContainer.scrollTop = target;
+    }
+
+    if (syncScrollTimeout) clearTimeout(syncScrollTimeout);
+    syncScrollTimeout = setTimeout(() => { isScrollingEditor = false; }, 60);
+  }
+
+  function syncPreviewToEditor() {
+    if (!editorTextarea || !previewContainer || isScrollingEditor) return;
+    const editorMax = editorTextarea.scrollHeight - editorTextarea.clientHeight;
+    const previewMax = previewContainer.scrollHeight - previewContainer.clientHeight;
+    if (editorMax <= 0 || previewMax <= 0) return;
+
+    isScrollingPreview = true;
+    const percentage = Math.max(0, Math.min(1, previewContainer.scrollTop / previewMax));
+    editorTextarea.scrollTop = Math.round(percentage * editorMax);
+
+    if (syncScrollTimeout) clearTimeout(syncScrollTimeout);
+    syncScrollTimeout = setTimeout(() => { isScrollingPreview = false; }, 60);
+  }
+
   let scrollRaf = null;
 
   function scrollEditorToCenter(smooth = true) {
@@ -156,6 +195,9 @@ document.addEventListener('DOMContentLoaded', () => {
           editorTextarea.scrollTop = targetScrollTop;
         }
       }
+
+      // Always keep preview synchronized with editor position during midline scrolling
+      syncEditorToPreview(smooth);
     });
   }
 
@@ -461,25 +503,14 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Synchronized Scrolling between Editor and Preview
-  let isScrollingEditor = false;
-  let isScrollingPreview = false;
-
   if (editorTextarea && previewContainer) {
     editorTextarea.addEventListener('scroll', () => {
-      if (isScrollingPreview) return;
-      isScrollingEditor = true;
-      const percentage = editorTextarea.scrollTop / (editorTextarea.scrollHeight - editorTextarea.clientHeight);
-      previewContainer.scrollTop = percentage * (previewContainer.scrollHeight - previewContainer.clientHeight);
-      setTimeout(() => { isScrollingEditor = false; }, 50);
-    });
+      syncEditorToPreview(false);
+    }, { passive: true });
 
     previewContainer.addEventListener('scroll', () => {
-      if (isScrollingEditor) return;
-      isScrollingPreview = true;
-      const percentage = previewContainer.scrollTop / (previewContainer.scrollHeight - previewContainer.clientHeight);
-      editorTextarea.scrollTop = percentage * (editorTextarea.scrollHeight - editorTextarea.clientHeight);
-      setTimeout(() => { isScrollingPreview = false; }, 50);
-    });
+      syncPreviewToEditor();
+    }, { passive: true });
   }
 
   // Drag & Drop File Upload Support

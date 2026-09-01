@@ -742,8 +742,9 @@ body {
 /* Rendered Preview Styles */
 .preview-content {
   flex: 1;
-  padding: 20px 28px;
+  padding: 20px 28px 55vh 28px;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .markdown-body {
@@ -1237,7 +1238,8 @@ body.is-typing .pane-header:hover {
     height: 100%;
     min-height: 0;
     overflow-y: auto;
-    padding: 10px 12px;
+    padding: 10px 12px 55vh 12px;
+    box-sizing: border-box;
   }
 
   .pane-header {

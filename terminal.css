@@ -510,6 +510,8 @@ html[data-flicker="true"] .overlay-flicker {
   flex-direction: column;
   padding: 16px;
   gap: 12px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* System Banner */
@@ -787,7 +789,8 @@ html[data-flicker="true"] .overlay-flicker {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 420px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .term-pane {
@@ -795,7 +798,8 @@ html[data-flicker="true"] .overlay-flicker {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 420px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .term-pane.hidden {
@@ -806,7 +810,7 @@ html[data-flicker="true"] .overlay-flicker {
   flex: 1;
   display: flex;
   height: 100%;
-  min-height: 420px;
+  min-height: 0;
   border: 1px solid var(--ph-border);
   border-radius: 6px;
   background-color: rgba(0,0,0,0.4);
@@ -818,7 +822,7 @@ html[data-flicker="true"] .overlay-flicker {
   flex: 1;
   width: 100%;
   height: 100%;
-  min-height: 420px;
+  min-height: 0;
   box-sizing: border-box;
   padding: 12px 12px 55vh 12px;
   font-family: var(--font-mono);
@@ -868,6 +872,8 @@ html[data-flicker="true"] .overlay-flicker {
 /* HTML Rendered Preview in CRT Terminal Style */
 .term-rendered-body {
   flex: 1;
+  height: 100%;
+  box-sizing: border-box;
   padding: 16px 20px;
   border: 1px solid var(--ph-border);
   border-radius: 6px;
@@ -1153,6 +1159,36 @@ body.distraction-free-mode .crt-bezel {
   border: none;
   padding: 8px;
   height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+body.fullscreen-active .crt-screen,
+body.distraction-free-mode .crt-screen {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+body.fullscreen-active .term-workspace,
+body.distraction-free-mode .term-workspace {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+body.fullscreen-active .term-content-area,
+body.distraction-free-mode .term-content-area {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+body.fullscreen-active .term-pane,
+body.distraction-free-mode .term-pane {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Auto-fade all UI noise inside Terminal monitor during typing, keeping timer readable */
