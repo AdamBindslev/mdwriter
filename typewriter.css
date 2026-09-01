@@ -676,6 +676,7 @@ body.typewriter-body {
   flex-direction: column;
   min-height: 480px;
   height: auto;
+  position: relative;
 }
 
 .tw-view-container.hidden {
@@ -691,8 +692,7 @@ body.typewriter-body {
   font-size: 1.05rem;
   line-height: 1.8;
   color: var(--ink-current);
-  caret-color: var(--ink-current);
-  caret-shape: underscore;
+  caret-color: transparent;
   background: transparent;
   border: none;
   outline: none;
@@ -701,6 +701,142 @@ body.typewriter-body {
   overflow: hidden;
   box-sizing: border-box;
   display: block;
+}
+
+/* ==========================================================================
+   MECHANICAL TYPEWRITER TYPEGUIDE & HAMMER RECOIL
+   ========================================================================== */
+.tw-typeguide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 28px;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  will-change: transform;
+}
+
+.tw-typeguide.active {
+  opacity: 1;
+}
+
+/* Vertical Striker Bar */
+.tw-typeguide-strike {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2.5px;
+  height: 100%;
+  background-color: var(--ink-current);
+  border-radius: 1px;
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.4);
+  animation: twMechanicalBlink 0.9s infinite steps(1);
+}
+
+.tw-typeguide.typing .tw-typeguide-strike {
+  animation: none;
+  opacity: 1;
+}
+
+/* Vintage Metal Guide Notch at the Base of the Striker */
+.tw-typeguide-notch {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 5px;
+  border-left: 2px solid var(--ink-current);
+  border-right: 2px solid var(--ink-current);
+  border-bottom: 2px solid var(--ink-current);
+  border-radius: 0 0 2px 2px;
+  opacity: 0.65;
+  box-sizing: border-box;
+}
+
+.tw-typeguide-notch::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-bottom: 3px solid var(--ink-current);
+  opacity: 0.9;
+}
+
+/* Micro Ink Flash / Bloom */
+.tw-strike-flash {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  margin-top: -11px;
+  margin-left: -11px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--ink-current) 0%, rgba(0, 0, 0, 0.05) 50%, transparent 75%);
+  opacity: 0;
+  transform: scale(0.3);
+  pointer-events: none;
+}
+
+/* Hammer Recoil Animation on Key Strike */
+.tw-typeguide.striking {
+  animation: twHammerRecoil 0.09s ease-out forwards;
+}
+
+.tw-typeguide.striking .tw-strike-flash {
+  animation: twInkBloom 0.12s ease-out forwards;
+}
+
+@keyframes twHammerRecoil {
+  0% {
+    transform: translate3d(var(--tg-x, 0), var(--tg-y, 0), 0) scale(1) translateY(0);
+  }
+  30% {
+    transform: translate3d(var(--tg-x, 0), var(--tg-y, 0), 0) scale(1.15) translateY(-3px);
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+  }
+  65% {
+    transform: translate3d(var(--tg-x, 0), var(--tg-y, 0), 0) scale(0.97) translateY(1px);
+  }
+  100% {
+    transform: translate3d(var(--tg-x, 0), var(--tg-y, 0), 0) scale(1) translateY(0);
+  }
+}
+
+@keyframes twInkBloom {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.4);
+  }
+  40% {
+    opacity: 0.3;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes twMechanicalBlink {
+  0%, 48% {
+    opacity: 1;
+  }
+  50%, 98% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 /* Rendered HTML Styling inside Paper Sheet */

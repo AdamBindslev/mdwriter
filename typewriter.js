@@ -568,6 +568,63 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ==========================================================================
+  // MECHANICAL TYPEGUIDE & HAMMER RECOIL SYSTEM
+  // ==========================================================================
+  let typeguideEl = null;
+  let typingDebounceTimer = null;
+
+  function initTypeguide() {
+    if (!editorView || typeguideEl) return;
+    typeguideEl = document.createElement('div');
+    typeguideEl.className = 'tw-typeguide';
+    typeguideEl.id = 'twTypeguide';
+    typeguideEl.innerHTML = `
+      <div class="tw-typeguide-strike"></div>
+      <div class="tw-typeguide-notch"></div>
+      <div class="tw-strike-flash"></div>
+    `;
+    editorView.appendChild(typeguideEl);
+  }
+
+  function updateTypeguide(isKeyStrike = false) {
+    if (!editorTextarea || !editorView || editorView.classList.contains('hidden')) {
+      if (typeguideEl) typeguideEl.classList.remove('active');
+      return;
+    }
+
+    if (!typeguideEl) initTypeguide();
+
+    const isFocused = document.activeElement === editorTextarea;
+    const hasSelectionRange = editorTextarea.selectionStart !== editorTextarea.selectionEnd;
+
+    if (!isFocused || hasSelectionRange) {
+      typeguideEl.classList.remove('active');
+      return;
+    }
+
+    const cursorPos = editorTextarea.selectionStart || 0;
+    const caret = getCaretCoordinates(editorTextarea, cursorPos);
+
+    typeguideEl.style.setProperty('--tg-x', `${caret.left}px`);
+    typeguideEl.style.setProperty('--tg-y', `${caret.top}px`);
+    typeguideEl.style.transform = `translate3d(${caret.left}px, ${caret.top}px, 0)`;
+    typeguideEl.style.height = `${caret.height || 28}px`;
+    typeguideEl.classList.add('active');
+
+    typeguideEl.classList.add('typing');
+    if (typingDebounceTimer) clearTimeout(typingDebounceTimer);
+    typingDebounceTimer = setTimeout(() => {
+      if (typeguideEl) typeguideEl.classList.remove('typing');
+    }, 550);
+
+    if (isKeyStrike) {
+      typeguideEl.classList.remove('striking');
+      void typeguideEl.offsetWidth; // Force reflow to re-trigger animation
+      typeguideEl.classList.add('striking');
+    }
+  }
+
   function updateTypewriterScrollUI() {
     if (btnTypewriterScroll) {
       btnTypewriterScroll.classList.toggle('active', typewriterScrollEnabled);
@@ -619,6 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
     autoResizeTextarea();
     playKeyClickSound();
     scrollTypewriterToCenter(false);
+    setTimeout(() => updateTypeguide(false), 50);
   });
 
   tabPreview.addEventListener('click', () => {
@@ -627,6 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
     previewView.classList.remove('hidden');
     editorView.classList.add('hidden');
     if (paperSheet) paperSheet.classList.add('preview-active');
+    if (typeguideEl) typeguideEl.classList.remove('active');
     renderPreview();
     playKeyClickSound();
   });
@@ -876,8 +935,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   if (editorTextarea) {
+    editorTextarea.addEventListener('keydown', (e) => {
+      // Trigger typewriter hammer recoil animation on actual typing keys
+      if ((!e.ctrlKey && !e.metaKey && !e.altKey && e.key.length === 1) || e.key === 'Backspace' || e.key === 'Enter') {
+        updateTypeguide(true);
+      }
+    });
+
     editorTextarea.addEventListener('keyup', (e) => {
       updateToolbarStates();
+      updateTypeguide(false);
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'].includes(e.key)) {
         scrollTypewriterToCenter(true);
       }
@@ -885,12 +952,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     editorTextarea.addEventListener('click', () => {
       updateToolbarStates();
+      updateTypeguide(false);
       scrollTypewriterToCenter(true);
+    });
+
+    editorTextarea.addEventListener('focus', () => {
+      updateTypeguide(false);
+    });
+
+    editorTextarea.addEventListener('blur', () => {
+      if (typeguideEl) typeguideEl.classList.remove('active');
     });
 
     editorTextarea.addEventListener('input', () => {
       autoResizeTextarea();
       renderPreview();
+      updateTypeguide(true);
       scrollTypewriterToCenter(true);
     });
 
@@ -898,6 +975,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         autoResizeTextarea();
         renderPreview();
+        updateTypeguide(false);
         scrollTypewriterToCenter(true);
       }, 20);
     });
@@ -909,8 +987,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.addEventListener('resize', autoResizeTextarea);
-  document.addEventListener('selectionchange', updateToolbarStates);
+  window.addEventListener('resize', () => {
+    autoResizeTextarea();
+    updateTypeguide(false);
+  });
+  document.addEventListener('selectionchange', () => {
+    updateToolbarStates();
+    if (document.activeElement === editorTextarea) {
+      updateTypeguide(false);
+    }
+  });
 
   // Drag & Drop Import
   window.addEventListener('dragover', (e) => e.preventDefault());
@@ -1072,8 +1158,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderPreview();
   autoResizeTextarea();
+  initTypeguide();
   preloadRealWavSounds();
   if (typewriterScrollEnabled) {
-    setTimeout(() => scrollTypewriterToCenter(false), 100);
+    setTimeout(() => {
+      scrollTypewriterToCenter(false);
+      updateTypeguide(false);
+    }, 120);
   }
 });
