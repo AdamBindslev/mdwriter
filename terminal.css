@@ -820,7 +820,7 @@ html[data-flicker="true"] .overlay-flicker {
   height: 100%;
   min-height: 420px;
   box-sizing: border-box;
-  padding: 12px;
+  padding: 12px 12px 55vh 12px;
   font-family: var(--font-mono);
   font-size: 0.95rem;
   line-height: 1.6;
@@ -834,6 +834,13 @@ html[data-flicker="true"] .overlay-flicker {
   white-space: pre-wrap;
   word-break: break-word;
   overflow-y: auto;
+}
+
+#btnMidlineToggle.active {
+  border-color: var(--ph-border-bright);
+  color: var(--ph-text-bright);
+  background: var(--ph-btn-active);
+  box-shadow: 0 0 8px var(--ph-glow-subtle);
 }
 
 /* Custom Scrollbar for Terminal */

@@ -681,7 +681,7 @@ body {
 #editorTextarea {
   flex: 1;
   width: 100%;
-  padding: 16px 20px;
+  padding: 16px 20px 55vh 20px;
   background: transparent;
   border: none;
   color: var(--text-main);
@@ -693,6 +693,13 @@ body {
   resize: none;
   outline: none;
   tab-size: 2;
+  overflow-y: auto;
+}
+
+#btnMidlineToggle.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(37, 99, 235, 0.15);
 }
 
 /* Drag Overlay */
@@ -1221,7 +1228,7 @@ body.is-typing .pane-header:hover {
     height: 100% !important;
     min-height: 0 !important;
     font-size: 16px;
-    padding: 8px 10px;
+    padding: 8px 10px 55vh 10px;
     line-height: 1.5;
   }
 
@@ -1475,6 +1482,84 @@ kbd {
 .modal-hint {
   font-size: 0.775rem;
   color: var(--text-subtle);
+}
+
+/* ==========================================================================
+   Distraction-Free / Fullscreen Mode Styles
+   ========================================================================== */
+body.distraction-free-mode,
+body.fullscreen-active {
+  overflow: hidden;
+}
+
+body.distraction-free-mode .top-header,
+body.distraction-free-mode .status-bar,
+body.fullscreen-active .top-header,
+body.fullscreen-active .status-bar {
+  display: none !important;
+}
+
+body.distraction-free-mode .app-container,
+body.fullscreen-active .app-container {
+  height: 100vh;
+  max-width: 100%;
+  padding: 0;
+}
+
+/* Floating Exit Fullscreen Button */
+.floating-exit-fs {
+  position: fixed;
+  top: 16px;
+  right: 24px;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color, #334155);
+  color: var(--text-main, #f8fafc);
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.6;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.distraction-free-mode .floating-exit-fs,
+body.fullscreen-active .floating-exit-fs {
+  display: inline-flex !important;
+}
+
+.floating-exit-fs:hover,
+.floating-exit-fs:active {
+  opacity: 1;
+  background: rgba(220, 38, 38, 0.9);
+  border-color: #ef4444;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(220, 38, 38, 0.4);
+}
+
+.floating-exit-fs kbd {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  font-family: var(--font-sans, sans-serif);
+}
+
+.floating-exit-fs.hidden {
+  display: none !important;
 }
 
 /* ==========================================================================

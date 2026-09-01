@@ -36,7 +36,7 @@
           <div class="logo-icon"><i data-feather="edit-3"></i></div>
           <div class="brand-text">
             <h1>Flowscribe</h1>
-            <span class="subtitle">Markdown Editor & Eksportør • v2.4.4</span>
+            <span class="subtitle">Markdown Editor & Eksportør • v2.4.5</span>
           </div>
         </div>
 
@@ -51,6 +51,10 @@
           </div>
 
           <div class="action-divider"></div>
+
+          <button id="btnMidlineToggle" class="btn btn-icon active" title="Centreret Rulning (Midterlinje fastholder aktiv linje på midten af skærmen)">
+            <i data-feather="target" id="midlineIcon"></i>
+          </button>
 
           <button id="btnFullscreen" class="btn btn-secondary btn-compact" title="Fuldskærm (Alt+F eller ESC)">
             <i data-feather="maximize" id="fullscreenIcon"></i> <span>Fuldskærm</span>
@@ -295,6 +299,11 @@
       </div>
     </div>
   </div>
+
+  <!-- Floating Exit Fullscreen Button (Visible in fullscreen mode) -->
+  <button id="floatingExitFs" class="floating-exit-fs hidden" title="Forlad Fuldskærm (Alt+F eller ESC)">
+    <i data-feather="minimize-2"></i> Afslut Fuldskærm [ESC]
+  </button>
 
   <!-- Flowscribe Core Modules -->
   <script src="js/core/storage.js"></script>

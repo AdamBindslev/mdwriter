@@ -54,9 +54,132 @@ document.addEventListener('DOMContentLoaded', () => {
   // Controls & Toggles
   const btnSoundToggle = document.getElementById('btnSoundToggle');
   const soundIcon = document.getElementById('soundIcon');
+  const btnMidlineToggle = document.getElementById('btnMidlineToggle');
+  const midlineIcon = document.getElementById('midlineIcon');
   const btnFullscreen = document.getElementById('btnFullscreen');
   const fullscreenIcon = document.getElementById('fullscreenIcon');
   const floatingExitFs = document.getElementById('floatingExitFs');
+
+  // Midline / Centered Typewriter Scroll State
+  const MIDLINE_KEY = 'md_writer_terminal_midline_scroll';
+  let midlineEnabled = true;
+  const savedMidline = safeGetStorage(MIDLINE_KEY);
+  if (savedMidline !== null) {
+    midlineEnabled = savedMidline === 'true';
+  }
+
+  function updateMidlineUI() {
+    if (btnMidlineToggle) {
+      btnMidlineToggle.classList.toggle('active', midlineEnabled);
+      btnMidlineToggle.setAttribute(
+        'title',
+        midlineEnabled
+          ? 'Centreret Rulning aktiv (Aktiv linje fastholdes på midten af skærmen)'
+          : 'Standard rulning (Midterlinje slået fra)'
+      );
+    }
+  }
+
+  if (btnMidlineToggle) {
+    btnMidlineToggle.addEventListener('click', () => {
+      midlineEnabled = !midlineEnabled;
+      try {
+        localStorage.setItem(MIDLINE_KEY, midlineEnabled);
+      } catch (e) {}
+      updateMidlineUI();
+      showToast(
+        midlineEnabled ? 'MIDTERLINJE: AKTIVERET' : 'MIDTERLINJE: DEAKTIVERET'
+      );
+      playTerminalTypingSound('char');
+      if (midlineEnabled) {
+        scrollTerminalToCenter(true);
+      }
+    });
+  }
+
+  // ----------------------------------------------------
+  // MID-SCREEN CENTERED SCROLLING SYSTEM (TERMINAL)
+  // ----------------------------------------------------
+  const mirrorProperties = [
+    'direction', 'boxSizing', 'overflowX', 'overflowY',
+    'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'borderStyle',
+    'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+    'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch',
+    'fontSize', 'fontSizeAdjust', 'lineHeight', 'fontFamily',
+    'textAlign', 'textTransform', 'textIndent', 'textDecoration',
+    'letterSpacing', 'wordSpacing', 'tabSize', 'MozTabSize'
+  ];
+
+  let mirrorDiv = null;
+
+  function getCaretCoordinates(element, position) {
+    if (!mirrorDiv) {
+      mirrorDiv = document.createElement('div');
+      mirrorDiv.id = 'term-caret-mirror';
+      document.body.appendChild(mirrorDiv);
+    }
+
+    const style = mirrorDiv.style;
+    const computed = window.getComputedStyle(element);
+
+    style.whiteSpace = 'pre-wrap';
+    style.wordWrap = 'break-word';
+    style.overflowWrap = 'break-word';
+    style.position = 'fixed';
+    style.top = '-9999px';
+    style.left = '-9999px';
+    style.visibility = 'hidden';
+    style.pointerEvents = 'none';
+
+    mirrorProperties.forEach(prop => {
+      style[prop] = computed[prop];
+    });
+
+    style.width = computed.width;
+
+    const textBefore = element.value.substring(0, position);
+    mirrorDiv.textContent = textBefore;
+
+    const marker = document.createElement('span');
+    marker.textContent = element.value.substring(position, position + 1) || ' ';
+    if (marker.textContent === '\n') marker.textContent = ' ';
+    mirrorDiv.appendChild(marker);
+
+    return {
+      top: marker.offsetTop + parseInt(computed.borderTopWidth || 0, 10),
+      left: marker.offsetLeft + parseInt(computed.borderLeftWidth || 0, 10),
+      height: marker.offsetHeight || parseInt(computed.lineHeight || 24, 10)
+    };
+  }
+
+  let scrollRaf = null;
+
+  function scrollTerminalToCenter(smooth = true) {
+    if (!midlineEnabled || !editorTextarea) return;
+    if (editorView && editorView.classList.contains('hidden')) return;
+
+    if (scrollRaf) cancelAnimationFrame(scrollRaf);
+    scrollRaf = requestAnimationFrame(() => {
+      const cursorPos = editorTextarea.selectionStart || 0;
+      const caret = getCaretCoordinates(editorTextarea, cursorPos);
+
+      // Desired position: active line at ~45% from top of editor textarea viewport
+      const targetViewportY = editorTextarea.clientHeight * 0.45;
+      const targetScrollTop = Math.max(0, Math.round(caret.top - targetViewportY));
+
+      const diff = Math.abs(editorTextarea.scrollTop - targetScrollTop);
+      if (diff > 4) {
+        if (smooth) {
+          editorTextarea.scrollTo({
+            top: targetScrollTop,
+            behavior: 'smooth'
+          });
+        } else {
+          editorTextarea.scrollTop = targetScrollTop;
+        }
+      }
+    });
+  }
 
   // CRT FX Buttons
   const btnToggleScanlines = document.getElementById('btnToggleScanlines');
@@ -365,6 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tabPreview.classList.remove('active');
     editorView.classList.remove('hidden');
     previewView.classList.add('hidden');
+    scrollTerminalToCenter(false);
   });
 
   tabPreview.addEventListener('click', () => {
@@ -392,6 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Formatter.applyFormat(cmd, editorTextarea, () => {
           renderPreview();
           updateToolbarStates();
+          scrollTerminalToCenter(true);
         });
       }
     });
@@ -416,6 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
       editorTextarea.value = editorTextarea.value.substring(0, start) + '  ' + editorTextarea.value.substring(end);
       editorTextarea.selectionStart = editorTextarea.selectionEnd = start + 2;
       renderPreview();
+      scrollTerminalToCenter(true);
     }
   });
 
@@ -428,9 +554,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  editorTextarea.addEventListener('input', renderPreview);
-  editorTextarea.addEventListener('keyup', updateToolbarStates);
-  editorTextarea.addEventListener('click', updateToolbarStates);
+  editorTextarea.addEventListener('input', () => {
+    renderPreview();
+    scrollTerminalToCenter(true);
+  });
+  editorTextarea.addEventListener('keyup', (e) => {
+    updateToolbarStates();
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'].includes(e.key)) {
+      scrollTerminalToCenter(true);
+    }
+  });
+  editorTextarea.addEventListener('click', () => {
+    updateToolbarStates();
+    scrollTerminalToCenter(true);
+  });
+  editorTextarea.addEventListener('paste', () => {
+    setTimeout(() => {
+      renderPreview();
+      scrollTerminalToCenter(true);
+    }, 20);
+  });
   document.addEventListener('selectionchange', updateToolbarStates);
 
   // Quick Chips
@@ -609,13 +752,19 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnFullscreen) btnFullscreen.addEventListener('click', toggleFullscreen);
   if (floatingExitFs) floatingExitFs.addEventListener('click', toggleFullscreen);
 
-  document.addEventListener('fullscreenchange', () => {
+  function handleFsChange() {
     const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-    if (!isFs && (document.body.classList.contains('fullscreen-active') || document.body.classList.contains('distraction-free-mode'))) {
+    if (!isFs && !document.body.classList.contains('distraction-free-mode')) {
       document.body.classList.remove('fullscreen-active', 'distraction-free-mode');
       if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
+    } else if (isFs) {
+      document.body.classList.add('fullscreen-active', 'distraction-free-mode');
+      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
     }
-  });
+  }
+
+  document.addEventListener('fullscreenchange', handleFsChange);
+  document.addEventListener('webkitfullscreenchange', handleFsChange);
 
   // Global Shortcuts
   document.addEventListener('keydown', (e) => {
@@ -638,9 +787,35 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btnPrintPdf) btnPrintPdf.click();
     }
     if (e.key === 'Escape') {
+      let modalOrDropdownClosed = false;
       if (shortcutModal && !shortcutModal.classList.contains('hidden')) {
         shortcutModal.classList.add('hidden');
-      } else if (
+        modalOrDropdownClosed = true;
+      }
+      const focusDropdown = document.getElementById('focusTimerDropdown');
+      if (focusDropdown && focusDropdown.classList.contains('active')) {
+        focusDropdown.classList.remove('active');
+        modalOrDropdownClosed = true;
+      }
+      const customModal = document.getElementById('focusCustomModal');
+      if (customModal && customModal.classList.contains('active')) {
+        customModal.classList.remove('active');
+        modalOrDropdownClosed = true;
+      }
+      const breakOverlay = document.getElementById('focusBreakOverlay');
+      if (breakOverlay && breakOverlay.classList.contains('active')) {
+        breakOverlay.classList.remove('active');
+        modalOrDropdownClosed = true;
+      }
+      const strictModal = document.getElementById('focusStrictModal');
+      if (strictModal && strictModal.classList.contains('active')) {
+        strictModal.classList.remove('active');
+        modalOrDropdownClosed = true;
+      }
+
+      if (modalOrDropdownClosed) return;
+
+      if (
         document.fullscreenElement ||
         document.webkitFullscreenElement ||
         document.body.classList.contains('fullscreen-active') ||
@@ -659,6 +834,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Initial Startup Execution
+  updateMidlineUI();
   if (Storage) {
     const savedDraft = Storage.loadDraft();
     if (savedDraft) {
@@ -669,4 +845,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   renderPreview();
+  if (midlineEnabled) {
+    setTimeout(() => scrollTerminalToCenter(false), 100);
+  }
 });

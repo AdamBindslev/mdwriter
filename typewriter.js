@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnShortcuts = document.getElementById('btnShortcuts');
   const shortcutModal = document.getElementById('shortcutModal');
   const btnCloseShortcutModal = document.getElementById('btnCloseShortcutModal');
+  const floatingExitFs = document.getElementById('floatingExitFs');
   const toast = document.getElementById('toast');
 
   // Stats / Odometer
@@ -1028,7 +1029,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Fullscreen & Distraction-Free Mode
   function toggleFullscreen() {
     playKeyClickSound();
-    const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.body.classList.contains('distraction-free-mode'));
+    const isFullscreen = !!(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.body.classList.contains('distraction-free-mode') ||
+      document.body.classList.contains('fullscreen-active')
+    );
 
     if (!isFullscreen) {
       if (document.documentElement.requestFullscreen) {
@@ -1036,7 +1042,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (document.documentElement.webkitRequestFullscreen) {
         document.documentElement.webkitRequestFullscreen().catch(() => {});
       }
-      document.body.classList.add('distraction-free-mode');
+      document.body.classList.add('distraction-free-mode', 'fullscreen-active');
       if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
       if (btnFullscreen) {
         btnFullscreen.classList.add('active');
@@ -1051,7 +1057,7 @@ document.addEventListener('DOMContentLoaded', () => {
           document.webkitExitFullscreen().catch(() => {});
         }
       }
-      document.body.classList.remove('distraction-free-mode');
+      document.body.classList.remove('distraction-free-mode', 'fullscreen-active');
       if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
       if (btnFullscreen) {
         btnFullscreen.classList.remove('active');
@@ -1066,18 +1072,22 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (btnFullscreen) btnFullscreen.addEventListener('click', toggleFullscreen);
+  if (floatingExitFs) floatingExitFs.addEventListener('click', toggleFullscreen);
 
-  document.addEventListener('fullscreenchange', () => {
+  function handleFullscreenChange() {
     const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-    if (!isFs) {
-      document.body.classList.remove('distraction-free-mode');
+    if (!isFs && !document.body.classList.contains('distraction-free-mode')) {
+      document.body.classList.remove('distraction-free-mode', 'fullscreen-active');
       if (btnFullscreen) btnFullscreen.classList.remove('active');
-    } else {
-      document.body.classList.add('distraction-free-mode');
+    } else if (isFs) {
+      document.body.classList.add('distraction-free-mode', 'fullscreen-active');
       if (btnFullscreen) btnFullscreen.classList.add('active');
     }
     if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
-  });
+  }
+
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
 
   // Keyboard Shortcuts Modal Toggle
   function openShortcutModal() {
@@ -1106,8 +1116,52 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (e.key === 'Escape') {
-      closeShortcutModal();
-      if (exportDropdown) exportDropdown.classList.remove('open');
+      let modalOrDropdownClosed = false;
+
+      if (shortcutModal && !shortcutModal.classList.contains('hidden')) {
+        closeShortcutModal();
+        modalOrDropdownClosed = true;
+      }
+      if (exportDropdown && exportDropdown.classList.contains('open')) {
+        exportDropdown.classList.remove('open');
+        modalOrDropdownClosed = true;
+      }
+
+      const focusDropdown = document.getElementById('focusTimerDropdown');
+      if (focusDropdown && focusDropdown.classList.contains('active')) {
+        focusDropdown.classList.remove('active');
+        modalOrDropdownClosed = true;
+      }
+      const customModal = document.getElementById('focusCustomModal');
+      if (customModal && customModal.classList.contains('active')) {
+        customModal.classList.remove('active');
+        modalOrDropdownClosed = true;
+      }
+      const breakOverlay = document.getElementById('focusBreakOverlay');
+      if (breakOverlay && breakOverlay.classList.contains('active')) {
+        breakOverlay.classList.remove('active');
+        modalOrDropdownClosed = true;
+      }
+      const strictModal = document.getElementById('focusStrictModal');
+      if (strictModal && strictModal.classList.contains('active')) {
+        strictModal.classList.remove('active');
+        modalOrDropdownClosed = true;
+      }
+
+      if (modalOrDropdownClosed) {
+        return;
+      }
+
+      const isFullscreen = !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.body.classList.contains('distraction-free-mode') ||
+        document.body.classList.contains('fullscreen-active')
+      );
+
+      if (isFullscreen) {
+        toggleFullscreen();
+      }
       return;
     }
 

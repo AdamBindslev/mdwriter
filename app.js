@@ -27,6 +27,138 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnThemeToggle = document.getElementById('btnThemeToggle');
   const themeIcon = document.getElementById('themeIcon');
 
+  // Midline / Centered Typewriter Scroll Toggle
+  const btnMidlineToggle = document.getElementById('btnMidlineToggle');
+  const midlineIcon = document.getElementById('midlineIcon');
+  const MIDLINE_KEY = 'md_writer_midline_scroll';
+  let midlineEnabled = true;
+
+  function safeGetStorage(key, fallback = null) {
+    try {
+      const val = localStorage.getItem(key);
+      return val !== null ? val : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  const savedMidline = safeGetStorage(MIDLINE_KEY);
+  if (savedMidline !== null) {
+    midlineEnabled = savedMidline === 'true';
+  }
+
+  function updateMidlineUI() {
+    if (btnMidlineToggle) {
+      btnMidlineToggle.classList.toggle('active', midlineEnabled);
+      btnMidlineToggle.setAttribute(
+        'title',
+        midlineEnabled
+          ? 'Centreret Rulning aktiv (Aktiv linje fastholdes på midten af skærmen)'
+          : 'Standard rulning (Midterlinje slået fra)'
+      );
+    }
+  }
+
+  if (btnMidlineToggle) {
+    btnMidlineToggle.addEventListener('click', () => {
+      midlineEnabled = !midlineEnabled;
+      try {
+        localStorage.setItem(MIDLINE_KEY, midlineEnabled);
+      } catch (e) {}
+      updateMidlineUI();
+      showToast(
+        midlineEnabled ? 'Midterlinje-rulning Aktiveret' : 'Standard rulning slået til',
+        'target'
+      );
+      if (midlineEnabled) {
+        scrollEditorToCenter(true);
+      }
+    });
+  }
+
+  // ----------------------------------------------------
+  // MID-SCREEN CENTERED SCROLLING SYSTEM (EDITOR)
+  // ----------------------------------------------------
+  const mirrorProperties = [
+    'direction', 'boxSizing', 'overflowX', 'overflowY',
+    'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'borderStyle',
+    'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+    'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch',
+    'fontSize', 'fontSizeAdjust', 'lineHeight', 'fontFamily',
+    'textAlign', 'textTransform', 'textIndent', 'textDecoration',
+    'letterSpacing', 'wordSpacing', 'tabSize', 'MozTabSize'
+  ];
+
+  let mirrorDiv = null;
+
+  function getCaretCoordinates(element, position) {
+    if (!mirrorDiv) {
+      mirrorDiv = document.createElement('div');
+      mirrorDiv.id = 'app-caret-mirror';
+      document.body.appendChild(mirrorDiv);
+    }
+
+    const style = mirrorDiv.style;
+    const computed = window.getComputedStyle(element);
+
+    style.whiteSpace = 'pre-wrap';
+    style.wordWrap = 'break-word';
+    style.overflowWrap = 'break-word';
+    style.position = 'fixed';
+    style.top = '-9999px';
+    style.left = '-9999px';
+    style.visibility = 'hidden';
+    style.pointerEvents = 'none';
+
+    mirrorProperties.forEach(prop => {
+      style[prop] = computed[prop];
+    });
+
+    style.width = computed.width;
+
+    const textBefore = element.value.substring(0, position);
+    mirrorDiv.textContent = textBefore;
+
+    const marker = document.createElement('span');
+    marker.textContent = element.value.substring(position, position + 1) || ' ';
+    if (marker.textContent === '\n') marker.textContent = ' ';
+    mirrorDiv.appendChild(marker);
+
+    return {
+      top: marker.offsetTop + parseInt(computed.borderTopWidth || 0, 10),
+      left: marker.offsetLeft + parseInt(computed.borderLeftWidth || 0, 10),
+      height: marker.offsetHeight || parseInt(computed.lineHeight || 24, 10)
+    };
+  }
+
+  let scrollRaf = null;
+
+  function scrollEditorToCenter(smooth = true) {
+    if (!midlineEnabled || !editorTextarea) return;
+
+    if (scrollRaf) cancelAnimationFrame(scrollRaf);
+    scrollRaf = requestAnimationFrame(() => {
+      const cursorPos = editorTextarea.selectionStart || 0;
+      const caret = getCaretCoordinates(editorTextarea, cursorPos);
+
+      // Desired position: active line at ~45% from top of editor textarea viewport
+      const targetViewportY = editorTextarea.clientHeight * 0.45;
+      const targetScrollTop = Math.max(0, Math.round(caret.top - targetViewportY));
+
+      const diff = Math.abs(editorTextarea.scrollTop - targetScrollTop);
+      if (diff > 4) {
+        if (smooth) {
+          editorTextarea.scrollTo({
+            top: targetScrollTop,
+            behavior: 'smooth'
+          });
+        } else {
+          editorTextarea.scrollTop = targetScrollTop;
+        }
+      }
+    });
+  }
+
   // Quick Chips
   const chipDate = document.getElementById('chipDate');
   const chipLocation = document.getElementById('chipLocation');
@@ -43,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnShortcuts = document.getElementById('btnShortcuts');
   const shortcutModal = document.getElementById('shortcutModal');
   const btnCloseShortcutModal = document.getElementById('btnCloseShortcutModal');
+  const floatingExitFs = document.getElementById('floatingExitFs');
   const toast = document.getElementById('toast');
 
   // Stats Counters
@@ -147,9 +280,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener('selectionchange', updateToolbarActiveStates);
   if (editorTextarea) {
-    editorTextarea.addEventListener('keyup', updateToolbarActiveStates);
-    editorTextarea.addEventListener('click', updateToolbarActiveStates);
-    editorTextarea.addEventListener('input', renderPreview);
+    editorTextarea.addEventListener('keyup', (e) => {
+      updateToolbarActiveStates();
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'].includes(e.key)) {
+        scrollEditorToCenter(true);
+      }
+    });
+    editorTextarea.addEventListener('click', () => {
+      updateToolbarActiveStates();
+      scrollEditorToCenter(true);
+    });
+    editorTextarea.addEventListener('input', () => {
+      renderPreview();
+      scrollEditorToCenter(true);
+    });
+    editorTextarea.addEventListener('paste', () => {
+      setTimeout(() => {
+        renderPreview();
+        scrollEditorToCenter(true);
+      }, 20);
+    });
   }
 
   if (docTitleInput) docTitleInput.addEventListener('input', renderPreview);
@@ -400,8 +550,52 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (e.key === 'Escape') {
-      closeShortcutModal();
-      if (exportDropdown) exportDropdown.classList.remove('open');
+      let modalOrDropdownClosed = false;
+
+      if (shortcutModal && !shortcutModal.classList.contains('hidden')) {
+        closeShortcutModal();
+        modalOrDropdownClosed = true;
+      }
+      if (exportDropdown && exportDropdown.classList.contains('open')) {
+        exportDropdown.classList.remove('open');
+        modalOrDropdownClosed = true;
+      }
+
+      const focusDropdown = document.getElementById('focusTimerDropdown');
+      if (focusDropdown && focusDropdown.classList.contains('active')) {
+        focusDropdown.classList.remove('active');
+        modalOrDropdownClosed = true;
+      }
+      const customModal = document.getElementById('focusCustomModal');
+      if (customModal && customModal.classList.contains('active')) {
+        customModal.classList.remove('active');
+        modalOrDropdownClosed = true;
+      }
+      const breakOverlay = document.getElementById('focusBreakOverlay');
+      if (breakOverlay && breakOverlay.classList.contains('active')) {
+        breakOverlay.classList.remove('active');
+        modalOrDropdownClosed = true;
+      }
+      const strictModal = document.getElementById('focusStrictModal');
+      if (strictModal && strictModal.classList.contains('active')) {
+        strictModal.classList.remove('active');
+        modalOrDropdownClosed = true;
+      }
+
+      if (modalOrDropdownClosed) {
+        return;
+      }
+
+      const isFullscreen = !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.body.classList.contains('distraction-free-mode') ||
+        document.body.classList.contains('fullscreen-active')
+      );
+
+      if (isFullscreen) {
+        toggleFullscreen();
+      }
       return;
     }
 
@@ -455,9 +649,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnFullscreen = document.getElementById('btnFullscreen');
 
   if (btnFullscreen) btnFullscreen.addEventListener('click', toggleFullscreen);
+  if (floatingExitFs) floatingExitFs.addEventListener('click', toggleFullscreen);
 
   function toggleFullscreen() {
-    const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.body.classList.contains('distraction-free-mode'));
+    const isFullscreen = !!(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.body.classList.contains('distraction-free-mode') ||
+      document.body.classList.contains('fullscreen-active')
+    );
 
     if (!isFullscreen) {
       if (document.documentElement.requestFullscreen) {
@@ -465,7 +665,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (document.documentElement.webkitRequestFullscreen) {
         document.documentElement.webkitRequestFullscreen().catch(() => {});
       }
-      document.body.classList.add('distraction-free-mode');
+      document.body.classList.add('distraction-free-mode', 'fullscreen-active');
       if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
       if (btnFullscreen) {
         btnFullscreen.classList.add('active');
@@ -480,7 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
           document.webkitExitFullscreen().catch(() => {});
         }
       }
-      document.body.classList.remove('distraction-free-mode');
+      document.body.classList.remove('distraction-free-mode', 'fullscreen-active');
       if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
       if (btnFullscreen) {
         btnFullscreen.classList.remove('active');
@@ -488,19 +688,29 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       showToast('Forlod Fuldskærmstilstand', 'minimize');
     }
+
+    if (window.feather) {
+      setTimeout(() => feather.replace(), 50);
+    }
   }
 
-  document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement) {
-      document.body.classList.remove('distraction-free-mode');
-      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
+  function handleFullscreenChange() {
+    const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    if (!isFs && !document.body.classList.contains('distraction-free-mode')) {
+      document.body.classList.remove('distraction-free-mode', 'fullscreen-active');
       if (btnFullscreen) btnFullscreen.classList.remove('active');
-    } else {
-      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
+    } else if (isFs) {
+      document.body.classList.add('distraction-free-mode', 'fullscreen-active');
+      if (btnFullscreen) btnFullscreen.classList.add('active');
     }
-  });
+    if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
+  }
+
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
 
   // Initial Load Pipeline
+  updateMidlineUI();
   if (Storage) {
     const savedDraft = Storage.loadDraft();
     if (savedDraft) {
@@ -511,4 +721,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   renderPreview();
+  if (midlineEnabled) {
+    setTimeout(() => scrollEditorToCenter(false), 100);
+  }
 });
