@@ -630,12 +630,14 @@ body.typewriter-body {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .tw-chips {
   display: flex;
   gap: 4px;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .tw-chip {
@@ -1199,24 +1201,43 @@ body.is-typing .tw-meta-inputs:hover {
     left: 8px;
   }
 
-  .tw-meta-block {
+  .paper-header-fields {
+    gap: 4px;
     margin-bottom: 4px;
+  }
+
+  .tw-field-group {
     gap: 2px;
   }
 
-  .tw-meta-row label {
+  .tw-field-label {
     font-size: 0.68rem;
   }
 
-  .tw-meta-row input {
+  .tw-input {
     font-size: 0.82rem;
     height: 22px;
     padding: 2px 4px;
   }
 
-  .tw-meta-chips .chip-btn {
-    padding: 1px 4px;
-    font-size: 0.62rem;
+  .tw-title-input {
+    font-size: 0.95rem;
+  }
+
+  .tw-input-with-chips {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+  }
+
+  .tw-chips {
+    gap: 3px;
+    flex-wrap: wrap;
+  }
+
+  .tw-chip {
+    padding: 1px 5px;
+    font-size: 0.65rem;
   }
 
   .tw-toolbar {

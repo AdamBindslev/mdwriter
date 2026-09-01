@@ -382,6 +382,7 @@ body {
   display: flex;
   gap: 4px;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .chip-btn {
@@ -1136,6 +1137,7 @@ body.is-typing .pane-header:hover {
 
   .quick-chips {
     gap: 3px;
+    flex-wrap: wrap;
   }
 
   .quick-chips .chip-btn {
