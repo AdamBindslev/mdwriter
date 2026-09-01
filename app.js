@@ -685,7 +685,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function isTouchOrIOS() {
     return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
-           ('ontouchstart' in window && window.innerWidth <= 1366);
+           (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
+           ('ontouchstart' in window);
   }
 
   function toggleFullscreen(forceExit = false) {
