@@ -693,9 +693,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function autoResizeTextarea() {
     if (!editorTextarea) return;
+    const prevWrapperScroll = paperWrapper ? paperWrapper.scrollTop : 0;
+    const prevWindowScroll = window.scrollY || (document.documentElement ? document.documentElement.scrollTop : 0);
+
     editorTextarea.style.height = 'auto';
     const scrollH = editorTextarea.scrollHeight;
     editorTextarea.style.height = Math.max(480, scrollH + 40) + 'px';
+
+    if (paperWrapper) {
+      paperWrapper.scrollTop = prevWrapperScroll;
+    }
+    if (prevWindowScroll) {
+      window.scrollTo(0, prevWindowScroll);
+    }
   }
 
   function updateOdometer() {
