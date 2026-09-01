@@ -1129,12 +1129,18 @@ body.is-typing .tw-meta-inputs:hover {
     gap: 6px;
   }
 
-  .tw-brand h1 {
-    font-size: 0.95rem;
+  .tw-brand-info h1 {
+    font-size: 0.85rem;
+  }
+
+  .tw-sub,
+  #btnShortcuts,
+  #btnFullscreen {
+    display: none !important;
   }
 
   .tw-header {
-    padding: 4px 8px;
+    padding: 4px 6px;
     gap: 4px;
   }
 
@@ -1148,7 +1154,7 @@ body.is-typing .tw-meta-inputs:hover {
   }
 
   .tw-btn {
-    padding: 4px 6px;
+    padding: 3px 6px;
     font-size: 0.72rem;
   }
 
@@ -1217,11 +1223,21 @@ body.is-typing .tw-meta-inputs:hover {
     display: none;
   }
 
-  .tw-key {
+  .tw-key:not(.tw-key-action) {
     width: 26px;
     height: 26px;
     min-width: 26px;
     font-size: 0.7rem;
+  }
+
+  .tw-key-action {
+    width: auto !important;
+    min-width: unset !important;
+    height: 26px !important;
+    padding: 0 8px !important;
+    font-size: 0.72rem !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
   }
 
   .editor-wrapper {
