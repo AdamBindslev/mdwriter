@@ -35,7 +35,7 @@
         <div class="logo-icon"><i data-feather="edit-3"></i></div>
         <div class="brand-text">
           <h1>Flowscribe</h1>
-          <span class="subtitle">Markdown Editor & Eksportør • v2.2.6</span>
+          <span class="subtitle">Markdown Editor & Eksportør • v2.2.7</span>
         </div>
       </div>
 
@@ -129,48 +129,48 @@
 
     <!-- Format Toolbar -->
     <div class="toolbar" id="toolbar">
-      <div class="toolbar-group">
-        <button type="button" data-cmd="h1" class="tb-btn" title="Overskrift 1 (#)"><i data-feather="type"></i>1</button>
-        <button type="button" data-cmd="h2" class="tb-btn" title="Overskrift 2 (##)"><i data-feather="type"></i>2</button>
-        <button type="button" data-cmd="h3" class="tb-btn" title="Overskrift 3 (###)"><i data-feather="type"></i>3</button>
+      <div class="toolbar-left">
+        <div class="toolbar-group">
+          <button type="button" data-cmd="h1" class="tb-btn" title="Overskrift 1 (#)"><i data-feather="type"></i>1</button>
+          <button type="button" data-cmd="h2" class="tb-btn" title="Overskrift 2 (##)"><i data-feather="type"></i>2</button>
+          <button type="button" data-cmd="h3" class="tb-btn" title="Overskrift 3 (###)"><i data-feather="type"></i>3</button>
+        </div>
+
+        <div class="tb-divider"></div>
+
+        <div class="toolbar-group">
+          <button type="button" data-cmd="bold" class="tb-btn" title="Fed (**tekst**)"><i data-feather="bold"></i></button>
+          <button type="button" data-cmd="italic" class="tb-btn" title="Kursiv (*tekst*)"><i data-feather="italic"></i></button>
+          <button type="button" data-cmd="strikethrough" class="tb-btn" title="Gennemstreget (~~tekst~~)"><i data-feather="minus"></i></button>
+          <button type="button" data-cmd="code" class="tb-btn" title="Inline Kode (`kode`)"><i data-feather="code"></i></button>
+        </div>
+
+        <div class="tb-divider"></div>
+
+        <div class="toolbar-group">
+          <button type="button" data-cmd="quote" class="tb-btn" title="Citat (> quote)"><i data-feather="message-square"></i></button>
+          <button type="button" data-cmd="ul" class="tb-btn" title="Punktopstilling (- punkt)"><i data-feather="list"></i></button>
+          <button type="button" data-cmd="ol" class="tb-btn tb-badge-btn" title="Nummereret liste (1. 2. 3.)">1.2.3</button>
+          <button type="button" data-cmd="task" class="tb-btn" title="Opgaveliste (- [ ])"><i data-feather="check-square"></i></button>
+        </div>
+
+        <div class="tb-divider"></div>
+
+        <div class="toolbar-group">
+          <button type="button" data-cmd="link" class="tb-btn" title="Indsæt Link ([titel](url))"><i data-feather="link"></i></button>
+          <button type="button" data-cmd="codeblock" class="tb-btn" title="Tekstblok (``` tekst ```)"><i data-feather="file-text"></i></button>
+          <button type="button" data-cmd="diagram" class="tb-btn" title="Diagram (Mermaid)"><i data-feather="share-2"></i></button>
+          <button type="button" data-cmd="table" class="tb-btn" title="Indsæt Tabel"><i data-feather="grid"></i></button>
+          <button type="button" data-cmd="hr" class="tb-btn" title="Vandret Linje (---)"><i data-feather="more-horizontal"></i></button>
+        </div>
       </div>
 
-      <div class="tb-divider"></div>
-
-      <div class="toolbar-group">
-        <button type="button" data-cmd="bold" class="tb-btn" title="Fed (**tekst**)"><i data-feather="bold"></i></button>
-        <button type="button" data-cmd="italic" class="tb-btn" title="Kursiv (*tekst*)"><i data-feather="italic"></i></button>
-        <button type="button" data-cmd="strikethrough" class="tb-btn" title="Gennemstreget (~~tekst~~)"><i data-feather="minus"></i></button>
-        <button type="button" data-cmd="code" class="tb-btn" title="Inline Kode (`kode`)"><i data-feather="code"></i></button>
-      </div>
-
-      <div class="tb-divider"></div>
-
-      <div class="toolbar-group">
-        <button type="button" data-cmd="quote" class="tb-btn" title="Citat (> quote)"><i data-feather="message-square"></i></button>
-        <button type="button" data-cmd="ul" class="tb-btn" title="Punktopstilling (- punkt)"><i data-feather="list"></i></button>
-        <button type="button" data-cmd="ol" class="tb-btn tb-badge-btn" title="Nummereret liste (1. 2. 3.)">1.2.3</button>
-        <button type="button" data-cmd="task" class="tb-btn" title="Opgaveliste (- [ ])"><i data-feather="check-square"></i></button>
-      </div>
-
-      <div class="tb-divider"></div>
-
-      <div class="toolbar-group">
-        <button type="button" data-cmd="link" class="tb-btn" title="Indsæt Link ([titel](url))"><i data-feather="link"></i></button>
-        <button type="button" data-cmd="codeblock" class="tb-btn" title="Tekstblok (``` tekst ```)"><i data-feather="file-text"></i></button>
-        <button type="button" data-cmd="diagram" class="tb-btn" title="Diagram (Mermaid)"><i data-feather="share-2"></i></button>
-        <button type="button" data-cmd="table" class="tb-btn" title="Indsæt Tabel"><i data-feather="grid"></i></button>
-        <button type="button" data-cmd="hr" class="tb-btn" title="Vandret Linje (---)"><i data-feather="more-horizontal"></i></button>
-      </div>
-
-      <div class="tb-divider"></div>
-
-      <div class="toolbar-group ml-auto">
+      <div class="toolbar-right">
         <button type="button" id="btnCopyMd" class="tb-btn tb-action" title="Kopier ren MD til udklipsholder">
-          <i data-feather="copy"></i> Kopier MD
+          <i data-feather="copy"></i> <span class="tb-btn-text">Kopier</span>
         </button>
         <button type="button" id="btnClear" class="tb-btn tb-danger" title="Ryd indhold">
-          <i data-feather="trash-2"></i> Ryd
+          <i data-feather="trash-2"></i> <span class="tb-btn-text">Ryd</span>
         </button>
         <div class="focus-timer-mount"></div>
       </div>

@@ -949,28 +949,188 @@ body.is-typing .pane-header:hover {
   opacity: 1 !important;
 }
 
+/* Toolbar Styling */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  -webkit-overflow-scrolling: touch;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.toolbar-left::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.tb-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-color);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.tb-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.tb-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-main);
+}
+
+.tb-btn.active {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px var(--primary-glow);
+}
+
+.tb-action {
+  background: var(--bg-input);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  gap: 4px;
+}
+
+.tb-danger {
+  background: var(--bg-input);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  gap: 4px;
+}
+
+.tb-danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* Clear Strikethrough Visual Styling */
+.markdown-body del,
+.markdown-body s,
+.markdown-body strike {
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+/* Base Headings Visual Reset for Markdown Body */
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
+  letter-spacing: -0.015em;
+  font-weight: 700;
+}
+
+/* Base Inline and Block Code Visual Reset */
+.markdown-body pre,
+.markdown-body code {
+  font-family: var(--font-mono);
+}
+
+/* Drag and Drop Upload Visual Indicator */
+.drag-drop-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--primary);
+  border-radius: var(--radius-md);
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.drag-drop-overlay.active {
+  opacity: 1;
+}
+
 /* Responsive Rules */
-@media (max-width: 1250px) {
+@media (max-width: 1200px) {
   .brand-text .subtitle {
     display: none;
   }
   .header-actions {
     gap: 6px;
   }
-  .btn-toggle,
-  .btn-toggle-link {
-    padding: 5px 8px;
-    font-size: 0.78rem;
-  }
 }
 
-@media (max-width: 1050px) {
+@media (max-width: 1000px) {
   .top-header {
-    padding: 8px 12px;
+    padding: 6px 12px;
     gap: 8px;
   }
   .action-divider {
     display: none;
+  }
+  .btn-toggle span,
+  .btn-toggle-link span,
+  #btnFullscreen span,
+  .tb-btn-text {
+    display: none !important;
+  }
+  .btn-toggle,
+  .btn-toggle-link {
+    padding: 6px 8px;
+  }
+  #btnFullscreen {
+    padding: 6px 8px !important;
   }
 }
 
@@ -985,74 +1145,85 @@ body.is-typing .pane-header:hover {
     height: 100vh;
     height: 100dvh;
     max-height: 100dvh;
-    padding: 6px 8px;
-    gap: 6px;
+    padding: 4px 6px;
+    gap: 4px;
     overflow: hidden;
   }
 
   .top-header {
-    padding: 6px 10px;
-    gap: 6px;
+    padding: 4px 8px;
+    gap: 4px;
     flex-wrap: nowrap;
     border-radius: var(--radius-sm);
   }
 
   .brand {
-    gap: 8px;
+    gap: 6px;
   }
 
   .logo-icon {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
+  }
+
+  .logo-icon i {
+    width: 15px;
+    height: 15px;
   }
 
   .brand-text h1 {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .header-actions {
-    gap: 4px;
+    gap: 3px;
     justify-content: flex-end;
   }
 
-  .btn-toggle,
-  .btn-toggle-link,
-  .btn {
-    padding: 4px 7px;
+  .btn-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .btn-icon i {
+    width: 14px;
+    height: 14px;
+  }
+
+  .btn-primary {
+    padding: 5px 8px;
     font-size: 0.75rem;
   }
 
   .meta-section {
-    padding: 6px 10px;
-    gap: 4px;
+    padding: 4px 8px;
+    gap: 3px;
     border-radius: var(--radius-sm);
   }
 
   .meta-grid {
     grid-template-columns: 1fr;
-    gap: 4px;
+    gap: 3px;
   }
 
   .input-group label {
-    font-size: 0.72rem;
-    margin-bottom: 2px;
+    font-size: 0.68rem;
+    margin-bottom: 1px;
   }
 
   .input-group input {
-    padding: 4px 8px;
+    padding: 3px 6px;
     font-size: 0.85rem;
-    height: 28px;
+    height: 24px;
   }
 
   .input-with-actions {
     flex-direction: column;
     align-items: stretch;
-    gap: 4px;
+    gap: 2px;
   }
 
   .quick-chips {
-    justify-content: flex-start;
-  }
 
   .quick-chips .chip-btn {
     padding: 2px 6px;

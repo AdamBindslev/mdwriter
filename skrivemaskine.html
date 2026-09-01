@@ -36,7 +36,7 @@
         <div class="tw-logo-key"><i data-feather="edit-3"></i></div>
         <div class="tw-brand-info">
           <h1>FLOWSCRIBE <span class="tw-badge">SKRIVEMASKINE</span></h1>
-          <span class="tw-sub">Klassisk Mekanisk Tekstbehandler • v2.2.6</span>
+          <span class="tw-sub">Klassisk Mekanisk Tekstbehandler • v2.2.7</span>
         </div>
       </div>
 
@@ -104,48 +104,48 @@
 
       <!-- Keycap Formatting Toolbar -->
       <div class="tw-toolbar">
-        <div class="keycap-group">
-          <button class="tw-key" data-cmd="h1" title="Overskrift 1 (#)"><span class="key-symbol">H₁</span></button>
-          <button class="tw-key" data-cmd="h2" title="Overskrift 2 (##)"><span class="key-symbol">H₂</span></button>
-          <button class="tw-key" data-cmd="h3" title="Overskrift 3 (###)"><span class="key-symbol">H₃</span></button>
+        <div class="tw-left-keys">
+          <div class="keycap-group">
+            <button class="tw-key" data-cmd="h1" title="Overskrift 1 (#)"><span class="key-symbol">H₁</span></button>
+            <button class="tw-key" data-cmd="h2" title="Overskrift 2 (##)"><span class="key-symbol">H₂</span></button>
+            <button class="tw-key" data-cmd="h3" title="Overskrift 3 (###)"><span class="key-symbol">H₃</span></button>
+          </div>
+
+          <div class="key-divider"></div>
+
+          <div class="keycap-group">
+            <button class="tw-key" data-cmd="bold" title="Fed tekst (**tekst**)"><i data-feather="bold"></i></button>
+            <button class="tw-key" data-cmd="italic" title="Kursiv tekst (*tekst*)"><i data-feather="italic"></i></button>
+            <button class="tw-key" data-cmd="strikethrough" title="Gennemstreget (~~tekst~~)"><span class="key-symbol strike-symbol">S</span></button>
+            <button class="tw-key" data-cmd="code" title="Inline Kode (`kode`)"><i data-feather="code"></i></button>
+            <button class="tw-key" data-cmd="quote" title="Citat (>)"><i data-feather="message-square"></i></button>
+          </div>
+
+          <div class="key-divider"></div>
+
+          <div class="keycap-group">
+            <button class="tw-key" data-cmd="ul" title="Punktopstilling (-)"><i data-feather="list"></i></button>
+            <button class="tw-key" data-cmd="ol" title="Nummereret (1.)"><span class="key-symbol">1.</span></button>
+            <button class="tw-key" data-cmd="task" title="Tjekliste (- [ ])"><i data-feather="check-square"></i></button>
+          </div>
+
+          <div class="key-divider"></div>
+
+          <div class="keycap-group">
+            <button class="tw-key" data-cmd="link" title="Indsæt Link ([titel](url))"><i data-feather="link"></i></button>
+            <button class="tw-key" data-cmd="codeblock" title="Tekstblok (``` tekst ```)"><i data-feather="file-text"></i></button>
+            <button class="tw-key" data-cmd="diagram" title="Diagram (Mermaid)"><i data-feather="share-2"></i></button>
+            <button class="tw-key" data-cmd="table" title="Indsæt Tabel"><i data-feather="grid"></i></button>
+            <button class="tw-key" data-cmd="hr" title="Vandret Linje (---)"><i data-feather="minus"></i></button>
+          </div>
         </div>
 
-        <div class="key-divider"></div>
-
-        <div class="keycap-group">
-          <button class="tw-key" data-cmd="bold" title="Fed tekst (**tekst**)"><i data-feather="bold"></i></button>
-          <button class="tw-key" data-cmd="italic" title="Kursiv tekst (*tekst*)"><i data-feather="italic"></i></button>
-          <button class="tw-key" data-cmd="strikethrough" title="Gennemstreget (~~tekst~~)"><span class="key-symbol strike-symbol">S</span></button>
-          <button class="tw-key" data-cmd="code" title="Inline Kode (`kode`)"><i data-feather="code"></i></button>
-          <button class="tw-key" data-cmd="quote" title="Citat (>)"><i data-feather="message-square"></i></button>
-        </div>
-
-        <div class="key-divider"></div>
-
-        <div class="keycap-group">
-          <button class="tw-key" data-cmd="ul" title="Punktopstilling (-)"><i data-feather="list"></i></button>
-          <button class="tw-key" data-cmd="ol" title="Nummereret (1.)"><span class="key-symbol">1.</span></button>
-          <button class="tw-key" data-cmd="task" title="Tjekliste (- [ ])"><i data-feather="check-square"></i></button>
-        </div>
-
-        <div class="key-divider"></div>
-
-        <div class="keycap-group">
-          <button class="tw-key" data-cmd="link" title="Indsæt Link ([titel](url))"><i data-feather="link"></i></button>
-          <button class="tw-key" data-cmd="codeblock" title="Tekstblok (``` tekst ```)"><i data-feather="file-text"></i></button>
-          <button class="tw-key" data-cmd="diagram" title="Diagram (Mermaid)"><i data-feather="share-2"></i></button>
-          <button class="tw-key" data-cmd="table" title="Indsæt Tabel"><i data-feather="grid"></i></button>
-          <button class="tw-key" data-cmd="hr" title="Vandret Linje (---)"><i data-feather="minus"></i></button>
-        </div>
-
-        <div class="key-divider"></div>
-
-        <div class="keycap-group right-keys">
+        <div class="tw-right-keys">
           <button class="tw-key tw-key-action tw-key-copy" id="btnCopyMd" title="Kopier Markdown til udklipsholder">
-            <i data-feather="copy"></i> <span>Kopier MD</span>
+            <i data-feather="copy"></i> <span class="tw-key-label">Kopier</span>
           </button>
           <button class="tw-key tw-key-action tw-key-clear" id="btnClear" title="Ryd Papir">
-            <i data-feather="trash-2"></i> <span>Ryd</span>
+            <i data-feather="trash-2"></i> <span class="tw-key-label">Ryd</span>
           </button>
           <div class="focus-timer-mount"></div>
         </div>

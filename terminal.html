@@ -36,7 +36,7 @@
         <div class="term-logo-icon"><i data-feather="terminal"></i></div>
         <div class="term-brand-info">
           <h1>FLOWSCRIBE <span class="term-badge">CRT TERMINAL</span></h1>
-          <span class="term-sub">Retro Phosphor Tekstbehandler • v2.2.6</span>
+          <span class="term-sub">Retro Phosphor Tekstbehandler • v2.2.7</span>
         </div>
       </div>
 
@@ -144,47 +144,47 @@
 
           <!-- Function Keys Toolbar -->
           <div class="term-toolbar">
-            <div class="term-key-group">
-              <button class="term-key" data-cmd="h1" title="Overskrift 1 (#)"><span class="fn-tag">F1</span> H1</button>
-              <button class="term-key" data-cmd="h2" title="Overskrift 2 (##)"><span class="fn-tag">F2</span> H2</button>
-              <button class="term-key" data-cmd="h3" title="Overskrift 3 (###)"><span class="fn-tag">F3</span> H3</button>
+            <div class="term-left-keys">
+              <div class="term-key-group">
+                <button class="term-key" data-cmd="h1" title="Overskrift 1 (#)"><span class="fn-tag">F1</span> H1</button>
+                <button class="term-key" data-cmd="h2" title="Overskrift 2 (##)"><span class="fn-tag">F2</span> H2</button>
+                <button class="term-key" data-cmd="h3" title="Overskrift 3 (###)"><span class="fn-tag">F3</span> H3</button>
+              </div>
+
+              <div class="term-key-divider">|</div>
+
+              <div class="term-key-group">
+                <button class="term-key" data-cmd="bold" title="Fed tekst (**tekst**)"><span class="fn-tag">F4</span> <b>FED</b></button>
+                <button class="term-key" data-cmd="italic" title="Kursiv tekst (*tekst*)"><span class="fn-tag">F5</span> <i>KUR</i></button>
+                <button class="term-key" data-cmd="code" title="Inline Kode (`kode`)"><span class="fn-tag">F6</span> KODE</button>
+                <button class="term-key" data-cmd="quote" title="Citat (>)"><span class="fn-tag">F7</span> CITAT</button>
+              </div>
+
+              <div class="term-key-divider">|</div>
+
+              <div class="term-key-group">
+                <button class="term-key" data-cmd="ul" title="Punktopstilling (-)"><span class="fn-tag">F8</span> LISTE</button>
+                <button class="term-key" data-cmd="ol" title="Nummereret (1.)"><span class="fn-tag">F9</span> NUM</button>
+                <button class="term-key" data-cmd="task" title="Tjekliste (- [ ])"><span class="fn-tag">F10</span> TJEK</button>
+              </div>
+
+              <div class="term-key-divider">|</div>
+
+              <div class="term-key-group">
+                <button class="term-key" data-cmd="link" title="Indsæt Link ([titel](url))"><span class="fn-tag">F11</span> LINK</button>
+                <button class="term-key" data-cmd="codeblock" title="Tekstblok (``` tekst ```)"><span class="fn-tag">F12</span> BLOK</button>
+                <button class="term-key" data-cmd="diagram" title="Diagram (Mermaid)">DIAGRAM</button>
+                <button class="term-key" data-cmd="table" title="Indsæt Tabel">TABEL</button>
+                <button class="term-key" data-cmd="hr" title="Vandret Linje (---)">LINJE</button>
+              </div>
             </div>
 
-            <div class="term-key-divider">|</div>
-
-            <div class="term-key-group">
-              <button class="term-key" data-cmd="bold" title="Fed tekst (**tekst**)"><span class="fn-tag">F4</span> <b>FED</b></button>
-              <button class="term-key" data-cmd="italic" title="Kursiv tekst (*tekst*)"><span class="fn-tag">F5</span> <i>KUR</i></button>
-              <button class="term-key" data-cmd="code" title="Inline Kode (`kode`)"><span class="fn-tag">F6</span> KODE</button>
-              <button class="term-key" data-cmd="quote" title="Citat (>)"><span class="fn-tag">F7</span> CITAT</button>
-            </div>
-
-            <div class="term-key-divider">|</div>
-
-            <div class="term-key-group">
-              <button class="term-key" data-cmd="ul" title="Punktopstilling (-)"><span class="fn-tag">F8</span> LISTE</button>
-              <button class="term-key" data-cmd="ol" title="Nummereret (1.)"><span class="fn-tag">F9</span> NUM</button>
-              <button class="term-key" data-cmd="task" title="Tjekliste (- [ ])"><span class="fn-tag">F10</span> TJEK</button>
-            </div>
-
-            <div class="term-key-divider">|</div>
-
-            <div class="term-key-group">
-              <button class="term-key" data-cmd="link" title="Indsæt Link ([titel](url))"><span class="fn-tag">F11</span> LINK</button>
-              <button class="term-key" data-cmd="codeblock" title="Tekstblok (``` tekst ```)"><span class="fn-tag">F12</span> BLOK</button>
-              <button class="term-key" data-cmd="diagram" title="Diagram (Mermaid)">DIAGRAM</button>
-              <button class="term-key" data-cmd="table" title="Indsæt Tabel">TABEL</button>
-              <button class="term-key" data-cmd="hr" title="Vandret Linje (---)">LINJE</button>
-            </div>
-
-            <div class="term-key-divider">|</div>
-
-            <div class="term-key-group term-right-keys">
+            <div class="term-right-keys">
               <button class="term-key term-key-copy" id="btnCopyMd" title="Kopier Markdown til udklipsholder">
-                <i data-feather="copy"></i> KOPIER
+                <i data-feather="copy"></i> <span class="term-key-label">KOPIER</span>
               </button>
               <button class="term-key term-key-clear" id="btnClear" title="Ryd Skærm">
-                <i data-feather="trash-2"></i> RYD
+                <i data-feather="trash-2"></i> <span class="term-key-label">RYD</span>
               </button>
               <div class="focus-timer-mount"></div>
             </div>
