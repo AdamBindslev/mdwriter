@@ -91,35 +91,75 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { once: false, passive: true });
   });
 
+  function base64ToArrayBuffer(base64) {
+    const binaryString = window.atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+
+  async function decodeBase64Sample(base64) {
+    if (!base64) return null;
+    try {
+      initAudio();
+      if (!audioCtx) return null;
+      const arrayBuf = base64ToArrayBuffer(base64);
+      return await audioCtx.decodeAudioData(arrayBuf);
+    } catch (e) {
+      return null;
+    }
+  }
+
   async function loadWavSample(url) {
     try {
       initAudio();
+      if (!audioCtx) return null;
       const res = await fetch(url, { cache: 'no-cache' });
       if (!res.ok) return null;
       const arrayBuf = await res.arrayBuffer();
       return await audioCtx.decodeAudioData(arrayBuf);
     } catch (e) {
-      // Local file:// fetch restriction or decode failure gracefully falls back to synthesized audio
+      // Local file:// fetch restriction gracefully falls back
       return null;
     }
   }
 
   async function preloadRealWavSounds() {
     soundBuffers.keys = [];
-    const k1 = await loadWavSample('sounds/key1.wav');
-    if (k1) soundBuffers.keys.push(k1);
+    const embedded = window.FlowscribeSounds || {};
 
-    const k2 = await loadWavSample('sounds/key2.wav');
-    if (k2) soundBuffers.keys.push(k2);
-
-    if (soundBuffers.keys.length === 0) {
-      const kSingle = await loadWavSample('sounds/key.wav');
-      if (kSingle) soundBuffers.keys.push(kSingle);
+    // 1. Try embedded Base64 (instant, 100% offline & file:// safe without network or CORS restrictions)
+    if (embedded.key1) {
+      const k1 = await decodeBase64Sample(embedded.key1);
+      if (k1) soundBuffers.keys.push(k1);
+    }
+    if (embedded.key2) {
+      const k2 = await decodeBase64Sample(embedded.key2);
+      if (k2) soundBuffers.keys.push(k2);
+    }
+    if (embedded.space) {
+      soundBuffers.space = await decodeBase64Sample(embedded.space);
+    }
+    if (embedded.enter) {
+      soundBuffers.enter = await decodeBase64Sample(embedded.enter);
+    }
+    if (embedded.backspace) {
+      soundBuffers.backspace = await decodeBase64Sample(embedded.backspace);
     }
 
-    soundBuffers.space = await loadWavSample('sounds/space.wav');
-    soundBuffers.enter = await loadWavSample('sounds/enter.wav') || await loadWavSample('sounds/return.wav') || await loadWavSample('sounds/bell.wav');
-    soundBuffers.backspace = await loadWavSample('sounds/backspace.wav');
+    // 2. Fallback to fetch() from sounds/ directory if not embedded or if decoding failed
+    if (soundBuffers.keys.length === 0) {
+      const k1 = await loadWavSample('sounds/key1.wav');
+      if (k1) soundBuffers.keys.push(k1);
+      const k2 = await loadWavSample('sounds/key2.wav');
+      if (k2) soundBuffers.keys.push(k2);
+    }
+    if (!soundBuffers.space) soundBuffers.space = await loadWavSample('sounds/space.wav');
+    if (!soundBuffers.enter) soundBuffers.enter = await loadWavSample('sounds/enter.wav');
+    if (!soundBuffers.backspace) soundBuffers.backspace = await loadWavSample('sounds/backspace.wav');
   }
 
   let lastKeyIndex = -1;
