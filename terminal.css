@@ -6,6 +6,7 @@
    CRT PHOSPHOR COLOR SCHEMES
    -------------------------------------------------------------------------- */
 :root {
+  color-scheme: dark;
   /* Common Fonts */
   --font-terminal: 'Share Tech Mono', 'VT323', 'JetBrains Mono', 'Courier Prime', monospace;
   --font-mono: 'JetBrains Mono', 'Courier Prime', monospace;
@@ -509,21 +510,34 @@ html[data-flicker="true"] .overlay-flicker {
 .term-toolbar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background-color: rgba(0,0,0,0.3);
   border: 1px solid var(--ph-border);
   border-radius: 6px;
   padding: 6px 12px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  flex-wrap: nowrap;
+}
+
+.term-toolbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .term-key-group {
   display: flex;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .term-key-divider {
   color: var(--ph-border);
+  flex-shrink: 0;
 }
 
 .term-key {
@@ -1236,104 +1250,157 @@ kbd {
 
 @media (max-width: 992px) {
   .term-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 12px;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
   }
   .term-brand {
-    width: 100%;
     justify-content: flex-start;
   }
   .term-header-controls {
-    width: 100%;
-    justify-content: flex-start;
-    gap: 8px;
-    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: nowrap;
   }
   .term-v-divider {
     display: none;
   }
-  .theme-selector,
-  .fx-toggle-group,
-  .term-nav-group {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-  }
 }
 
 @media (max-width: 768px) {
-  .crt-monitor-container {
-    padding: 6px;
-    gap: 8px;
+  body.terminal-body {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
   }
-  .term-header-controls {
-    width: 100%;
-    justify-content: flex-start;
-    gap: 6px;
-  }
-  .term-btn {
-    padding: 5px 8px;
-    font-size: 0.78rem;
-  }
-  .theme-btn {
-    padding: 4px 6px;
-    font-size: 0.74rem;
-  }
-  .selector-label {
-    font-size: 0.75rem;
-  }
-  .term-toolbar {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 6px;
-  }
-  .term-right-keys {
-    margin-left: 0;
-  }
-  .term-prompt-line {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  .prompt-label {
-    min-width: unset;
-  }
-  .term-input-with-chips {
-    flex-direction: column;
-    width: 100%;
-    gap: 6px;
-  }
-  .term-chips {
-    width: 100%;
-    justify-content: flex-start;
-  }
-}
 
-@media (max-width: 520px) {
+  .crt-monitor-container {
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    padding: 4px 6px;
+    gap: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
   .term-brand-info h1 {
     font-size: 0.95rem;
   }
+
   .term-sub {
+    display: none;
+  }
+
+  .term-header {
+    padding: 6px 8px;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .term-header-controls {
+    justify-content: flex-end;
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+
+  .term-btn {
+    padding: 4px 6px;
+    font-size: 0.72rem;
+  }
+
+  .theme-btn {
+    padding: 3px 5px;
     font-size: 0.7rem;
   }
-  .theme-selector {
-    width: 100%;
+
+  .selector-label {
+    display: none;
   }
-  .fx-toggle-group {
-    width: 100%;
+
+  .term-toolbar {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 6px;
+    gap: 4px;
+    flex-shrink: 0;
+    flex-wrap: nowrap;
   }
-  .term-nav-group {
-    width: 100%;
+
+  .term-toolbar::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
   }
-  .dropdown {
-    width: 100%;
+
+  .term-key {
+    font-size: 0.72rem;
+    padding: 2px 6px;
+    flex-shrink: 0;
   }
-  .dropdown .term-btn-primary {
-    width: 100%;
-    justify-content: center;
+
+  .term-meta-panel {
+    padding: 4px 6px;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+
+  .term-prompt-line {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .prompt-label {
+    min-width: unset;
+    font-size: 0.72rem;
+  }
+
+  .prompt-input {
+    font-size: 0.85rem;
+    height: 24px;
+    padding: 2px 4px;
+  }
+
+  .term-chips .chip-btn {
+    padding: 2px 5px;
+    font-size: 0.65rem;
+  }
+
+  .term-workspace {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .term-pane {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .term-textarea {
+    flex: 1 1 auto;
+    height: 100% !important;
+    min-height: 0 !important;
+    font-size: 16px;
+    padding: 8px 10px;
+  }
+
+  .term-status-bar {
+    padding: 3px 6px;
+    font-size: 0.7rem;
+    flex-shrink: 0;
   }
 }
 
