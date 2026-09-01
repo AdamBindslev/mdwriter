@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnSoundToggle = document.getElementById('btnSoundToggle');
   const soundIcon = document.getElementById('soundIcon');
   const btnFullscreen = document.getElementById('btnFullscreen');
-  const floatingExitFs = document.getElementById('floatingExitFs');
   const ribbonBtns = document.querySelectorAll('.ribbon-btn');
 
   // Chips
@@ -42,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCopyMdDropdown = document.getElementById('btnCopyMdDropdown');
   const btnCopyMd = document.getElementById('btnCopyMd');
   const btnClear = document.getElementById('btnClear');
-  const btnLoadSample = document.getElementById('btnLoadSample');
   const btnShortcuts = document.getElementById('btnShortcuts');
   const shortcutModal = document.getElementById('shortcutModal');
   const btnCloseShortcutModal = document.getElementById('btnCloseShortcutModal');
@@ -54,6 +52,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const statLines = document.getElementById('statLines');
   const statReadTime = document.getElementById('statReadTime');
 
+  // Safe localStorage helper
+  function safeGetStorage(key, fallback = null) {
+    try {
+      const val = localStorage.getItem(key);
+      return val !== null ? val : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
   // ----------------------------------------------------
   // REAL AUDIO SAMPLE PLAYER (.wav files) WITH FALLBACK
   // ----------------------------------------------------
@@ -61,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let soundEnabled = true;
   let audioCtx = null;
 
-  const savedSound = localStorage.getItem(SOUND_KEY);
+  const savedSound = safeGetStorage(SOUND_KEY);
   if (savedSound !== null) {
     soundEnabled = savedSound === 'true';
   }
@@ -690,19 +698,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  if (btnLoadSample) {
-    btnLoadSample.addEventListener('click', () => {
-      playBellSound();
-      if (Storage && Storage.sampleData) {
-        docTitleInput.value = Storage.sampleData.title;
-        docCategoriesInput.value = Storage.sampleData.categories;
-        editorTextarea.value = Storage.sampleData.body;
-        renderPreview();
-        showToast('Eksempel (Møns Klint) indlæst på skrivemaskinen!', 'file-text');
-      }
-    });
-  }
-
   // Mode Switch Navigation Links (Pass active draft to other editions)
   document.querySelectorAll('.mode-toggle-group a, .view-toggle-group a, a[href="index.html"], a[href="terminal.html"]').forEach(link => {
     link.addEventListener('click', (e) => {
@@ -833,7 +828,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (btnFullscreen) btnFullscreen.addEventListener('click', toggleFullscreen);
-  if (floatingExitFs) floatingExitFs.addEventListener('click', toggleFullscreen);
 
   document.addEventListener('fullscreenchange', () => {
     const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);

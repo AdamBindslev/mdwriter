@@ -84,14 +84,43 @@
     return service.turndown(htmlString);
   }
 
+  // Lazy-load Promise singleton for vendor/mermaid.min.js
+  let mermaidLoadingPromise = null;
+  function loadMermaidScript() {
+    if (window.mermaid) {
+      return Promise.resolve(window.mermaid);
+    }
+    if (mermaidLoadingPromise) {
+      return mermaidLoadingPromise;
+    }
+
+    mermaidLoadingPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'vendor/mermaid.min.js';
+      script.async = true;
+      script.onload = () => {
+        resolve(window.mermaid);
+      };
+      script.onerror = (err) => {
+        mermaidLoadingPromise = null;
+        console.warn('Fejl ved lazy loading af mermaid.min.js:', err);
+        reject(err);
+      };
+      document.head.appendChild(script);
+    });
+
+    return mermaidLoadingPromise;
+  }
+
   /**
-   * Render Mermaid diagrams within a container
+   * Render Mermaid diagrams within a container (Lazy-loaded and strictly scoped)
    */
-  function renderMermaid(container, isDark = true) {
-    if (!window.mermaid || !container) return;
+  async function renderMermaid(container, isDark = true) {
+    if (!container) return;
     const mermaidCodes = container.querySelectorAll('code.language-mermaid, pre.language-mermaid');
     if (mermaidCodes.length === 0) return;
 
+    const createdDivs = [];
     mermaidCodes.forEach((el) => {
       const parent = el.tagName.toLowerCase() === 'code' ? el.parentElement : el;
       const codeText = el.textContent;
@@ -99,17 +128,25 @@
       div.className = 'mermaid';
       div.textContent = codeText;
       parent.replaceWith(div);
+      createdDivs.push(div);
     });
 
     try {
+      const mermaid = await loadMermaidScript();
+      if (!mermaid) return;
+
       mermaid.initialize({
         startOnLoad: false,
         theme: isDark ? 'dark' : 'default',
-        securityLevel: 'loose'
+        securityLevel: 'strict'
       });
-      mermaid.run({
-        querySelector: '.mermaid'
-      }).catch(() => {});
+
+      const mermaidNodes = container.querySelectorAll('.mermaid');
+      if (mermaidNodes.length > 0) {
+        await mermaid.run({
+          nodes: Array.from(mermaidNodes)
+        });
+      }
     } catch (err) {
       console.warn('Mermaid rendering error:', err);
     }
@@ -130,6 +167,7 @@
     htmlToMarkdown,
     renderMermaid,
     renderPreview,
+    loadMermaidScript,
     getTurndownService
   };
 })();

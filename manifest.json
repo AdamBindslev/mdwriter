@@ -1,0 +1,57 @@
+{
+  "name": "Flowscribe — Distraktionsfri Markdown Editor",
+  "short_name": "Flowscribe",
+  "description": "Distraktionsfri Markdown Editor, Skrivemaskine og CRT Terminal med live forhåndsvisning og fuld offline support.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "any",
+  "lang": "da",
+  "dir": "ltr",
+  "categories": ["productivity", "utilities", "writing"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Markdown Editor",
+      "short_name": "Editor",
+      "description": "Åbn Flowscribe standard Markdown editor",
+      "url": "./index.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Skrivemaskine Tilstand",
+      "short_name": "Skrivemaskine",
+      "description": "Åbn klassisk mekanisk skrivemaskine",
+      "url": "./skrivemaskine.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "CRT Terminal",
+      "short_name": "Terminal",
+      "description": "Åbn retro CRT Matrix / Wargames terminal",
+      "url": "./terminal.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

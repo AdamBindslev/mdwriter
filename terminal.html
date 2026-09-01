@@ -9,10 +9,21 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=JetBrains+Mono:wght@400;500;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <!-- Feather Icons -->
   <script src="vendor/feather.min.js"></script>
-  <!-- Marked parser & DOMPurify & Mermaid.js (Offline Vendor) -->
+  <!-- PWA & Mobile Capabilities -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Flowscribe">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+  <!-- Marked parser & DOMPurify (Offline Vendor - Mermaid is lazy-loaded on demand) -->
   <script src="vendor/marked.min.js"></script>
   <script src="vendor/purify.min.js"></script>
-  <script src="vendor/mermaid.min.js"></script>
   <link rel="stylesheet" href="terminal.css">
   <link rel="stylesheet" href="focus-timer.css">
 </head>
@@ -304,6 +315,7 @@
   <script src="js/core/formatter.js"></script>
   <script src="js/core/export.js"></script>
   <script src="focus-timer.js"></script>
+  <script src="js/pwa.js"></script>
   <script src="terminal.js"></script>
 </body>
 </html>

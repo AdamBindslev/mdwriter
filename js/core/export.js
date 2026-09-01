@@ -48,6 +48,19 @@
   }
 
   /**
+   * Escape HTML special characters for safe inclusion in HTML templates
+   */
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  /**
    * Export as a standalone HTML document (.html)
    */
   function exportHtml(title, categories, body, isDark = false) {
@@ -63,7 +76,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${docTitle}</title>
+  <title>${escapeHtml(docTitle)}</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;

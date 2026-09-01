@@ -13,13 +13,34 @@ document.addEventListener('DOMContentLoaded', () => {
   const THEME_KEY = 'md_writer_crt_theme';
   const FX_KEY = 'md_writer_crt_fx';
   const SOUND_KEY = 'md_writer_terminal_sound';
+  const VALID_THEMES = ['matrix', 'wargames', 'cyan', 'monochrome'];
+
+  // Safe localStorage helper functions to protect against corrupted storage
+  function safeGetStorage(key, fallback = null) {
+    try {
+      const val = localStorage.getItem(key);
+      return val !== null ? val : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  function safeGetStorageJSON(key, fallback = {}) {
+    try {
+      const val = localStorage.getItem(key);
+      if (!val) return fallback;
+      const parsed = JSON.parse(val);
+      return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
 
   // DOM Element References
   const html = document.documentElement;
   const docTitleInput = document.getElementById('docTitle');
   const docCategoriesInput = document.getElementById('docCategories');
   const editorTextarea = document.getElementById('editorTextarea');
-  const lineNumbers = document.getElementById('lineNumbers');
   const previewContainer = document.getElementById('previewContainer');
   const filenamePreview = document.getElementById('filenamePreview');
   const clockDisplay = document.getElementById('clockDisplay');
@@ -56,7 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCopyMdDropdown = document.getElementById('btnCopyMdDropdown');
   const btnCopyMd = document.getElementById('btnCopyMd');
   const btnClear = document.getElementById('btnClear');
-  const btnLoadSample = document.getElementById('btnLoadSample');
   const btnShortcuts = document.getElementById('btnShortcuts');
   const shortcutModal = document.getElementById('shortcutModal');
   const btnCloseShortcutModal = document.getElementById('btnCloseShortcutModal');
@@ -74,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let soundEnabled = true;
   let audioCtx = null;
 
-  const savedSound = localStorage.getItem(SOUND_KEY);
+  const savedSound = safeGetStorage(SOUND_KEY);
   if (savedSound !== null) {
     soundEnabled = savedSound === 'true';
     updateSoundUI();
@@ -187,32 +207,36 @@ document.addEventListener('DOMContentLoaded', () => {
   // ----------------------------------------------------
   // CRT THEMES & EFFECTS MANAGEMENT
   // ----------------------------------------------------
-  const savedTheme = localStorage.getItem(THEME_KEY) || 'matrix';
+  const rawTheme = safeGetStorage(THEME_KEY, 'matrix');
+  const savedTheme = VALID_THEMES.includes(rawTheme) ? rawTheme : 'matrix';
   setCRTTheme(savedTheme);
 
   themeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const theme = btn.getAttribute('data-theme');
-      setCRTTheme(theme);
+      if (VALID_THEMES.includes(theme)) {
+        setCRTTheme(theme);
+      }
     });
   });
 
   function setCRTTheme(theme) {
-    html.setAttribute('data-crt-theme', theme);
+    const activeTheme = VALID_THEMES.includes(theme) ? theme : 'matrix';
+    html.setAttribute('data-crt-theme', activeTheme);
     try {
-      localStorage.setItem(THEME_KEY, theme);
+      localStorage.setItem(THEME_KEY, activeTheme);
     } catch (e) {}
     themeBtns.forEach(b => {
-      b.classList.toggle('active', b.getAttribute('data-theme') === theme);
+      b.classList.toggle('active', b.getAttribute('data-theme') === activeTheme);
     });
   }
 
-  const savedFX = JSON.parse(localStorage.getItem(FX_KEY) || '{}');
+  const savedFX = safeGetStorageJSON(FX_KEY, {});
   const fxState = {
-    scanlines: savedFX.scanlines !== undefined ? savedFX.scanlines : true,
-    curved: savedFX.curved !== undefined ? savedFX.curved : true,
-    glow: savedFX.glow !== undefined ? savedFX.glow : true,
-    flicker: savedFX.flicker !== undefined ? savedFX.flicker : false
+    scanlines: typeof savedFX.scanlines === 'boolean' ? savedFX.scanlines : true,
+    curved: typeof savedFX.curved === 'boolean' ? savedFX.curved : true,
+    glow: typeof savedFX.glow === 'boolean' ? savedFX.glow : true,
+    flicker: typeof savedFX.flicker === 'boolean' ? savedFX.flicker : false
   };
 
   applyFXState();
@@ -223,32 +247,40 @@ document.addEventListener('DOMContentLoaded', () => {
     html.setAttribute('data-glow', fxState.glow);
     html.setAttribute('data-flicker', fxState.flicker);
 
-    btnToggleScanlines.classList.toggle('active', fxState.scanlines);
-    btnToggleCurved.classList.toggle('active', fxState.curved);
-    btnToggleGlow.classList.toggle('active', fxState.glow);
-    btnToggleFlicker.classList.toggle('active', fxState.flicker);
+    if (btnToggleScanlines) btnToggleScanlines.classList.toggle('active', fxState.scanlines);
+    if (btnToggleCurved) btnToggleCurved.classList.toggle('active', fxState.curved);
+    if (btnToggleGlow) btnToggleGlow.classList.toggle('active', fxState.glow);
+    if (btnToggleFlicker) btnToggleFlicker.classList.toggle('active', fxState.flicker);
 
     try {
       localStorage.setItem(FX_KEY, JSON.stringify(fxState));
     } catch (e) {}
   }
 
-  btnToggleScanlines.addEventListener('click', () => {
-    fxState.scanlines = !fxState.scanlines;
-    applyFXState();
-  });
-  btnToggleCurved.addEventListener('click', () => {
-    fxState.curved = !fxState.curved;
-    applyFXState();
-  });
-  btnToggleGlow.addEventListener('click', () => {
-    fxState.glow = !fxState.glow;
-    applyFXState();
-  });
-  btnToggleFlicker.addEventListener('click', () => {
-    fxState.flicker = !fxState.flicker;
-    applyFXState();
-  });
+  if (btnToggleScanlines) {
+    btnToggleScanlines.addEventListener('click', () => {
+      fxState.scanlines = !fxState.scanlines;
+      applyFXState();
+    });
+  }
+  if (btnToggleCurved) {
+    btnToggleCurved.addEventListener('click', () => {
+      fxState.curved = !fxState.curved;
+      applyFXState();
+    });
+  }
+  if (btnToggleGlow) {
+    btnToggleGlow.addEventListener('click', () => {
+      fxState.glow = !fxState.glow;
+      applyFXState();
+    });
+  }
+  if (btnToggleFlicker) {
+    btnToggleFlicker.addEventListener('click', () => {
+      fxState.flicker = !fxState.flicker;
+      applyFXState();
+    });
+  }
 
   // Real-time Digital Clock
   function updateClock() {
@@ -260,17 +292,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   setInterval(updateClock, 1000);
   updateClock();
-
-  // Line Numbers Sync
-  function updateLineNumbers() {
-    if (!lineNumbers || !editorTextarea) return;
-    const lines = editorTextarea.value.split('\n').length;
-    let numbersHtml = '';
-    for (let i = 1; i <= Math.max(lines, 20); i++) {
-      numbersHtml += `${i}\n`;
-    }
-    lineNumbers.textContent = numbersHtml;
-  }
 
   // Toast
   function showToast(msg) {
@@ -307,7 +328,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updateFilenamePreview();
-    updateLineNumbers();
 
     let saveResult = null;
     if (Storage) {
@@ -498,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Clear & Sample Load
+  // Clear Action
   if (btnClear) {
     btnClear.addEventListener('click', () => {
       if (confirm('Er du sikker på, at du vil rydde skærmen?')) {
@@ -508,20 +528,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Storage) Storage.clearDraft();
         renderPreview();
         showToast('Skærm ryddet');
-      }
-    });
-  }
-
-  if (btnLoadSample) {
-    btnLoadSample.addEventListener('click', () => {
-      if (confirm('Vil du erstatte dit nuværende indhold med Møns Klint feltjournal eksemplet?')) {
-        if (Storage && Storage.sampleData) {
-          docTitleInput.value = Storage.sampleData.title;
-          docCategoriesInput.value = Storage.sampleData.categories;
-          editorTextarea.value = Storage.sampleData.body;
-          renderPreview();
-          showToast('Eksempel indlæst');
-        }
       }
     });
   }

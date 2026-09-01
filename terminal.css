@@ -1221,19 +1221,119 @@ kbd {
 /* --------------------------------------------------------------------------
    RESPONSIVE ADJUSTMENTS
    -------------------------------------------------------------------------- */
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
+  .term-header {
+    gap: 12px;
+  }
+  .term-header-controls {
+    gap: 8px;
+  }
+  .term-v-divider {
+    height: 18px;
+    margin: 0 2px;
+  }
+}
+
+@media (max-width: 992px) {
+  .term-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px;
+  }
+  .term-brand {
+    width: 100%;
+    justify-content: flex-start;
+  }
   .term-header-controls {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
   }
   .term-v-divider {
     display: none;
   }
+  .theme-selector,
+  .fx-toggle-group,
+  .term-nav-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 768px) {
+  .crt-monitor-container {
+    padding: 6px;
+    gap: 8px;
+  }
+  .term-header-controls {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+  .term-btn {
+    padding: 5px 8px;
+    font-size: 0.78rem;
+  }
+  .theme-btn {
+    padding: 4px 6px;
+    font-size: 0.74rem;
+  }
+  .selector-label {
+    font-size: 0.75rem;
+  }
   .term-toolbar {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
   }
   .term-right-keys {
     margin-left: 0;
+  }
+  .term-prompt-line {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .prompt-label {
+    min-width: unset;
+  }
+  .term-input-with-chips {
+    flex-direction: column;
+    width: 100%;
+    gap: 6px;
+  }
+  .term-chips {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .term-brand-info h1 {
+    font-size: 0.95rem;
+  }
+  .term-sub {
+    font-size: 0.7rem;
+  }
+  .theme-selector {
+    width: 100%;
+  }
+  .fx-toggle-group {
+    width: 100%;
+  }
+  .term-nav-group {
+    width: 100%;
+  }
+  .dropdown {
+    width: 100%;
+  }
+  .dropdown .term-btn-primary {
+    width: 100%;
+    justify-content: center;
   }
 }
 

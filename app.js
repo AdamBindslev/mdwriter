@@ -40,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCopyMdDropdown = document.getElementById('btnCopyMdDropdown');
   const btnCopyMd = document.getElementById('btnCopyMd');
   const btnClear = document.getElementById('btnClear');
-  const btnLoadSample = document.getElementById('btnLoadSample');
   const btnShortcuts = document.getElementById('btnShortcuts');
   const shortcutModal = document.getElementById('shortcutModal');
   const btnCloseShortcutModal = document.getElementById('btnCloseShortcutModal');
@@ -280,19 +279,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Sample Data Loading
-  if (btnLoadSample) {
-    btnLoadSample.addEventListener('click', () => {
-      if (Storage && Storage.sampleData) {
-        docTitleInput.value = Storage.sampleData.title;
-        docCategoriesInput.value = Storage.sampleData.categories;
-        editorTextarea.value = Storage.sampleData.body;
-        renderPreview();
-        showToast('Eksempel på feltdagbog indlæst!', 'file-text');
-      }
-    });
-  }
-
   // Clear Action
   if (btnClear) {
     btnClear.addEventListener('click', () => {
@@ -467,10 +453,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Fullscreen & Distraction-Free Mode
   const btnFullscreen = document.getElementById('btnFullscreen');
-  const floatingExitFs = document.getElementById('floatingExitFs');
 
   if (btnFullscreen) btnFullscreen.addEventListener('click', toggleFullscreen);
-  if (floatingExitFs) floatingExitFs.addEventListener('click', toggleFullscreen);
 
   function toggleFullscreen() {
     const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.body.classList.contains('distraction-free-mode'));
