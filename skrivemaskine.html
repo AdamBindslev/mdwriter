@@ -30,70 +30,68 @@
 <body class="typewriter-body">
   <div class="desk-container">
 
-    <!-- Top Header Bar -->
+    <!-- Top Header Bar (Modular Stacked) -->
     <header class="tw-header">
-      <div class="tw-brand">
-        <div class="tw-logo-key"><i data-feather="edit-3"></i></div>
-        <div class="tw-brand-info">
-          <h1>FLOWSCRIBE <span class="tw-badge">SKRIVEMASKINE</span></h1>
-          <span class="tw-sub">Klassisk Mekanisk Tekstbehandler • v2.3.0</span>
+      <div class="tw-header-main">
+        <div class="tw-brand">
+          <div class="tw-logo-key"><i data-feather="edit-3"></i></div>
+          <div class="tw-brand-info">
+            <h1>FLOWSCRIBE <span class="tw-badge">SKRIVEMASKINE</span></h1>
+            <span class="tw-sub">Klassisk Mekanisk Tekstbehandler • v2.4.0</span>
+          </div>
+        </div>
+
+        <div class="tw-header-actions">
+          <div class="tw-nav-group">
+            <a href="index.html" class="tw-btn tw-btn-nav" title="Skift til Standard Visning">
+              <i data-feather="monitor"></i> <span>Standard App</span>
+            </a>
+            <a href="terminal.html" class="tw-btn tw-btn-nav" title="Skift til Terminal (CRT) Udgave">
+              <i data-feather="terminal"></i> <span>Terminal</span>
+            </a>
+          </div>
+
+          <div class="tw-v-divider"></div>
+
+          <button id="btnSoundToggle" class="tw-btn tw-btn-icon active" title="Mekanisk lyd slået til">
+            <i data-feather="volume-2" id="soundIcon"></i> <span>Lyd</span>
+          </button>
+
+          <button id="btnFullscreen" class="tw-btn tw-btn-icon" title="Fuldskærm (Alt+F eller ESC)">
+            <i data-feather="maximize" id="fullscreenIcon"></i> <span>Fuldskærm</span>
+          </button>
+
+          <button id="btnShortcuts" class="tw-btn tw-btn-icon" title="Tastatur-genveje (?)">
+            <i data-feather="help-circle"></i> <span>Hjælp</span>
+          </button>
+
+          <!-- Export Dropdown -->
+          <div class="dropdown" id="exportDropdown">
+            <button id="btnExportMenu" class="tw-btn tw-btn-primary dropdown-toggle" title="Eksportmuligheder (Cmd+S / Cmd+P)">
+              <i data-feather="download"></i> Eksportér <i data-feather="chevron-down" class="chevron"></i>
+            </button>
+            <div class="dropdown-menu tw-dropdown-menu">
+              <button id="btnExportMd" class="dropdown-item">
+                <i data-feather="file-text"></i> Download .md fil <span class="shortcut-tag">⌘S</span>
+              </button>
+              <button id="btnPrintPdf" class="dropdown-item">
+                <i data-feather="printer"></i> Gem som PDF / Print <span class="shortcut-tag">⌘P</span>
+              </button>
+              <button id="btnCopyMdDropdown" class="dropdown-item">
+                <i data-feather="copy"></i> Kopier ren MD
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="tw-header-controls">
-        <!-- Return to Standard App -->
-        <a href="index.html" class="tw-btn tw-btn-nav" title="Skift til Standard Visning">
-          <i data-feather="monitor"></i> Standard App
-        </a>
-
-        <a href="terminal.html" class="tw-btn tw-btn-nav" title="Skift til Terminal (Matrix / Wargames CRT) Udgave">
-          <i data-feather="terminal"></i> Terminal
-        </a>
-
-        <div class="tw-v-divider"></div>
-
-        <!-- Ribbon Selector -->
+      <!-- Secondary Controls: Ribbon Selector -->
+      <div class="tw-header-sub">
         <div class="ribbon-selector" title="Skift Blækbånd / Farve">
           <span class="ribbon-label"><i data-feather="sliders"></i> Blækbånd:</span>
-          <button class="ribbon-btn active" data-ribbon="black" title="Sort Blækbånd"><span class="dot dot-black"></span> Sort</button>
-          <button class="ribbon-btn" data-ribbon="red" title="Rødt Blækbånd"><span class="dot dot-red"></span> Rød</button>
-          <button class="ribbon-btn" data-ribbon="sepia" title="Klassisk Sepia"><span class="dot dot-sepia"></span> Sepia</button>
-        </div>
-
-        <div class="tw-v-divider"></div>
-
-        <!-- Audio Sound FX Toggle -->
-        <button id="btnSoundToggle" class="tw-btn tw-btn-icon active" title="Mekanisk lyd slået til">
-          <i data-feather="volume-2" id="soundIcon"></i> Lyd
-        </button>
-
-        <!-- Distraction Free Fullscreen Toggle -->
-        <button id="btnFullscreen" class="tw-btn tw-btn-icon" title="Fuldskærm / Distraktionsfri Skrivemodus (Alt+F eller ESC)">
-          <i data-feather="maximize" id="fullscreenIcon"></i> Fuldskærm
-        </button>
-
-        <button id="btnShortcuts" class="tw-btn tw-btn-icon" title="Tastatur-genveje (?)">
-          <i data-feather="help-circle"></i> Hjælp
-        </button>
-
-        <div class="tw-v-divider"></div>
-
-        <!-- Export Dropdown -->
-        <div class="dropdown" id="exportDropdown">
-          <button id="btnExportMenu" class="tw-btn tw-btn-primary dropdown-toggle" title="Eksportmuligheder (Cmd+S / Cmd+P)">
-            <i data-feather="download"></i> Eksportér <i data-feather="chevron-down" class="chevron"></i>
-          </button>
-          <div class="dropdown-menu tw-dropdown-menu">
-            <button id="btnExportMd" class="dropdown-item">
-              <i data-feather="file-text"></i> Download .md fil <span class="shortcut-tag">⌘S</span>
-            </button>
-            <button id="btnPrintPdf" class="dropdown-item">
-              <i data-feather="printer"></i> Gem som PDF / Print <span class="shortcut-tag">⌘P</span>
-            </button>
-            <button id="btnCopyMdDropdown" class="dropdown-item">
-              <i data-feather="copy"></i> Kopier ren MD
-            </button>
-          </div>
+          <button class="ribbon-btn active" data-ribbon="black" title="Sort Blækbånd"><span class="dot dot-black"></span> <span>Sort</span></button>
+          <button class="ribbon-btn" data-ribbon="red" title="Rødt Blækbånd"><span class="dot dot-red"></span> <span>Rød</span></button>
+          <button class="ribbon-btn" data-ribbon="sepia" title="Klassisk Sepia"><span class="dot dot-sepia"></span> <span>Sepia</span></button>
         </div>
       </div>
     </header>
@@ -101,10 +99,9 @@
     <!-- Typewriter Machine & Paper Assembly -->
     <main class="tw-machine">
 
-
-      <!-- Keycap Formatting Toolbar -->
+      <!-- Keycap Formatting Toolbar (Modular 2-Row Stack) -->
       <div class="tw-toolbar">
-        <div class="tw-left-keys">
+        <div class="tw-keys-row">
           <div class="keycap-group">
             <button class="tw-key" data-cmd="h1" title="Overskrift 1 (#)"><span class="key-symbol">H₁</span></button>
             <button class="tw-key" data-cmd="h2" title="Overskrift 2 (##)"><span class="key-symbol">H₂</span></button>
@@ -140,13 +137,16 @@
           </div>
         </div>
 
-        <div class="tw-right-keys">
-          <button class="tw-key tw-key-action tw-key-copy" id="btnCopyMd" title="Kopier Markdown til udklipsholder">
-            <i data-feather="copy"></i> <span class="tw-key-label">Kopier</span>
-          </button>
-          <button class="tw-key tw-key-action tw-key-clear" id="btnClear" title="Ryd Papir">
-            <i data-feather="trash-2"></i> <span class="tw-key-label">Ryd</span>
-          </button>
+        <!-- Dedicated Action & Focus Timer Row (Never overlaps formatting) -->
+        <div class="tw-actions-row">
+          <div class="tw-actions-left">
+            <button class="tw-key tw-key-action tw-key-copy" id="btnCopyMd" title="Kopier Markdown til udklipsholder">
+              <i data-feather="copy"></i> <span class="tw-key-label">Kopier MD</span>
+            </button>
+            <button class="tw-key tw-key-action tw-key-clear" id="btnClear" title="Ryd Papir">
+              <i data-feather="trash-2"></i> <span class="tw-key-label">Ryd</span>
+            </button>
+          </div>
           <div class="focus-timer-mount"></div>
         </div>
       </div>

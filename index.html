@@ -29,68 +29,73 @@
 </head>
 <body>
   <div class="app-container">
-    <!-- Top Navigation Bar -->
+    <!-- Top Navigation Bar (Modular Stacked) -->
     <header class="top-header">
-      <div class="brand">
-        <div class="logo-icon"><i data-feather="edit-3"></i></div>
-        <div class="brand-text">
-          <h1>Flowscribe</h1>
-          <span class="subtitle">Markdown Editor & Eksportør • v2.3.0</span>
+      <div class="top-header-main">
+        <div class="brand">
+          <div class="logo-icon"><i data-feather="edit-3"></i></div>
+          <div class="brand-text">
+            <h1>Flowscribe</h1>
+            <span class="subtitle">Markdown Editor & Eksportør • v2.4.0</span>
+          </div>
+        </div>
+
+        <div class="header-main-actions">
+          <div class="view-toggle-group mode-toggle-group">
+            <a href="skrivemaskine.html" class="btn-toggle-link" title="Skift til Skrivemaskine Udgave">
+              <i data-feather="type"></i> <span>Skrivemaskine</span>
+            </a>
+            <a href="terminal.html" class="btn-toggle-link" title="Skift til Terminal (CRT) Udgave">
+              <i data-feather="terminal"></i> <span>Terminal</span>
+            </a>
+          </div>
+
+          <div class="action-divider"></div>
+
+          <button id="btnFullscreen" class="btn btn-secondary btn-compact" title="Fuldskærm (Alt+F eller ESC)">
+            <i data-feather="maximize" id="fullscreenIcon"></i> <span>Fuldskærm</span>
+          </button>
+
+          <button id="btnThemeToggle" class="btn btn-icon" title="Skift Mørk/Lys Tema">
+            <i data-feather="sun" id="themeIcon"></i>
+          </button>
+
+          <button id="btnShortcuts" class="btn btn-icon" title="Tastatur-genveje (?)">
+            <i data-feather="help-circle"></i>
+          </button>
+
+          <!-- Export Dropdown -->
+          <div class="dropdown" id="exportDropdown">
+            <button id="btnExportMenu" class="btn btn-primary dropdown-toggle" title="Eksportmuligheder (Cmd+S / Cmd+P)">
+              <i data-feather="download"></i> Eksportér <i data-feather="chevron-down" class="chevron"></i>
+            </button>
+            <div class="dropdown-menu">
+              <button id="btnExportMd" class="dropdown-item">
+                <i data-feather="file-text"></i> Download .md fil <span class="shortcut-tag">⌘S</span>
+              </button>
+              <button id="btnPrintPdf" class="dropdown-item">
+                <i data-feather="printer"></i> Gem som PDF / Print <span class="shortcut-tag">⌘P</span>
+              </button>
+              <button id="btnCopyMdDropdown" class="dropdown-item">
+                <i data-feather="copy"></i> Kopier ren MD
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="header-actions">
+      <!-- Secondary Row: View Modes (Split / Editor / Preview) -->
+      <div class="top-header-sub">
         <div class="view-toggle-group">
           <button id="btnViewSplit" class="btn-toggle active" title="Splittet visning">
-            <i data-feather="columns"></i> Splittet
+            <i data-feather="columns"></i> <span>Splittet</span>
           </button>
           <button id="btnViewEditor" class="btn-toggle" title="Kun editor">
-            <i data-feather="edit"></i> Editor
+            <i data-feather="edit"></i> <span>Editor</span>
           </button>
           <button id="btnViewPreview" class="btn-toggle" title="Kun forhåndsvisning">
-            <i data-feather="eye"></i> Preview
+            <i data-feather="eye"></i> <span>Preview</span>
           </button>
-        </div>
-
-        <div class="view-toggle-group mode-toggle-group">
-          <a href="skrivemaskine.html" class="btn-toggle-link" title="Skift til Skrivemaskine Udgave">
-            <i data-feather="type"></i> Skrivemaskine
-          </a>
-          <a href="terminal.html" class="btn-toggle-link" title="Skift til Terminal (CRT) Udgave">
-            <i data-feather="terminal"></i> Terminal
-          </a>
-        </div>
-
-        <div class="action-divider"></div>
-
-        <button id="btnFullscreen" class="btn btn-secondary btn-compact" title="Fuldskærm / Distraktionsfri Skrivemodus (Alt+F eller ESC)">
-          <i data-feather="maximize" id="fullscreenIcon"></i> Fuldskærm
-        </button>
-
-        <button id="btnThemeToggle" class="btn btn-icon" title="Skift Mørk/Lys Tema">
-          <i data-feather="sun" id="themeIcon"></i>
-        </button>
-
-        <button id="btnShortcuts" class="btn btn-icon" title="Tastatur-genveje (?)">
-          <i data-feather="help-circle"></i>
-        </button>
-
-        <!-- Export Dropdown -->
-        <div class="dropdown" id="exportDropdown">
-          <button id="btnExportMenu" class="btn btn-primary dropdown-toggle" title="Eksportmuligheder (Cmd+S / Cmd+P)">
-            <i data-feather="download"></i> Eksportér <i data-feather="chevron-down" class="chevron"></i>
-          </button>
-          <div class="dropdown-menu">
-            <button id="btnExportMd" class="dropdown-item">
-              <i data-feather="file-text"></i> Download .md fil <span class="shortcut-tag">⌘S</span>
-            </button>
-            <button id="btnPrintPdf" class="dropdown-item">
-              <i data-feather="printer"></i> Gem som PDF / Print <span class="shortcut-tag">⌘P</span>
-            </button>
-            <button id="btnCopyMdDropdown" class="dropdown-item">
-              <i data-feather="copy"></i> Kopier ren MD
-            </button>
-          </div>
         </div>
       </div>
     </header>
@@ -127,9 +132,9 @@
       </div>
     </section>
 
-    <!-- Format Toolbar -->
+    <!-- Format Toolbar (Modular 2-Row Stack) -->
     <div class="toolbar" id="toolbar">
-      <div class="toolbar-left">
+      <div class="toolbar-format-row">
         <div class="toolbar-group">
           <button type="button" data-cmd="h1" class="tb-btn" title="Overskrift 1 (#)"><i data-feather="type"></i>1</button>
           <button type="button" data-cmd="h2" class="tb-btn" title="Overskrift 2 (##)"><i data-feather="type"></i>2</button>
@@ -165,13 +170,16 @@
         </div>
       </div>
 
-      <div class="toolbar-right">
-        <button type="button" id="btnCopyMd" class="tb-btn tb-action" title="Kopier ren MD til udklipsholder">
-          <i data-feather="copy"></i> <span class="tb-btn-text">Kopier</span>
-        </button>
-        <button type="button" id="btnClear" class="tb-btn tb-danger" title="Ryd indhold">
-          <i data-feather="trash-2"></i> <span class="tb-btn-text">Ryd</span>
-        </button>
+      <!-- Dedicated Action & Timer Row (Never overlaps formatting) -->
+      <div class="toolbar-actions-row">
+        <div class="toolbar-actions-left">
+          <button type="button" id="btnCopyMd" class="tb-btn tb-action" title="Kopier ren MD til udklipsholder">
+            <i data-feather="copy"></i> <span class="tb-btn-text">Kopier MD</span>
+          </button>
+          <button type="button" id="btnClear" class="tb-btn tb-danger" title="Ryd indhold">
+            <i data-feather="trash-2"></i> <span class="tb-btn-text">Ryd</span>
+          </button>
+        </div>
         <div class="focus-timer-mount"></div>
       </div>
     </div>

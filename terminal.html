@@ -32,88 +32,82 @@
 
     <!-- CRT Top Navigation Bar -->
     <header class="term-header">
-      <div class="term-brand">
-        <div class="term-logo-icon"><i data-feather="terminal"></i></div>
-        <div class="term-brand-info">
-          <h1>FLOWSCRIBE <span class="term-badge">CRT TERMINAL</span></h1>
-          <span class="term-sub">Retro Phosphor Tekstbehandler • v2.3.0</span>
+      <div class="term-header-main">
+        <div class="term-brand">
+          <div class="term-logo-icon"><i data-feather="terminal"></i></div>
+          <div class="term-brand-info">
+            <h1>FLOWSCRIBE <span class="term-badge">CRT TERMINAL</span></h1>
+            <span class="term-sub">Retro Phosphor Tekstbehandler • v2.4.0</span>
+          </div>
+        </div>
+
+        <div class="term-header-actions">
+          <div class="term-nav-group">
+            <a href="index.html" class="term-btn term-btn-nav" title="Skift til Standard Visning">
+              <i data-feather="monitor"></i> <span>Standard App</span>
+            </a>
+            <a href="skrivemaskine.html" class="term-btn term-btn-nav" title="Skift til Skrivemaskine Udgave">
+              <i data-feather="type"></i> <span>Skrivemaskine</span>
+            </a>
+          </div>
+
+          <div class="term-v-divider"></div>
+
+          <button id="btnSoundToggle" class="term-btn term-btn-icon active" title="Terminal lyd slået til">
+            <i data-feather="volume-2" id="soundIcon"></i> <span>Lyd</span>
+          </button>
+
+          <button id="btnFullscreen" class="term-btn term-btn-icon" title="Fuldskærm (Alt+F eller ESC)">
+            <i data-feather="maximize" id="fullscreenIcon"></i> <span>Fuldskærm</span>
+          </button>
+
+          <button id="btnShortcuts" class="term-btn term-btn-icon" title="Tastatur-genveje (?)">
+            <i data-feather="help-circle"></i> <span>Hjælp</span>
+          </button>
+
+          <!-- Export Dropdown -->
+          <div class="dropdown" id="exportDropdown">
+            <button id="btnExportMenu" class="term-btn term-btn-primary dropdown-toggle" title="Eksportmuligheder (Cmd+S / Cmd+P)">
+              <i data-feather="download"></i> Eksportér <i data-feather="chevron-down" class="chevron"></i>
+            </button>
+            <div class="dropdown-menu term-dropdown-menu">
+              <button id="btnExportMd" class="dropdown-item">
+                <i data-feather="file-text"></i> Download .md fil <span class="shortcut-tag">⌘S</span>
+              </button>
+              <button id="btnPrintPdf" class="dropdown-item">
+                <i data-feather="printer"></i> Gem som PDF / Print <span class="shortcut-tag">⌘P</span>
+              </button>
+              <button id="btnCopyMdDropdown" class="dropdown-item">
+                <i data-feather="copy"></i> Kopier ren MD
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="term-header-controls">
-        <!-- Navigation to other modes -->
-        <div class="term-nav-group">
-          <a href="index.html" class="term-btn term-btn-nav" title="Skift til Standard Visning">
-            <i data-feather="monitor"></i> Standard App
-          </a>
-          <a href="skrivemaskine.html" class="term-btn term-btn-nav" title="Skift til Skrivemaskine Udgave">
-            <i data-feather="type"></i> Skrivemaskine
-          </a>
-        </div>
-
-        <div class="term-v-divider"></div>
-
-        <!-- CRT Phosphor Color Theme Selector -->
+      <!-- Secondary CRT Controls Bar (Phosphor & FX) -->
+      <div class="term-header-sub">
         <div class="theme-selector" title="Skift Phosphor Farve">
           <span class="selector-label"><i data-feather="sun"></i> Phosphor:</span>
-          <button class="theme-btn active" data-theme="matrix" title="Matrix Grøn (VT220)"><span class="phosphor-dot dot-matrix"></span> Grøn</button>
-          <button class="theme-btn" data-theme="wargames" title="Wargames Amber (WOPR)"><span class="phosphor-dot dot-wargames"></span> Amber</button>
-          <button class="theme-btn" data-theme="cyan" title="Cyberpunk Cyan (VT100)"><span class="phosphor-dot dot-cyan"></span> Cyan</button>
-          <button class="theme-btn" data-theme="monochrome" title="Paper White"><span class="phosphor-dot dot-mono"></span> Hvid</button>
+          <button class="theme-btn active" data-theme="matrix" title="Matrix Grøn (VT220)"><span class="phosphor-dot dot-matrix"></span> <span class="theme-name">Grøn</span></button>
+          <button class="theme-btn" data-theme="wargames" title="Wargames Amber (WOPR)"><span class="phosphor-dot dot-wargames"></span> <span class="theme-name">Amber</span></button>
+          <button class="theme-btn" data-theme="cyan" title="Cyberpunk Cyan (VT100)"><span class="phosphor-dot dot-cyan"></span> <span class="theme-name">Cyan</span></button>
+          <button class="theme-btn" data-theme="monochrome" title="Paper White"><span class="phosphor-dot dot-mono"></span> <span class="theme-name">Hvid</span></button>
         </div>
 
-        <div class="term-v-divider"></div>
-
-        <!-- CRT FX Toggles -->
         <div class="fx-toggle-group">
-          <button id="btnToggleScanlines" class="term-btn term-btn-icon active" title="Slå CRT Scanlines til/fra">
-            <i data-feather="grid"></i> Scanlines
+          <button id="btnToggleScanlines" class="term-btn term-btn-icon fx-btn active" title="Slå CRT Scanlines til/fra">
+            <i data-feather="grid"></i> <span>Scanlines</span>
           </button>
-          <button id="btnToggleCurved" class="term-btn term-btn-icon active" title="Slå CRT Skærmbue til/fra">
-            <i data-feather="tv"></i> Skærmbue
+          <button id="btnToggleCurved" class="term-btn term-btn-icon fx-btn active" title="Slå CRT Skærmbue til/fra">
+            <i data-feather="tv"></i> <span>Skærmbue</span>
           </button>
-          <button id="btnToggleGlow" class="term-btn term-btn-icon active" title="Slå Phosphor Glow til/fra">
-            <i data-feather="zap"></i> Glow
+          <button id="btnToggleGlow" class="term-btn term-btn-icon fx-btn active" title="Slå Phosphor Glow til/fra">
+            <i data-feather="zap"></i> <span>Glow</span>
           </button>
-          <button id="btnToggleFlicker" class="term-btn term-btn-icon" title="Slå Skærmflimmer til/fra">
-            <i data-feather="activity"></i> Flimmer
+          <button id="btnToggleFlicker" class="term-btn term-btn-icon fx-btn" title="Slå Skærmflimmer til/fra">
+            <i data-feather="activity"></i> <span>Flimmer</span>
           </button>
-        </div>
-
-        <div class="term-v-divider"></div>
-
-        <!-- Audio Sound FX Toggle -->
-        <button id="btnSoundToggle" class="term-btn term-btn-icon active" title="Terminal lyd slået til">
-          <i data-feather="volume-2" id="soundIcon"></i> Lyd
-        </button>
-
-        <!-- Distraction Free Fullscreen Toggle -->
-        <button id="btnFullscreen" class="term-btn term-btn-icon" title="Fuldskærm / Distraktionsfri Skrivemodus (Alt+F eller ESC)">
-          <i data-feather="maximize" id="fullscreenIcon"></i> Fuldskærm
-        </button>
-
-        <button id="btnShortcuts" class="term-btn term-btn-icon" title="Tastatur-genveje (?)">
-          <i data-feather="help-circle"></i> Hjælp
-        </button>
-
-        <div class="term-v-divider"></div>
-
-        <!-- Export Dropdown -->
-        <div class="dropdown" id="exportDropdown">
-          <button id="btnExportMenu" class="term-btn term-btn-primary dropdown-toggle" title="Eksportmuligheder (Cmd+S / Cmd+P)">
-            <i data-feather="download"></i> Eksportér <i data-feather="chevron-down" class="chevron"></i>
-          </button>
-          <div class="dropdown-menu term-dropdown-menu">
-            <button id="btnExportMd" class="dropdown-item">
-              <i data-feather="file-text"></i> Download .md fil <span class="shortcut-tag">⌘S</span>
-            </button>
-            <button id="btnPrintPdf" class="dropdown-item">
-              <i data-feather="printer"></i> Gem som PDF / Print <span class="shortcut-tag">⌘P</span>
-            </button>
-            <button id="btnCopyMdDropdown" class="dropdown-item">
-              <i data-feather="copy"></i> Kopier ren MD
-            </button>
-          </div>
         </div>
       </div>
     </header>
@@ -144,7 +138,7 @@
 
           <!-- Function Keys Toolbar -->
           <div class="term-toolbar">
-            <div class="term-left-keys">
+            <div class="term-keys-row">
               <div class="term-key-group">
                 <button class="term-key" data-cmd="h1" title="Overskrift 1 (#)"><span class="fn-tag">F1</span> H1</button>
                 <button class="term-key" data-cmd="h2" title="Overskrift 2 (##)"><span class="fn-tag">F2</span> H2</button>
@@ -179,13 +173,16 @@
               </div>
             </div>
 
-            <div class="term-right-keys">
-              <button class="term-key term-key-copy" id="btnCopyMd" title="Kopier Markdown til udklipsholder">
-                <i data-feather="copy"></i> <span class="term-key-label">KOPIER</span>
-              </button>
-              <button class="term-key term-key-clear" id="btnClear" title="Ryd Skærm">
-                <i data-feather="trash-2"></i> <span class="term-key-label">RYD</span>
-              </button>
+            <!-- Dedicated Actions & Focus Timer Row (Never overlaps formatting) -->
+            <div class="term-actions-row">
+              <div class="term-actions-left">
+                <button class="term-key term-key-copy" id="btnCopyMd" title="Kopier Markdown til udklipsholder">
+                  <i data-feather="copy"></i> <span class="term-key-label">KOPIER REN MD</span>
+                </button>
+                <button class="term-key term-key-clear" id="btnClear" title="Ryd Skærm">
+                  <i data-feather="trash-2"></i> <span class="term-key-label">RYD ALT</span>
+                </button>
+              </div>
               <div class="focus-timer-mount"></div>
             </div>
           </div>
