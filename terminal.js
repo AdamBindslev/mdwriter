@@ -309,12 +309,33 @@ document.addEventListener('DOMContentLoaded', () => {
     updateFilenamePreview();
     updateLineNumbers();
 
+    let saveResult = null;
     if (Storage) {
-      Storage.saveDraft({
+      saveResult = Storage.saveDraft({
         title: docTitleInput ? docTitleInput.value : '',
         categories: docCategoriesInput ? docCategoriesInput.value : '',
         body: editorTextarea ? editorTextarea.value : ''
       });
+    }
+
+    const statusIndicator = document.getElementById('statusIndicator');
+    if (statusIndicator) {
+      const hasContent = (docTitleInput && docTitleInput.value.trim()) ||
+                         (docCategoriesInput && docCategoriesInput.value.trim()) ||
+                         (editorTextarea && editorTextarea.value.trim());
+      if (!hasContent) {
+        statusIndicator.textContent = '● TOMT';
+        statusIndicator.className = 'status-indicator';
+      } else if (saveResult && !saveResult.ok) {
+        statusIndicator.textContent = '✖ KUN I HUKOMMELSE';
+        statusIndicator.className = 'status-indicator error';
+      } else if (saveResult && !saveResult.local && saveResult.session) {
+        statusIndicator.textContent = '▲ I SESSION';
+        statusIndicator.className = 'status-indicator warning';
+      } else {
+        statusIndicator.textContent = '● GEMT';
+        statusIndicator.className = 'status-indicator online';
+      }
     }
   }
 
@@ -576,6 +597,17 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         showToast('FEJL: KUN .MD ELLER .TXT FILER');
       }
+    }
+  });
+
+  if (btnFullscreen) btnFullscreen.addEventListener('click', toggleFullscreen);
+  if (floatingExitFs) floatingExitFs.addEventListener('click', toggleFullscreen);
+
+  document.addEventListener('fullscreenchange', () => {
+    const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    if (!isFs && (document.body.classList.contains('fullscreen-active') || document.body.classList.contains('distraction-free-mode'))) {
+      document.body.classList.remove('fullscreen-active', 'distraction-free-mode');
+      if (typeof window.updateFocusTimerPlacement === 'function') window.updateFocusTimerPlacement();
     }
   });
 

@@ -484,12 +484,33 @@ document.addEventListener('DOMContentLoaded', () => {
     autoResizeTextarea();
     updateOdometer();
 
+    let saveResult = null;
     if (Storage) {
-      Storage.saveDraft({
+      saveResult = Storage.saveDraft({
         title: docTitleInput ? docTitleInput.value : '',
         categories: docCategoriesInput ? docCategoriesInput.value : '',
         body: editorTextarea ? editorTextarea.value : ''
       });
+    }
+
+    const saveIndicator = document.getElementById('saveIndicator');
+    if (saveIndicator) {
+      const hasContent = (docTitleInput && docTitleInput.value.trim()) ||
+                         (docCategoriesInput && docCategoriesInput.value.trim()) ||
+                         (editorTextarea && editorTextarea.value.trim());
+      if (!hasContent) {
+        saveIndicator.textContent = 'Tomt dokument';
+        saveIndicator.className = 'tw-save-indicator';
+      } else if (saveResult && !saveResult.ok) {
+        saveIndicator.textContent = 'Kun i hukommelsen (eksportér nu)';
+        saveIndicator.className = 'tw-save-indicator save-error';
+      } else if (saveResult && !saveResult.local && saveResult.session) {
+        saveIndicator.textContent = 'Gemt i session';
+        saveIndicator.className = 'tw-save-indicator save-warning';
+      } else {
+        saveIndicator.textContent = 'Gemt automatisk';
+        saveIndicator.className = 'tw-save-indicator';
+      }
     }
   }
 

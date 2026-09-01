@@ -235,7 +235,18 @@ I aften står den på tørring af støvler og notatskrivning ved petroleumslampe
       }
     } catch (e) {}
 
-    window.location.href = targetUrl;
+    // Total storage failure and document is too large for safe URL transfer:
+    // Warn user to prevent silent data loss upon leaving page
+    const confirmLeave = typeof window.confirm === 'function' ? window.confirm(
+      'Advarsel: Dokumentet kan ikke gemmes i browserens lager (lageret er blokeret eller fuldt).\n\n' +
+      'Hvis du fortsætter til en anden visning nu, vil de seneste ændringer i teksten gå tabt.\n\n' +
+      'Eksportér venligst dit dokument først som .md-fil.\n\n' +
+      'Vil du skifte visning alligevel?'
+    ) : true;
+
+    if (confirmLeave) {
+      window.location.href = targetUrl;
+    }
   }
 
   /**

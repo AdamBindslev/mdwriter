@@ -937,6 +937,18 @@ html[data-flicker="true"] .overlay-flicker {
   letter-spacing: 1px;
 }
 
+.status-indicator.error {
+  color: #ff4444;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.status-indicator.warning {
+  color: #ffaa00;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
 .stat-sep {
   color: var(--ph-text-dim);
 }

@@ -779,6 +779,21 @@ body.typewriter-body {
   color: #a8a29e;
 }
 
+.tw-save-indicator {
+  color: #10b981;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.tw-save-indicator.save-error {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.tw-save-indicator.save-warning {
+  color: #f59e0b;
+}
+
 .stat-sep {
   color: #44403c;
 }
