@@ -613,6 +613,8 @@ body.typewriter-body {
   font-family: var(--font-typewriter);
   font-size: 1rem;
   color: var(--ink-current);
+  caret-color: var(--ink-current);
+  caret-shape: underscore;
   background: rgba(0, 0, 0, 0.02);
   border: none;
   border-bottom: 1px dashed #d6ceb8;
@@ -689,6 +691,8 @@ body.typewriter-body {
   font-size: 1.05rem;
   line-height: 1.8;
   color: var(--ink-current);
+  caret-color: var(--ink-current);
+  caret-shape: underscore;
   background: transparent;
   border: none;
   outline: none;

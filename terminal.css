@@ -723,6 +723,8 @@ html[data-flicker="true"] .overlay-flicker {
   border-bottom: 1px dashed var(--ph-border);
   padding: 4px 8px;
   outline: none;
+  caret-color: var(--ph-text-bright);
+  caret-shape: block;
   transition: border-color 0.2s ease;
 }
 
@@ -828,6 +830,7 @@ html[data-flicker="true"] .overlay-flicker {
   outline: none;
   resize: none;
   caret-color: var(--ph-text-bright);
+  caret-shape: block;
   white-space: pre-wrap;
   word-break: break-word;
   overflow-y: auto;
