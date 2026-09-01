@@ -50,6 +50,26 @@ html[data-ribbon="sepia"] {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #3d3530 transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3d3530;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #574c43;
 }
 
 body.typewriter-body {
@@ -275,13 +295,24 @@ body.typewriter-body {
   padding: 8px 16px;
   border-bottom: 1px solid #2a2420;
   overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
   min-height: 52px;
+}
+
+.tw-toolbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .keycap-group {
   display: flex;
   align-items: center;
   gap: 5px;
+  flex-shrink: 0;
 }
 
 .key-divider {
@@ -289,6 +320,7 @@ body.typewriter-body {
   height: 24px;
   background: #332b26;
   margin: 0 4px;
+  flex-shrink: 0;
 }
 
 .tw-key {
