@@ -398,6 +398,13 @@ html[data-glow="true"] body.terminal-body {
   border-radius: 3px;
 }
 
+.dropdown-divider {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--ph-border);
+  border: none;
+}
+
 /* --------------------------------------------------------------------------
    CRT CHASSIS FRAME & SCREEN
    -------------------------------------------------------------------------- */

@@ -158,9 +158,11 @@
     const parsedHtml = Markdown ? Markdown.parseToHtml(fullMd, { showReturnSymbols: false }) : fullMd;
 
     if (navigator.clipboard && window.ClipboardItem) {
-      const type = 'text/html';
-      const blob = new Blob([parsedHtml], { type });
-      const data = [new ClipboardItem({ [type]: blob })];
+      const typeHtml = 'text/html';
+      const typePlain = 'text/plain';
+      const blobHtml = new Blob([parsedHtml], { type: typeHtml });
+      const blobPlain = new Blob([fullMd], { type: typePlain });
+      const data = [new ClipboardItem({ [typeHtml]: blobHtml, [typePlain]: blobPlain })];
       await navigator.clipboard.write(data);
     } else {
       await navigator.clipboard.writeText(parsedHtml);

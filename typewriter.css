@@ -1563,8 +1563,15 @@ body.is-typing .tw-meta-inputs:hover {
   background: #09090b;
   border: 1px solid #3f3f46;
   padding: 1px 5px;
-  border-radius: 4px;
-  margin-left: auto;
+  border-radius: 3px;
+  margin-left: 12px;
+}
+
+.tw-dropdown-menu .dropdown-divider {
+  height: 1px;
+  margin: 4px 0;
+  background: #3f3f46;
+  border: none;
 }
 
 /* Modal Dialog in Typewriter Theme */

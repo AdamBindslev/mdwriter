@@ -42,7 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnExportMenu = document.getElementById('btnExportMenu');
   const btnExportMd = document.getElementById('btnExportMd');
   const btnPrintPdf = document.getElementById('btnPrintPdf');
+  const btnExportHtml = document.getElementById('btnExportHtml');
+  const btnExportTxt = document.getElementById('btnExportTxt');
   const btnCopyMdDropdown = document.getElementById('btnCopyMdDropdown');
+  const btnCopyHtmlDropdown = document.getElementById('btnCopyHtmlDropdown');
   const btnCopyMd = document.getElementById('btnCopyMd');
   const btnClear = document.getElementById('btnClear');
   const btnShortcuts = document.getElementById('btnShortcuts');
@@ -810,6 +813,36 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  if (btnPrintPdf) {
+    btnPrintPdf.addEventListener('click', () => {
+      playKeyClickSound();
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      if (Export) Export.triggerPdfPrint(renderPreview);
+    });
+  }
+
+  if (btnExportHtml) {
+    btnExportHtml.addEventListener('click', () => {
+      playKeyClickSound();
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      if (Export) {
+        const filename = Export.exportHtml(docTitleInput.value, docCategoriesInput.value, editorTextarea.value, false);
+        showToast(`HTML-fil gemt som: ${filename}`, 'code');
+      }
+    });
+  }
+
+  if (btnExportTxt) {
+    btnExportTxt.addEventListener('click', () => {
+      playKeyClickSound();
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      if (Export) {
+        const filename = Export.exportTxt(docTitleInput.value, docCategoriesInput.value, editorTextarea.value);
+        showToast(`Tekstfil gemt som: ${filename}`, 'file-text');
+      }
+    });
+  }
+
   if (btnCopyMd) {
     btnCopyMd.addEventListener('click', async () => {
       playKeyClickSound();
@@ -829,10 +862,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  if (btnPrintPdf) {
-    btnPrintPdf.addEventListener('click', () => {
+  if (btnCopyHtmlDropdown) {
+    btnCopyHtmlDropdown.addEventListener('click', async () => {
+      playKeyClickSound();
       if (exportDropdown) exportDropdown.classList.remove('open');
-      if (Export) Export.triggerPdfPrint(renderPreview);
+      if (Export) {
+        try {
+          await Export.copyHtml(docTitleInput.value, docCategoriesInput.value, editorTextarea.value);
+          showToast('Formateret rig tekst kopieret!', 'clipboard');
+        } catch (e) {
+          showToast('Kunne ikke kopiere formateret tekst', 'alert-circle');
+        }
+      }
     });
   }
 

@@ -197,7 +197,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnExportMenu = document.getElementById('btnExportMenu');
   const btnExportMd = document.getElementById('btnExportMd');
   const btnPrintPdf = document.getElementById('btnPrintPdf');
+  const btnExportHtml = document.getElementById('btnExportHtml');
+  const btnExportTxt = document.getElementById('btnExportTxt');
   const btnCopyMdDropdown = document.getElementById('btnCopyMdDropdown');
+  const btnCopyHtmlDropdown = document.getElementById('btnCopyHtmlDropdown');
   const btnCopyMd = document.getElementById('btnCopyMd');
   const btnClear = document.getElementById('btnClear');
   const btnShortcuts = document.getElementById('btnShortcuts');
@@ -641,6 +644,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  if (btnExportHtml) {
+    btnExportHtml.addEventListener('click', () => {
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      if (Export) {
+        const filename = Export.exportHtml(docTitleInput.value, docCategoriesInput.value, editorTextarea.value, true);
+        showToast(`HTML-fil gemt som: ${filename}`);
+      }
+    });
+  }
+
+  if (btnExportTxt) {
+    btnExportTxt.addEventListener('click', () => {
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      if (Export) {
+        const filename = Export.exportTxt(docTitleInput.value, docCategoriesInput.value, editorTextarea.value);
+        showToast(`Tekstfil gemt som: ${filename}`);
+      }
+    });
+  }
+
   if (btnCopyMd) {
     btnCopyMd.addEventListener('click', async () => {
       if (Export) {
@@ -658,6 +681,20 @@ document.addEventListener('DOMContentLoaded', () => {
     btnCopyMdDropdown.addEventListener('click', () => {
       if (exportDropdown) exportDropdown.classList.remove('open');
       if (btnCopyMd) btnCopyMd.click();
+    });
+  }
+
+  if (btnCopyHtmlDropdown) {
+    btnCopyHtmlDropdown.addEventListener('click', async () => {
+      if (exportDropdown) exportDropdown.classList.remove('open');
+      if (Export) {
+        try {
+          await Export.copyHtml(docTitleInput.value, docCategoriesInput.value, editorTextarea.value);
+          showToast('Formateret rig tekst kopieret');
+        } catch (e) {
+          showToast('Fejl ved kopiering af formateret tekst');
+        }
+      }
     });
   }
 
