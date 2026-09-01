@@ -135,6 +135,8 @@ html[data-glow="true"] body.terminal-body {
    CRT TOP HEADER BAR (MODULAR STACKED)
    -------------------------------------------------------------------------- */
 .term-header {
+  position: relative;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
   background-color: var(--ph-bg-chassis);
@@ -356,7 +358,7 @@ html[data-glow="true"] body.terminal-body {
   border-radius: 6px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.8);
   min-width: 210px;
-  z-index: 100;
+  z-index: 10001;
   display: none;
   overflow: hidden;
 }

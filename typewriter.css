@@ -95,6 +95,8 @@ body.typewriter-body {
 
 /* Top Header Navigation (Modular Stacked) */
 .tw-header {
+  position: relative;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
   background: #1c1917;
@@ -1513,7 +1515,7 @@ body.is-typing .tw-meta-inputs:hover {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  z-index: 500;
+  z-index: 10001;
   opacity: 0;
   visibility: hidden;
   transform: translateY(-8px);
