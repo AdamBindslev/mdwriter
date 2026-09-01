@@ -1252,16 +1252,19 @@ kbd {
   .term-header {
     flex-wrap: nowrap;
     align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
+    gap: 6px;
+    padding: 6px 10px;
   }
   .term-brand {
     justify-content: flex-start;
   }
   .term-header-controls {
     justify-content: flex-end;
-    gap: 6px;
+    gap: 4px;
     flex-wrap: nowrap;
+  }
+  .fx-toggle-group {
+    display: none !important;
   }
   .term-v-divider {
     display: none;
@@ -1280,23 +1283,29 @@ kbd {
     height: 100dvh;
     max-height: 100dvh;
     padding: 4px 6px;
-    gap: 6px;
+    gap: 4px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
   }
 
   .term-brand-info h1 {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
   }
 
-  .term-sub {
-    display: none;
+  .term-sub,
+  .term-sys-banner,
+  .term-hr-code,
+  .fx-toggle-group,
+  .selector-label,
+  #btnShortcuts,
+  #btnFullscreen {
+    display: none !important;
   }
 
   .term-header {
-    padding: 6px 8px;
-    gap: 6px;
+    padding: 4px 6px;
+    gap: 4px;
     flex-wrap: nowrap;
   }
 
@@ -1307,17 +1316,53 @@ kbd {
   }
 
   .term-btn {
-    padding: 4px 6px;
+    padding: 3px 6px;
     font-size: 0.72rem;
   }
 
   .theme-btn {
-    padding: 3px 5px;
-    font-size: 0.7rem;
+    padding: 2px 4px;
+    font-size: 0;
+    gap: 0;
+    min-width: unset;
   }
 
-  .selector-label {
-    display: none;
+  .theme-btn .phosphor-dot {
+    margin: 0;
+  }
+
+  .crt-bezel {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    padding: 3px;
+    border-width: 1px;
+    border-radius: 6px;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .crt-screen {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .term-workspace {
+    padding: 4px 6px;
+    gap: 4px;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
   .term-toolbar {
@@ -1325,10 +1370,14 @@ kbd {
     overflow-y: hidden;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
-    padding: 4px 6px;
-    gap: 4px;
+    padding: 2px 4px;
+    gap: 3px;
+    height: 34px;
+    min-height: 34px;
+    max-height: 34px;
     flex-shrink: 0;
     flex-wrap: nowrap;
+    border-radius: 4px;
   }
 
   .term-toolbar::-webkit-scrollbar {
@@ -1337,47 +1386,65 @@ kbd {
     height: 0;
   }
 
+  .fn-tag {
+    display: none !important;
+  }
+
   .term-key {
     font-size: 0.72rem;
-    padding: 2px 6px;
+    padding: 2px 5px;
+    min-height: 26px;
+    height: 26px;
+    white-space: nowrap;
     flex-shrink: 0;
   }
 
-  .term-meta-panel {
-    padding: 4px 6px;
+  .term-key-divider {
+    display: none;
+  }
+
+  .term-tabs {
     gap: 4px;
-    margin-bottom: 4px;
+    flex-shrink: 0;
+  }
+
+  .term-tab {
+    padding: 3px 8px;
+    font-size: 0.72rem;
+    border-radius: 3px 3px 0 0;
+  }
+
+  .term-meta-panel {
+    padding: 3px 6px;
+    gap: 2px;
+    margin-bottom: 2px;
+    flex-shrink: 0;
   }
 
   .term-prompt-line {
     flex-direction: column;
     align-items: flex-start;
-    gap: 2px;
+    gap: 1px;
   }
 
   .prompt-label {
     min-width: unset;
-    font-size: 0.72rem;
+    font-size: 0.68rem;
   }
 
   .prompt-input {
     font-size: 0.85rem;
-    height: 24px;
-    padding: 2px 4px;
+    height: 22px;
+    padding: 1px 4px;
+  }
+
+  .term-chips {
+    gap: 3px;
   }
 
   .term-chips .chip-btn {
-    padding: 2px 5px;
-    font-size: 0.65rem;
-  }
-
-  .term-workspace {
-    flex: 1 1 auto;
-    min-height: 0;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    padding: 1px 4px;
+    font-size: 0.62rem;
   }
 
   .term-pane {
@@ -1394,12 +1461,21 @@ kbd {
     height: 100% !important;
     min-height: 0 !important;
     font-size: 16px;
+    padding: 6px 8px;
+    line-height: 1.5;
+  }
+
+  .term-rendered-body {
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
     padding: 8px 10px;
   }
 
   .term-status-bar {
-    padding: 3px 6px;
-    font-size: 0.7rem;
+    padding: 2px 6px;
+    font-size: 0.68rem;
     flex-shrink: 0;
   }
 }
