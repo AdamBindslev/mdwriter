@@ -115,17 +115,18 @@ body {
   justify-content: space-between;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  padding: 10px 18px;
+  padding: 8px 16px;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-
   backdrop-filter: blur(12px);
+  flex-wrap: nowrap;
 }
 
 .brand {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .logo-icon {
@@ -138,6 +139,7 @@ body {
   justify-content: center;
   color: #ffffff;
   box-shadow: 0 0 15px var(--primary-glow);
+  flex-shrink: 0;
 }
 
 .logo-icon i {
@@ -153,18 +155,22 @@ body {
   background: linear-gradient(90deg, var(--text-main), var(--text-muted));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  white-space: nowrap;
 }
 
 .brand-text .subtitle {
   font-size: 0.75rem;
   color: var(--text-subtle);
   font-weight: 400;
+  white-space: nowrap;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
 .view-toggle-group {

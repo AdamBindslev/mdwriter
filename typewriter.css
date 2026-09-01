@@ -101,10 +101,10 @@ body.typewriter-body {
   background: #1c1917;
   border: 1px solid #332d29;
   border-radius: var(--radius-md);
-  padding: 10px 16px;
+  padding: 8px 14px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  flex-wrap: wrap;
-  gap: 12px;
+  flex-wrap: nowrap;
+  gap: 10px;
 }
 
 .tw-brand {

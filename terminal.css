@@ -138,21 +138,22 @@ html[data-glow="true"] body.terminal-body {
   background-color: var(--ph-bg-chassis);
   border: 1px solid var(--ph-border);
   border-radius: 8px;
-  padding: 10px 16px;
-  gap: 16px;
+  padding: 8px 14px;
+  gap: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .term-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .term-logo-icon {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border: 1px solid var(--ph-border-bright);
   border-radius: 6px;
   display: flex;
@@ -161,15 +162,17 @@ html[data-glow="true"] body.terminal-body {
   background-color: var(--ph-btn-bg);
   color: var(--ph-text-bright);
   box-shadow: 0 0 10px var(--ph-glow-subtle);
+  flex-shrink: 0;
 }
 
 .term-brand-info h1 {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   letter-spacing: 1.5px;
   display: flex;
   align-items: center;
   gap: 8px;
   color: var(--ph-text-bright);
+  white-space: nowrap;
 }
 
 .term-badge {
@@ -185,28 +188,45 @@ html[data-glow="true"] body.terminal-body {
   font-size: 0.78rem;
   color: var(--ph-text-dim);
   display: block;
+  white-space: nowrap;
 }
 
 .term-header-controls {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+.term-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.fx-toggle-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .term-v-divider {
   width: 1px;
-  height: 24px;
+  height: 20px;
   background-color: var(--ph-border);
-  margin: 0 4px;
+  margin: 0 2px;
+  flex-shrink: 0;
 }
 
 /* Header Buttons */
 .term-btn {
   font-family: var(--font-terminal);
-  font-size: 0.82rem;
-  letter-spacing: 0.8px;
-  padding: 6px 12px;
+  font-size: 0.78rem;
+  letter-spacing: 0.5px;
+  padding: 5px 9px;
   background-color: var(--ph-btn-bg);
   color: var(--ph-text);
   border: 1px solid var(--ph-border);
@@ -214,9 +234,11 @@ html[data-glow="true"] body.terminal-body {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   text-decoration: none;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .term-btn:hover {
