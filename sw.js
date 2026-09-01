@@ -1,10 +1,10 @@
 /**
  * Flowscribe Service Worker
- * Version: 2.2.7
+ * Version: 2.3.0
  * Provides offline caching and fast startup for Flowscribe PWA
  */
 
-const CACHE_NAME = 'flowscribe-v2.2.7';
+const CACHE_NAME = 'flowscribe-v2.3.0';
 
 const PRECACHE_ASSETS = [
   './',

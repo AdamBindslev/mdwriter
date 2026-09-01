@@ -776,14 +776,26 @@ body.typewriter-body {
   background: #171513;
   border: 1px solid #292524;
   border-radius: var(--radius-md);
-  padding: 8px 18px;
+  padding: 6px 14px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+
+.tw-footer::-webkit-scrollbar {
+  display: none;
 }
 
 .odometer-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .odometer-label {
@@ -828,6 +840,8 @@ body.typewriter-body {
   font-family: var(--font-sans);
   font-size: 0.775rem;
   color: #a8a29e;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tw-save-indicator {
@@ -853,6 +867,9 @@ body.typewriter-body {
   display: flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .fn-label {
@@ -1145,27 +1162,28 @@ body.is-typing .tw-meta-inputs:hover {
   }
 
   .tw-toolbar {
-    padding: 4px 6px;
-    min-height: 40px;
+    padding: 3px 6px;
     gap: 4px;
     flex-shrink: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
   }
 
-  .tw-toolbar::-webkit-scrollbar {
+  .tw-left-keys {
+    gap: 3px;
+  }
+
+  .tw-right-keys {
+    gap: 3px;
+  }
+
+  .key-divider {
     display: none;
-    width: 0;
-    height: 0;
   }
 
   .tw-key {
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
-    font-size: 0.75rem;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    font-size: 0.72rem;
   }
 
   .editor-wrapper {
