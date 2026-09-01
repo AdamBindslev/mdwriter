@@ -448,18 +448,26 @@ body.typewriter-body {
 
 /* Wide / Action Keycaps for right side */
 .tw-key-action {
-  width: auto;
-  min-width: auto;
-  height: 36px;
-  padding: 0 12px;
-  gap: 6px;
-  font-size: 0.8rem;
+  width: auto !important;
+  min-width: auto !important;
+  height: 28px;
+  padding: 0 10px;
+  gap: 5px;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 .tw-key-action svg,
 .tw-key-action i[data-feather] {
   width: 14px;
   height: 14px;
+  flex-shrink: 0;
 }
 
 .tw-key-sample {

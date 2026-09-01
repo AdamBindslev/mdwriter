@@ -1071,6 +1071,12 @@ body.is-typing .pane-header:hover {
     font-size: 0.95rem;
   }
 
+  .brand-text .subtitle,
+  #btnShortcuts,
+  #btnFullscreen {
+    display: none !important;
+  }
+
   .header-main-actions {
     gap: 3px;
   }
