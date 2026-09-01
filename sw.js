@@ -1,10 +1,10 @@
 /**
  * Flowscribe Service Worker
- * Version: 2.2.4
+ * Version: 2.2.5
  * Provides offline caching and fast startup for Flowscribe PWA
  */
 
-const CACHE_NAME = 'flowscribe-v2.2.4';
+const CACHE_NAME = 'flowscribe-v2.2.5';
 
 const PRECACHE_ASSETS = [
   './',
@@ -107,4 +107,11 @@ self.addEventListener('fetch', (event) => {
       return cachedResponse || fetchPromise;
     })
   );
+});
+
+// Message: Allow clients to force skip waiting on update
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

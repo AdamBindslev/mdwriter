@@ -1237,14 +1237,27 @@ kbd {
    -------------------------------------------------------------------------- */
 @media (max-width: 1200px) {
   .term-header {
-    gap: 12px;
+    gap: 8px;
+    padding: 6px 12px;
+    flex-wrap: nowrap;
+  }
+  .term-sub {
+    display: none;
+  }
+  .fx-toggle-group {
+    display: none !important;
+  }
+  .selector-label {
+    display: none !important;
+  }
+  .fn-tag {
+    display: none !important;
   }
   .term-header-controls {
-    gap: 8px;
+    gap: 6px;
   }
   .term-v-divider {
-    height: 18px;
-    margin: 0 2px;
+    display: none;
   }
 }
 
@@ -1253,7 +1266,7 @@ kbd {
     flex-wrap: nowrap;
     align-items: center;
     gap: 6px;
-    padding: 6px 10px;
+    padding: 6px 8px;
   }
   .term-brand {
     justify-content: flex-start;
@@ -1263,11 +1276,15 @@ kbd {
     gap: 4px;
     flex-wrap: nowrap;
   }
-  .fx-toggle-group {
+  .theme-btn {
+    padding: 3px 6px;
+    font-size: 0;
+  }
+  .term-sys-banner {
     display: none !important;
   }
-  .term-v-divider {
-    display: none;
+  .term-hr-code {
+    display: none !important;
   }
 }
 
