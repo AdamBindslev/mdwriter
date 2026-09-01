@@ -21,10 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabPreview = document.getElementById('tabPreview');
   const editorView = document.getElementById('editorView');
   const previewView = document.getElementById('previewView');
+  const paperSheet = document.getElementById('paperSheet');
+  const paperWrapper = document.querySelector('.paper-wrapper');
 
   // Sound & Controls
   const btnSoundToggle = document.getElementById('btnSoundToggle');
   const soundIcon = document.getElementById('soundIcon');
+  const btnTypewriterScroll = document.getElementById('btnTypewriterScroll');
+  const typewriterScrollIcon = document.getElementById('typewriterScrollIcon');
   const btnFullscreen = document.getElementById('btnFullscreen');
   const ribbonBtns = document.querySelectorAll('.ribbon-btn');
 
@@ -60,6 +64,14 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       return fallback;
     }
+  }
+
+  // Typewriter Center-Scroll State
+  const TYPEWRITER_SCROLL_KEY = 'md_writer_typewriter_scroll';
+  let typewriterScrollEnabled = true;
+  const savedScroll = safeGetStorage(TYPEWRITER_SCROLL_KEY);
+  if (savedScroll !== null) {
+    typewriterScrollEnabled = savedScroll === 'true';
   }
 
   // ----------------------------------------------------
@@ -466,6 +478,126 @@ document.addEventListener('DOMContentLoaded', () => {
     if (soundEnabled) playKeyClickSound();
   });
 
+  // ----------------------------------------------------
+  // TYPEWRITER MID-SCREEN CENTERED SCROLLING SYSTEM
+  // ----------------------------------------------------
+  const mirrorProperties = [
+    'direction', 'boxSizing', 'overflowX', 'overflowY',
+    'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'borderStyle',
+    'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+    'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch',
+    'fontSize', 'fontSizeAdjust', 'lineHeight', 'fontFamily',
+    'textAlign', 'textTransform', 'textIndent', 'textDecoration',
+    'letterSpacing', 'wordSpacing', 'tabSize', 'MozTabSize'
+  ];
+
+  let mirrorDiv = null;
+
+  function getCaretCoordinates(element, position) {
+    if (!mirrorDiv) {
+      mirrorDiv = document.createElement('div');
+      mirrorDiv.id = 'typewriter-caret-mirror';
+      document.body.appendChild(mirrorDiv);
+    }
+
+    const style = mirrorDiv.style;
+    const computed = window.getComputedStyle(element);
+
+    style.whiteSpace = 'pre-wrap';
+    style.wordWrap = 'break-word';
+    style.overflowWrap = 'break-word';
+    style.position = 'fixed';
+    style.top = '-9999px';
+    style.left = '-9999px';
+    style.visibility = 'hidden';
+    style.pointerEvents = 'none';
+
+    mirrorProperties.forEach(prop => {
+      style[prop] = computed[prop];
+    });
+
+    style.width = computed.width;
+
+    const textBefore = element.value.substring(0, position);
+    mirrorDiv.textContent = textBefore;
+
+    const marker = document.createElement('span');
+    marker.textContent = element.value.substring(position, position + 1) || ' ';
+    if (marker.textContent === '\n') marker.textContent = ' ';
+    mirrorDiv.appendChild(marker);
+
+    return {
+      top: marker.offsetTop + parseInt(computed.borderTopWidth || 0, 10),
+      left: marker.offsetLeft + parseInt(computed.borderLeftWidth || 0, 10),
+      height: marker.offsetHeight || parseInt(computed.lineHeight || 28, 10)
+    };
+  }
+
+  let scrollRaf = null;
+
+  function scrollTypewriterToCenter(smooth = true) {
+    if (!typewriterScrollEnabled || !editorTextarea || !paperWrapper) return;
+    if (editorView && editorView.classList.contains('hidden')) return;
+
+    if (scrollRaf) cancelAnimationFrame(scrollRaf);
+    scrollRaf = requestAnimationFrame(() => {
+      const cursorPos = editorTextarea.selectionStart || 0;
+      const caret = getCaretCoordinates(editorTextarea, cursorPos);
+
+      const wrapperRect = paperWrapper.getBoundingClientRect();
+      const textareaRect = editorTextarea.getBoundingClientRect();
+
+      // Distance of the active caret line from top of paperWrapper scroll canvas
+      const caretContentY = (textareaRect.top - wrapperRect.top + paperWrapper.scrollTop) + caret.top;
+
+      // Position active line at ~45% from the top of the viewport
+      const targetViewportY = paperWrapper.clientHeight * 0.45;
+      const targetScrollTop = Math.max(0, Math.round(caretContentY - targetViewportY));
+
+      const diff = Math.abs(paperWrapper.scrollTop - targetScrollTop);
+      if (diff > 4) {
+        if (smooth) {
+          paperWrapper.scrollTo({
+            top: targetScrollTop,
+            behavior: 'smooth'
+          });
+        } else {
+          paperWrapper.scrollTop = targetScrollTop;
+        }
+      }
+    });
+  }
+
+  function updateTypewriterScrollUI() {
+    if (btnTypewriterScroll) {
+      btnTypewriterScroll.classList.toggle('active', typewriterScrollEnabled);
+      btnTypewriterScroll.setAttribute(
+        'title',
+        typewriterScrollEnabled
+          ? 'Midterlinje aktiv (Skrivemaskine fastholder aktiv linje på midten af skærmen)'
+          : 'Standard rulning (Midterlinje slået fra)'
+      );
+    }
+  }
+
+  if (btnTypewriterScroll) {
+    btnTypewriterScroll.addEventListener('click', () => {
+      typewriterScrollEnabled = !typewriterScrollEnabled;
+      try {
+        localStorage.setItem(TYPEWRITER_SCROLL_KEY, typewriterScrollEnabled);
+      } catch (e) {}
+      updateTypewriterScrollUI();
+      showToast(
+        typewriterScrollEnabled ? 'Midterlinje-rulning Aktiveret' : 'Standard rulning slået til',
+        'target'
+      );
+      playKeyClickSound();
+      if (typewriterScrollEnabled) {
+        scrollTypewriterToCenter(true);
+      }
+    });
+  }
+
   // Ribbon Color Switcher
   ribbonBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -483,8 +615,10 @@ document.addEventListener('DOMContentLoaded', () => {
     tabPreview.classList.remove('active');
     editorView.classList.remove('hidden');
     previewView.classList.add('hidden');
+    if (paperSheet) paperSheet.classList.remove('preview-active');
     autoResizeTextarea();
     playKeyClickSound();
+    scrollTypewriterToCenter(false);
   });
 
   tabPreview.addEventListener('click', () => {
@@ -492,15 +626,16 @@ document.addEventListener('DOMContentLoaded', () => {
     tabPaper.classList.remove('active');
     previewView.classList.remove('hidden');
     editorView.classList.add('hidden');
+    if (paperSheet) paperSheet.classList.add('preview-active');
     renderPreview();
     playKeyClickSound();
   });
 
   function autoResizeTextarea() {
     if (!editorTextarea) return;
-    editorTextarea.style.height = '0px';
+    editorTextarea.style.height = 'auto';
     const scrollH = editorTextarea.scrollHeight;
-    editorTextarea.style.height = Math.max(500, scrollH + 40) + 'px';
+    editorTextarea.style.height = Math.max(480, scrollH + 40) + 'px';
   }
 
   function updateOdometer() {
@@ -729,30 +864,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  [editorTextarea, docTitleInput, docCategoriesInput].forEach(inputEl => {
+  [docTitleInput, docCategoriesInput].forEach(inputEl => {
     if (inputEl) {
       inputEl.addEventListener('keydown', handleTypingSound);
+      inputEl.addEventListener('focus', () => {
+        if (paperWrapper && typewriterScrollEnabled) {
+          paperWrapper.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
     }
   });
 
   if (editorTextarea) {
-    editorTextarea.addEventListener('keyup', updateToolbarStates);
-    editorTextarea.addEventListener('click', updateToolbarStates);
+    editorTextarea.addEventListener('keyup', (e) => {
+      updateToolbarStates();
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'].includes(e.key)) {
+        scrollTypewriterToCenter(true);
+      }
+    });
+
+    editorTextarea.addEventListener('click', () => {
+      updateToolbarStates();
+      scrollTypewriterToCenter(true);
+    });
+
     editorTextarea.addEventListener('input', () => {
       autoResizeTextarea();
       renderPreview();
+      scrollTypewriterToCenter(true);
     });
+
     editorTextarea.addEventListener('paste', () => {
       setTimeout(() => {
         autoResizeTextarea();
         renderPreview();
+        scrollTypewriterToCenter(true);
       }, 20);
     });
 
-    const paperWrapperEl = document.querySelector('.paper-wrapper');
-    if (paperWrapperEl) {
+    if (paperWrapper) {
       editorTextarea.addEventListener('wheel', (e) => {
-        paperWrapperEl.scrollTop += e.deltaY;
+        paperWrapper.scrollTop += e.deltaY;
       }, { passive: true });
     }
   }
@@ -908,6 +1060,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial Load Pipeline
   updateSoundUI();
+  updateTypewriterScrollUI();
   if (Storage) {
     const savedDraft = Storage.loadDraft();
     if (savedDraft) {
@@ -920,4 +1073,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderPreview();
   autoResizeTextarea();
   preloadRealWavSounds();
+  if (typewriterScrollEnabled) {
+    setTimeout(() => scrollTypewriterToCenter(false), 100);
+  }
 });
